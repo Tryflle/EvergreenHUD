@@ -1,31 +1,31 @@
 package org.polyfrost.evergreenhud.hud
 
-import org.polyfrost.oneconfig.api.config.v1.annotations.*
-import org.polyfrost.oneconfig.hud.SingleTextHud
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
-import org.polyfrost.evergreenhud.config.HudConfig
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.hud.v1.TextHud
 
-class ECounter: HudConfig("E Counter", "evergreenhud/ecounter.json", false) {
-    @HUD(name = "Main")
-    var hud = ECounterHUD()
+class ECounter : TextHud("E: ") {
+    @Switch(title = "Show total entities")
+    var showTotal = true
 
-    init {
-        initialize()
+    var renderedEntities: Int = 0
+    var totalEntities: Int = 0
+
+    fun update(renderedEntities: Int, totalEntities: Int) {
+        this.renderedEntities = renderedEntities
+        this.totalEntities = totalEntities
+        update()
     }
 
-    class ECounterHUD : SingleTextHud("E", true, 400, 90) {
-
-        @Switch(
-                name = "Simplified"
-        )
-        var simplified = true
-
-        override fun getText(example: Boolean): String {
-            if (mc.thePlayer == null) return "Unknown"
-
-            val delimiter = if (simplified) '/' else ','
-            return mc.renderGlobal.debugInfoEntities.substringAfter("E: ").substringBefore(delimiter)
-        }
+    override fun getText(): String {
+        sb.append(renderedEntities)
+        if (showTotal) sb.append('/').append(totalEntities)
+        return null
     }
+
+    override fun title() = "E Counter"
+
+    override fun id() = "evergreenhud/entity_count.json"
+
+    override fun category() = Category.INFO
 
 }

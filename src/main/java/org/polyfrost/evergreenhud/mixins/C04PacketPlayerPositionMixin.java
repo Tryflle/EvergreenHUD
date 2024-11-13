@@ -1,6 +1,7 @@
 package org.polyfrost.evergreenhud.mixins;
 
 import net.minecraft.network.play.client.C03PacketPlayer;
+import org.polyfrost.evergreenhud.hud.Coordinates;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

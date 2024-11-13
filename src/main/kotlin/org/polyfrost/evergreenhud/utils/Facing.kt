@@ -10,6 +10,11 @@ enum class Facing(val full: String, val abbreviated: String) {
     WEST("West", "W"),
     NORTH_WEST("North West", "NW");
 
+    val isNorth get() = this == NORTH || this == NORTH_WEST || this == NORTH_EAST
+    val isSouth get() = this == SOUTH || this == SOUTH_WEST || this == SOUTH_EAST
+    val isWest get() = this == WEST || this == NORTH_WEST || this == SOUTH_WEST
+    val isEast get() = this == EAST || this == NORTH_EAST || this == SOUTH_EAST
+
     companion object {
         fun parse(yaw: Float): Facing {
             val rotationYaw = wrapDegrees(yaw)

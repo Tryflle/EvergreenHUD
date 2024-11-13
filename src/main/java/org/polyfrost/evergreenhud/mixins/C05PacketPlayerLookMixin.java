@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class C05PacketPlayerLookMixin {
     @Inject(method = "<init>(FFZ)V", at = @At("RETURN"))
     private void evergreen$readPosition(float yaw, float pitch, boolean onGround, CallbackInfo ci) {
+        Coordinates.updateFacing(yaw);
         LookVecHud.update(yaw, pitch);
         Facing.update(yaw);
     }

@@ -1,22 +1,19 @@
 package org.polyfrost.evergreenhud.hud
 
-import org.polyfrost.oneconfig.api.config.v1.annotations.HUD
-import org.polyfrost.oneconfig.hud.SingleTextHud
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
-import org.polyfrost.evergreenhud.config.HudConfig
+import net.minecraft.client.Minecraft
+import org.polyfrost.oneconfig.api.hud.v1.TextHud
+import org.polyfrost.polyui.unit.seconds
 
-class Day: HudConfig("Day", "evergreenhud/day.json", false) {
-    @HUD(name = "Main")
-    var hud = DayHud()
-
-    init {
-        initialize()
+class Day : TextHud("Day: ", "") {
+    override fun getText(): String {
+        return Minecraft.getMinecraft().theWorld?.worldTime?.div(24000L)?.toString() ?: "0"
     }
 
-    class DayHud : SingleTextHud("Day", true, 400, 30) {
-        override fun getText(example: Boolean): String {
-            if (mc.theWorld == null) return "0"
-            return (mc.theWorld.worldTime / 24000L).toString()
-        }
-    }
+    override fun updateFrequency() = 1.seconds
+
+    override fun title() = "Day"
+
+    override fun id() = "evergreenhud/day.json"
+
+    override fun category() = Category.INFO
 }

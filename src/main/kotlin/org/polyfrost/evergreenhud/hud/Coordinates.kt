@@ -1,129 +1,90 @@
 package org.polyfrost.evergreenhud.hud
 
-import org.polyfrost.evergreenhud.utils.*
-import org.polyfrost.oneconfig.api.config.v1.annotations.*
-import org.polyfrost.oneconfig.hud.TextHud
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
-import org.polyfrost.evergreenhud.config.HudConfig
+import org.polyfrost.evergreenhud.utils.Facing
+import org.polyfrost.evergreenhud.utils.decimalFormat
+import org.polyfrost.oneconfig.api.config.v1.annotations.Checkbox
+import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
+import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.hud.v1.Hud
+import org.polyfrost.polyui.component.impl.Text
+import org.polyfrost.polyui.utils.dont
+import org.polyfrost.polyui.utils.translated
 
-class Coordinates: HudConfig("Coordinates", "evergreenhud/coordinates.json", true) {
-    @HUD(name = "Main")
-    var hud = CoordinatesHud()
+class Coordinates : Hud<Text>() {
+    @RadioButton(
+        title = "Mode",
+        options = ["Vertical", "Horizontal"]
+    )
+    var displayMode = 0
 
-    init {
-        initialize()
-    }
+    @Switch(title = "Show Axis")
+    var showAxis = true
 
-    class CoordinatesHud : TextHud(true, 0, 0) {
-        @DualOption(
-            name = "Mode",
-            left = "Vertical",
-            right = "Horizontal"
-        )
-        var displayMode = false
+    @Switch(title = "Show Direction")
+    var showDirection = false
 
-        @Switch(
-            name = "Show Axis"
-        )
-        var showAxis = true
+    @Checkbox(title = "Show X")
+    var showX = true
 
-        @Switch(
-            name = "Show Direction"
-        )
-        var showDirection = false
+    @Checkbox(title = "Show Y")
+    var showY = true
 
-        @Switch(
-            name = "Show X"
-        )
-        var showX = true
+    @Checkbox(title = "Show Z")
+    var showZ = true
 
-        @Switch(
-            name = "Show Y"
-        )
-        var showY = true
+    @Slider(
+        title = "Accuracy",
+        min = 0f, max = 16f,
+        step = 1f
+    )
+    var accuracy = 0
 
-        @Switch(
-            name = "Show Z"
-        )
-        var showZ = true
+    @Switch(title = "Trailing Zeros")
+    var trailingZeros = false
 
-        @Slider(
-            name = "Accuracy",
-            min = 0f,
-            max = 16f,
-            step = 1
-        )
-        var accuracy = 0
+    private val sb = StringBuilder()
+    private var df = decimalFormat(accuracy, trailingZeros)
+    private var facing: Facing = Facing.NORTH
 
-        @Switch(
-            name = "Trailing Zeros"
-        )
-        var trailingZeros = false
+    override fun create() = Text("".translated().dont(), fontSize = 12f)
 
-        override fun getLines(lines: MutableList<String>, example: Boolean) {
-            if (mc.thePlayer == null) {
-                lines.add("Unknown")
-                return
+    override fun initialize() {
+        if (isReal) {
+            addCallback("accuracy") { value: Int ->
+                df = decimalFormat(value, trailingZeros)
             }
-
-            val df = decimalFormat(accuracy, trailingZeros)
-
-            val sb = StringBuilder()
-            val facing = Facing.parseExact(mc.thePlayer!!.rotationYaw)
-            if (showX) {
-                sb.append(if (showAxis) "X: " else "")
-                sb.append(df.format(mc.thePlayer.posX))
-                if (showDirection) {
-                    sb.append(" (")
-
-                    sb.append(when (facing) {
-                        Facing.EAST, Facing.NORTH_EAST, Facing.SOUTH_EAST -> "+"
-                        Facing.WEST, Facing.NORTH_WEST, Facing.SOUTH_WEST -> "-"
-                        else -> " "
-                    })
-
-                    sb.append(")")
-                }
-                if (!displayMode) {
-                    lines.add(sb.toString())
-                    sb.setLength(0)
-                } else if (showY || showZ) {
-                    sb.append(", ")
-                }
-            }
-            if (showY) {
-                sb.append(if (showAxis) "Y: " else "")
-                sb.append(df.format(mc.thePlayer.posY))
-                if (!displayMode) {
-                    lines.add(sb.toString())
-                    sb.setLength(0)
-                } else if (showZ) {
-                    sb.append(", ")
-                }
-            }
-            if (showZ) {
-                sb.append(if (showAxis) "Z: " else "")
-                sb.append(df.format(mc.thePlayer.posZ))
-                if (showDirection) {
-                    sb.append(" (")
-
-                    sb.append(when (facing) {
-                        Facing.NORTH, Facing.NORTH_EAST, Facing.NORTH_WEST -> "-"
-                        Facing.SOUTH, Facing.SOUTH_WEST, Facing.SOUTH_EAST -> "+"
-                        else -> " "
-                    })
-
-                    sb.append(")")
-                }
-                if (!displayMode) {
-                    lines.add(sb.toString())
-                    sb.setLength(0)
-                }
-            }
-
-            if (displayMode) {
-                lines.add(sb.toString())
+            addCallback("trailingZeros") { state: Boolean ->
+                df = decimalFormat(accuracy, state)
             }
         }
     }
+
+    fun update(x: Double, y: Double, z: Double) {
+        sb.clear()
+        if (showX) createString('X', x, if (facing.isEast) '+' else if (facing.isWest) '-' else ' ')
+        if (showY) createString('Y', y, '\u0000')
+        if (showZ) createString('Z', z, if (facing.isSouth) '+' else if (facing.isNorth) '-' else ' ')
+    }
+
+    private fun createString(axis: Char, value: Double, sign: Char) {
+        if (sb.isNotEmpty()) {
+            if (displayMode == 0) sb.append('\n') else sb.append(", ")
+        }
+        if (showAxis) sb.append(axis).append(": ")
+        sb.append(df.format(value))
+        if (showDirection && sign != '\u0000') sb.append('(').append(sign).append(')')
+    }
+
+    fun updateFacing(yaw: Float) {
+        facing = Facing.parseExact(yaw)
+    }
+
+    override fun update() = false
+
+    override fun id() = "evergreenhud/coordinates.json"
+
+    override fun title() = "Coordinates"
+
+    override fun category() = Category.INFO
 }
