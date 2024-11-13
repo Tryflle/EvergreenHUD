@@ -1,11 +1,12 @@
 package org.polyfrost.evergreenhud.hud
 
-import cc.polyfrost.oneconfig.config.annotations.*
-import cc.polyfrost.oneconfig.config.core.OneColor
-import cc.polyfrost.oneconfig.hud.BasicHud
-import cc.polyfrost.oneconfig.libs.universal.UMatrixStack
-import cc.polyfrost.oneconfig.renderer.TextRenderer
-import cc.polyfrost.oneconfig.utils.dsl.mc
+import org.polyfrost.oneconfig.api.config.v1.annotations.*
+import org.polyfrost.polyui.color.PolyColor
+import org.polyfrost.oneconfig.api.config.v1.core.OneColor
+import org.polyfrost.oneconfig.hud.BasicHud
+import org.polyfrost.universal.UMatrixStack
+import org.polyfrost.oneconfig.renderer.TextRenderer
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.texture.DynamicTexture

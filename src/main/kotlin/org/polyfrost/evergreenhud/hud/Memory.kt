@@ -1,8 +1,8 @@
 package org.polyfrost.evergreenhud.hud
 
 import org.polyfrost.evergreenhud.utils.decimalFormat
-import cc.polyfrost.oneconfig.config.annotations.*
-import cc.polyfrost.oneconfig.hud.SingleTextHud
+import org.polyfrost.oneconfig.api.config.v1.annotations.*
+import org.polyfrost.oneconfig.hud.SingleTextHud
 import org.polyfrost.evergreenhud.config.HudConfig
 
 class Memory: HudConfig("Memory", "evergreenhud/memory.json", false) {

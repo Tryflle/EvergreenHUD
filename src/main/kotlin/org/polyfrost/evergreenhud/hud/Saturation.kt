@@ -1,11 +1,11 @@
 package org.polyfrost.evergreenhud.hud
 
 import org.polyfrost.evergreenhud.utils.decimalFormat
-import cc.polyfrost.oneconfig.config.annotations.HUD
-import cc.polyfrost.oneconfig.config.annotations.Slider
-import cc.polyfrost.oneconfig.config.annotations.Switch
-import cc.polyfrost.oneconfig.hud.SingleTextHud
-import cc.polyfrost.oneconfig.utils.dsl.mc
+import org.polyfrost.oneconfig.api.config.v1.annotations.HUD
+import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.hud.SingleTextHud
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.evergreenhud.config.HudConfig
 
 class Saturation: HudConfig("Saturation", "evergreenhud/saturation.json", false) {

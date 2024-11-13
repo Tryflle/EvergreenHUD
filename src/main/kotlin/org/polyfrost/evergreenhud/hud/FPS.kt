@@ -1,8 +1,8 @@
 package org.polyfrost.evergreenhud.hud
 
 import org.polyfrost.evergreenhud.utils.FrameTimeHelper
-import cc.polyfrost.oneconfig.config.annotations.*
-import cc.polyfrost.oneconfig.hud.SingleTextHud
+import org.polyfrost.oneconfig.api.config.v1.annotations.*
+import org.polyfrost.oneconfig.hud.SingleTextHud
 import net.minecraft.client.Minecraft
 import org.polyfrost.evergreenhud.config.HudConfig
 import kotlin.math.abs

@@ -1,11 +1,12 @@
 package org.polyfrost.evergreenhud.hud
 
-import cc.polyfrost.oneconfig.config.annotations.*
-import cc.polyfrost.oneconfig.config.core.OneColor
-import cc.polyfrost.oneconfig.config.elements.SubConfig
-import cc.polyfrost.oneconfig.hud.BasicHud
-import cc.polyfrost.oneconfig.libs.universal.UMatrixStack
-import cc.polyfrost.oneconfig.utils.dsl.*
+import org.polyfrost.oneconfig.api.config.v1.annotations.*
+import org.polyfrost.polyui.color.PolyColor
+import org.polyfrost.oneconfig.api.config.v1.core.OneColor
+import org.polyfrost.oneconfig.api.config.v1.elements.SubConfig
+import org.polyfrost.oneconfig.hud.BasicHud
+import org.polyfrost.universal.UMatrixStack
+import org.polyfrost.oneconfig.utils.v1.dsl.*
 import org.lwjgl.util.vector.Vector2f
 import org.polyfrost.evergreenhud.config.HudConfig
 import java.util.*
@@ -116,5 +117,5 @@ class Clock : HudConfig("Clock", "evergreenhud/clock.json", false) {
 
     }
 
-    data class LineInfo(var degree: Double, var start: Float, var end: Float, var width: Number)
+    data class LineInfo(var degree: Double, var start: Float, var end: Float, var width: Int)
 }

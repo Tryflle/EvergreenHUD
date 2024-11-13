@@ -1,10 +1,10 @@
 package org.polyfrost.evergreenhud.utils
 
-import cc.polyfrost.oneconfig.events.EventManager
-import cc.polyfrost.oneconfig.events.event.RenderEvent
-import cc.polyfrost.oneconfig.events.event.Stage
-import cc.polyfrost.oneconfig.events.event.TickEvent
-import cc.polyfrost.oneconfig.libs.eventbus.Subscribe
+import org.polyfrost.oneconfig.api.event.v1.EventManager
+import org.polyfrost.oneconfig.api.event.v1.events.event.RenderEvent
+import org.polyfrost.oneconfig.api.event.v1.events.event.Stage
+import org.polyfrost.oneconfig.api.event.v1.events.event.TickEvent
+import org.polyfrost.oneconfig.libs.eventbus.Subscribe
 
 object FrameTimeHelper {
     private var lastTime = System.currentTimeMillis().toDouble()

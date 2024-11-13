@@ -1,11 +1,11 @@
 package org.polyfrost.evergreenhud.utils
 
-import cc.polyfrost.oneconfig.events.EventManager
-import cc.polyfrost.oneconfig.events.event.WorldLoadEvent
-import cc.polyfrost.oneconfig.libs.eventbus.Subscribe
-import cc.polyfrost.oneconfig.utils.Multithreading
-import cc.polyfrost.oneconfig.utils.NetworkUtils
-import cc.polyfrost.oneconfig.utils.hypixel.LocrawUtil
+import org.polyfrost.oneconfig.api.event.v1.EventManager
+import org.polyfrost.oneconfig.api.event.v1.events.event.WorldLoadEvent
+import org.polyfrost.oneconfig.libs.eventbus.Subscribe
+import org.polyfrost.oneconfig.utils.v1.Multithreading
+import org.polyfrost.oneconfig.utils.v1.NetworkUtils
+import org.polyfrost.oneconfig.api.hypixel.v1.LocrawUtil
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 

@@ -1,12 +1,12 @@
 package org.polyfrost.evergreenhud.hud.hudlist
 
-import cc.polyfrost.oneconfig.config.Config
-import cc.polyfrost.oneconfig.config.elements.BasicOption
-import cc.polyfrost.oneconfig.gui.elements.BasicButton
-import cc.polyfrost.oneconfig.hud.Hud
-import cc.polyfrost.oneconfig.renderer.asset.SVG
-import cc.polyfrost.oneconfig.utils.InputHandler
-import cc.polyfrost.oneconfig.utils.color.ColorPalette
+import org.polyfrost.oneconfig.api.config.v1.Config
+import org.polyfrost.oneconfig.api.config.v1.elements.BasicOption
+import org.polyfrost.oneconfig.gui.elements.BasicButton
+import org.polyfrost.oneconfig.hud.Hud
+import org.polyfrost.oneconfig.renderer.asset.SVG
+import org.polyfrost.oneconfig.utils.v1.InputHandler
+import org.polyfrost.oneconfig.utils.v1.color.ColorPalette
 
 private val PLUS_ICON = SVG("/assets/evergreenhud/plus.svg")
 

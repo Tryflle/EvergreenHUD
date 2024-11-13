@@ -1,9 +1,9 @@
 package org.polyfrost.evergreenhud.hud
 
-import cc.polyfrost.oneconfig.config.annotations.*
-import cc.polyfrost.oneconfig.hud.SingleTextHud
-import cc.polyfrost.oneconfig.libs.universal.USound
-import cc.polyfrost.oneconfig.utils.dsl.mc
+import org.polyfrost.oneconfig.api.config.v1.annotations.*
+import org.polyfrost.oneconfig.hud.SingleTextHud
+import org.polyfrost.universal.USound
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import net.minecraft.block.*
 import net.minecraft.init.Blocks
 import net.minecraft.util.BlockPos

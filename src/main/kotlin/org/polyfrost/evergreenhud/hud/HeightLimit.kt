@@ -1,10 +1,10 @@
 package org.polyfrost.evergreenhud.hud
 
 import org.polyfrost.evergreenhud.utils.PinkuluAPIManager
-import cc.polyfrost.oneconfig.config.annotations.*
-import cc.polyfrost.oneconfig.hud.SingleTextHud
-import cc.polyfrost.oneconfig.utils.dsl.mc
-import cc.polyfrost.oneconfig.utils.hypixel.*
+import org.polyfrost.oneconfig.api.config.v1.annotations.*
+import org.polyfrost.oneconfig.hud.SingleTextHud
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import org.polyfrost.oneconfig.api.hypixel.v1.*
 import org.polyfrost.evergreenhud.config.HudConfig
 
 class HeightLimit : HudConfig("Height Limit", "evergreenhud/heightlimit.json", false) {

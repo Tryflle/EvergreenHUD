@@ -1,10 +1,10 @@
 package org.polyfrost.evergreenhud.hud
 
-import cc.polyfrost.oneconfig.config.annotations.HUD
-import cc.polyfrost.oneconfig.events.EventManager
-import cc.polyfrost.oneconfig.events.event.ReceivePacketEvent
-import cc.polyfrost.oneconfig.hud.SingleTextHud
-import cc.polyfrost.oneconfig.libs.eventbus.Subscribe
+import org.polyfrost.oneconfig.api.config.v1.annotations.HUD
+import org.polyfrost.oneconfig.api.event.v1.EventManager
+import org.polyfrost.oneconfig.api.event.v1.events.event.ReceivePacketEvent
+import org.polyfrost.oneconfig.hud.SingleTextHud
+import org.polyfrost.oneconfig.libs.eventbus.Subscribe
 import org.polyfrost.evergreenhud.config.HudConfig
 
 class TPS : HudConfig("TPS", "evergreenhud/tps.json", false) {

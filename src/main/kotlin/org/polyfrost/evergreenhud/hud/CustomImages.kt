@@ -1,15 +1,15 @@
 package org.polyfrost.evergreenhud.hud
 
 import org.polyfrost.evergreenhud.hud.hudlist.HudList
-import cc.polyfrost.oneconfig.config.annotations.*
-import cc.polyfrost.oneconfig.config.data.*
-import cc.polyfrost.oneconfig.config.elements.OptionPage
-import cc.polyfrost.oneconfig.hud.BasicHud
-import cc.polyfrost.oneconfig.libs.universal.UMatrixStack
-import cc.polyfrost.oneconfig.renderer.TinyFD
-import cc.polyfrost.oneconfig.renderer.asset.Image
-import cc.polyfrost.oneconfig.utils.Notifications
-import cc.polyfrost.oneconfig.utils.dsl.*
+import org.polyfrost.oneconfig.api.config.v1.annotations.*
+import org.polyfrost.oneconfig.api.config.v1.data.*
+import org.polyfrost.oneconfig.api.config.v1.elements.OptionPage
+import org.polyfrost.oneconfig.hud.BasicHud
+import org.polyfrost.universal.UMatrixStack
+import org.polyfrost.oneconfig.renderer.TinyFD
+import org.polyfrost.oneconfig.renderer.asset.Image
+import org.polyfrost.oneconfig.api.ui.v1.notifications.Notifications
+import org.polyfrost.oneconfig.utils.v1.dsl.*
 import org.polyfrost.evergreenhud.config.HudConfig
 import java.io.File
 import java.io.IOException

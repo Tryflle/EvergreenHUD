@@ -1,13 +1,13 @@
 package org.polyfrost.evergreenhud.hud
 
-import cc.polyfrost.oneconfig.config.annotations.*
-import cc.polyfrost.oneconfig.events.EventManager
-import cc.polyfrost.oneconfig.events.event.*
-import cc.polyfrost.oneconfig.hud.BasicHud
-import cc.polyfrost.oneconfig.libs.eventbus.Subscribe
-import cc.polyfrost.oneconfig.libs.universal.*
-import cc.polyfrost.oneconfig.libs.universal.UGraphics.GL
-import cc.polyfrost.oneconfig.utils.dsl.mc
+import org.polyfrost.oneconfig.api.config.v1.annotations.*
+import org.polyfrost.oneconfig.api.event.v1.EventManager
+import org.polyfrost.oneconfig.api.event.v1.events.event.*
+import org.polyfrost.oneconfig.hud.BasicHud
+import org.polyfrost.oneconfig.libs.eventbus.Subscribe
+import org.polyfrost.universal.*
+import org.polyfrost.universal.UGraphics.GL
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.gui.inventory.GuiChest
 import net.minecraft.client.renderer.*

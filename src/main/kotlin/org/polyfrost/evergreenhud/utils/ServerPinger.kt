@@ -1,11 +1,11 @@
 package org.polyfrost.evergreenhud.utils
 
-import cc.polyfrost.oneconfig.config.annotations.Exclude
-import cc.polyfrost.oneconfig.events.EventManager
-import cc.polyfrost.oneconfig.events.event.Stage
-import cc.polyfrost.oneconfig.events.event.TickEvent
-import cc.polyfrost.oneconfig.libs.eventbus.Subscribe
-import cc.polyfrost.oneconfig.utils.Multithreading
+import org.polyfrost.oneconfig.api.config.v1.annotations.Exclude
+import org.polyfrost.oneconfig.api.event.v1.EventManager
+import org.polyfrost.oneconfig.api.event.v1.events.event.Stage
+import org.polyfrost.oneconfig.api.event.v1.events.event.TickEvent
+import org.polyfrost.oneconfig.libs.eventbus.Subscribe
+import org.polyfrost.oneconfig.utils.v1.Multithreading
 import net.minecraft.client.Minecraft
 import net.minecraft.client.multiplayer.ServerAddress
 import net.minecraft.client.multiplayer.ServerData

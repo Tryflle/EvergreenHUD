@@ -1,14 +1,15 @@
 package org.polyfrost.evergreenhud.hud
 
-import cc.polyfrost.oneconfig.config.annotations.*
-import cc.polyfrost.oneconfig.config.core.OneColor
-import cc.polyfrost.oneconfig.hud.BasicHud
-import cc.polyfrost.oneconfig.libs.universal.UGraphics
-import cc.polyfrost.oneconfig.libs.universal.UMatrixStack
-import cc.polyfrost.oneconfig.libs.universal.UMinecraft
-import cc.polyfrost.oneconfig.platform.Platform
-import cc.polyfrost.oneconfig.renderer.TextRenderer
-import cc.polyfrost.oneconfig.utils.dsl.mc
+import org.polyfrost.oneconfig.api.config.v1.annotations.*
+import org.polyfrost.polyui.color.PolyColor
+import org.polyfrost.oneconfig.api.config.v1.core.OneColor
+import org.polyfrost.oneconfig.hud.BasicHud
+import org.polyfrost.universal.UGraphics
+import org.polyfrost.universal.UMatrixStack
+import org.polyfrost.universal.UMinecraft
+import org.polyfrost.oneconfig.api.platform.v1.Platform
+import org.polyfrost.oneconfig.renderer.TextRenderer
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.renderer.GlStateManager
@@ -301,7 +302,7 @@ class Armour : HudConfig("ArmourHud", "evergreenhud/armour.json", false) {
                     GlStateManager.disableBlend()
                     val x = xPosition + 2
                     val y = yPosition + 13
-                    Gui.drawRect(x, y, x + 13, y + 2, java.awt.Color(0, 0, 0).rgb)
+                    Gui.drawRect(x, y, x + 13, y + 2, 0)
                     Gui.drawRect(x, y, x + 12, y + 1, java.awt.Color((255 - i) / 4, 64, 0).rgb)
                     Gui.drawRect(x, y, x + j, y + 1, java.awt.Color(255 - i, i, 0, 255).rgb)
                     GlStateManager.enableAlpha()

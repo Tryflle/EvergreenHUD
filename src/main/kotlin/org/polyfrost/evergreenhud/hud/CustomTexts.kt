@@ -1,10 +1,10 @@
 package org.polyfrost.evergreenhud.hud
 
 import org.polyfrost.evergreenhud.hud.hudlist.HudList
-import cc.polyfrost.oneconfig.config.annotations.*
-import cc.polyfrost.oneconfig.config.data.*
-import cc.polyfrost.oneconfig.config.elements.OptionPage
-import cc.polyfrost.oneconfig.hud.TextHud
+import org.polyfrost.oneconfig.api.config.v1.annotations.*
+import org.polyfrost.oneconfig.api.config.v1.data.*
+import org.polyfrost.oneconfig.api.config.v1.elements.OptionPage
+import org.polyfrost.oneconfig.hud.TextHud
 import org.polyfrost.evergreenhud.config.HudConfig
 import java.lang.reflect.Field
 

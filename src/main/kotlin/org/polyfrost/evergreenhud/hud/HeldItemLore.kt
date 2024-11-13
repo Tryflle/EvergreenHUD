@@ -1,13 +1,14 @@
 package org.polyfrost.evergreenhud.hud
 
-import cc.polyfrost.oneconfig.config.annotations.*
-import cc.polyfrost.oneconfig.config.annotations.Number
-import cc.polyfrost.oneconfig.config.core.OneColor
-import cc.polyfrost.oneconfig.hud.TextHud
-import cc.polyfrost.oneconfig.libs.universal.*
-import cc.polyfrost.oneconfig.renderer.*
-import cc.polyfrost.oneconfig.utils.color.ColorUtils
-import cc.polyfrost.oneconfig.utils.dsl.mc
+import org.polyfrost.oneconfig.api.config.v1.annotations.*
+import org.polyfrost.oneconfig.api.config.v1.annotations.Number
+import org.polyfrost.polyui.color.PolyColor
+import org.polyfrost.oneconfig.api.config.v1.core.OneColor
+import org.polyfrost.oneconfig.hud.TextHud
+import org.polyfrost.universal.*
+import org.polyfrost.oneconfig.renderer.*
+import org.polyfrost.oneconfig.utils.v1.color.ColorUtils
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import net.minecraft.item.ItemStack
 import org.polyfrost.evergreenhud.config.HudConfig
 import org.polyfrost.evergreenhud.mixins.GuiIngameAccessor

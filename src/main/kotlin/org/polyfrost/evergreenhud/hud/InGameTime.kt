@@ -1,8 +1,8 @@
 package org.polyfrost.evergreenhud.hud
 
-import cc.polyfrost.oneconfig.config.annotations.*
-import cc.polyfrost.oneconfig.hud.SingleTextHud
-import cc.polyfrost.oneconfig.libs.universal.UMinecraft
+import org.polyfrost.oneconfig.api.config.v1.annotations.*
+import org.polyfrost.oneconfig.hud.SingleTextHud
+import org.polyfrost.universal.UMinecraft
 import org.polyfrost.evergreenhud.config.HudConfig
 import java.text.SimpleDateFormat
 import java.util.*

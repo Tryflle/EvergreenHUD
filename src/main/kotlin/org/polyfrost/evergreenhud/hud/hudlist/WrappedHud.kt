@@ -1,19 +1,19 @@
 package org.polyfrost.evergreenhud.hud.hudlist
 
-import cc.polyfrost.oneconfig.config.annotations.HUD
-import cc.polyfrost.oneconfig.config.core.ConfigUtils
-import cc.polyfrost.oneconfig.config.elements.OptionPage
-import cc.polyfrost.oneconfig.gui.OneConfigGui
-import cc.polyfrost.oneconfig.gui.elements.BasicButton
-import cc.polyfrost.oneconfig.gui.pages.ModConfigPage
-import cc.polyfrost.oneconfig.hud.HUDUtils
-import cc.polyfrost.oneconfig.hud.Hud
-import cc.polyfrost.oneconfig.internal.hud.HudCore
-import cc.polyfrost.oneconfig.renderer.asset.SVG
-import cc.polyfrost.oneconfig.renderer.font.Fonts
-import cc.polyfrost.oneconfig.utils.InputHandler
-import cc.polyfrost.oneconfig.utils.color.ColorPalette
-import cc.polyfrost.oneconfig.utils.dsl.nanoVGHelper
+import org.polyfrost.oneconfig.api.config.v1.annotations.HUD
+import org.polyfrost.oneconfig.api.config.v1.core.ConfigUtils
+import org.polyfrost.oneconfig.api.config.v1.elements.OptionPage
+import org.polyfrost.oneconfig.gui.OneConfigGui
+import org.polyfrost.oneconfig.gui.elements.BasicButton
+import org.polyfrost.oneconfig.gui.pages.ModConfigPage
+import org.polyfrost.oneconfig.hud.HUDUtils
+import org.polyfrost.oneconfig.hud.Hud
+import org.polyfrost.oneconfig.internal.hud.HudCore
+import org.polyfrost.oneconfig.renderer.asset.SVG
+import org.polyfrost.oneconfig.renderer.font.Fonts
+import org.polyfrost.oneconfig.utils.v1.InputHandler
+import org.polyfrost.oneconfig.utils.v1.color.ColorPalette
+import org.polyfrost.oneconfig.utils.v1.dsl.nanoVGHelper
 
 private val MINUS_ICON = SVG("/assets/evergreenhud/minus.svg")
 private const val WHITE_90 = 0xE5FFFFFF.toInt()

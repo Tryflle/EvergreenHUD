@@ -1,9 +1,9 @@
 package org.polyfrost.evergreenhud.hud.hudlist
 
-import cc.polyfrost.oneconfig.config.Config
-import cc.polyfrost.oneconfig.config.core.ConfigUtils
-import cc.polyfrost.oneconfig.config.elements.*
-import cc.polyfrost.oneconfig.hud.Hud
+import org.polyfrost.oneconfig.api.config.v1.Config
+import org.polyfrost.oneconfig.api.config.v1.core.ConfigUtils
+import org.polyfrost.oneconfig.api.config.v1.elements.*
+import org.polyfrost.oneconfig.hud.Hud
 
 abstract class HudList<T : Hud> : ArrayList<T>() {
     abstract fun newHud(): T

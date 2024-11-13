@@ -7,6 +7,7 @@ import net.minecraft.world.World
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import org.polyfrost.evergreenhud.config.ModConfig
+import org.polyfrost.oneconfig.api.event.v1.events.Event
 
 @Mod(modid = EvergreenHUD.MODID, name = EvergreenHUD.NAME, version = EvergreenHUD.VERSION)
 class EvergreenHUD {
@@ -23,5 +24,5 @@ class EvergreenHUD {
     }
 }
 
-class ClientDamageEntityEvent(val attacker: Entity, val target: Entity)
-class ClientPlaceBlockEvent(val player: EntityPlayer, val world: World)
+data class ClientDamageEntityEvent(val attacker: Entity, val target: Entity) : Event
+class ClientPlaceBlockEvent(val player: EntityPlayer, val world: World) : Event
