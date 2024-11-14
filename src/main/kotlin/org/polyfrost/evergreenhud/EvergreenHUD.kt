@@ -6,21 +6,14 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.world.World
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import org.polyfrost.evergreenhud.config.ModConfig
 import org.polyfrost.oneconfig.api.event.v1.events.Event
 
-@Mod(modid = EvergreenHUD.MODID, name = EvergreenHUD.NAME, version = EvergreenHUD.VERSION)
+@Mod(modid = "@ID@", name = "@NAME@", version = "@VER@")
 class EvergreenHUD {
+
     @Mod.EventHandler
     fun onFMLInitialization(event: FMLInitializationEvent) {
-        ModConfig.initialize()
         PinkuluAPIManager.initialize()
-    }
-
-    companion object {
-        const val MODID = "@ID@"
-        const val NAME = "@NAME@"
-        const val VERSION = "@VER@"
     }
 }
 

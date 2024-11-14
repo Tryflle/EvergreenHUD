@@ -1,11 +1,5 @@
 package org.polyfrost.evergreenhud.utils
 
-import org.polyfrost.oneconfig.api.config.v1.annotations.Exclude
-import org.polyfrost.oneconfig.api.event.v1.EventManager
-import org.polyfrost.oneconfig.api.event.v1.events.event.Stage
-import org.polyfrost.oneconfig.api.event.v1.events.event.TickEvent
-import org.polyfrost.oneconfig.libs.eventbus.Subscribe
-import org.polyfrost.oneconfig.utils.v1.Multithreading
 import net.minecraft.client.Minecraft
 import net.minecraft.client.multiplayer.ServerAddress
 import net.minecraft.client.multiplayer.ServerData
@@ -19,8 +13,11 @@ import net.minecraft.network.status.server.S00PacketServerInfo
 import net.minecraft.network.status.server.S01PacketPong
 import net.minecraft.util.ChatComponentText
 import net.minecraft.util.IChatComponent
+import org.polyfrost.oneconfig.api.event.v1.eventHandler
+import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
+import org.polyfrost.oneconfig.utils.v1.Multithreading
 import java.net.InetAddress
-import java.util.*
+import java.util.Collections
 
 object ServerPinger {
     val pingers = Collections.synchronizedList(mutableListOf<Pinger>())
@@ -31,26 +28,20 @@ object ServerPinger {
         return pinger
     }
 
-    @Exclude
     class Pinger(private val interval: () -> Int, private val serverGetter: () -> ServerData?) {
         var ping: Int? = null
-        private set
+            private set
 
         private var ticks = 0
+
         init {
-            EventManager.INSTANCE.register(this)
-            Multithreading.runAsync {
+            Multithreading.submit {
                 serverGetter()?.let(this::ping)
             }
-        }
-
-        @Subscribe
-        private fun onTick(event: TickEvent) {
-            if (event.stage == Stage.START) {
+            eventHandler { event: TickEvent.Start ->
                 ticks++
-
                 if (ticks % interval() == 0) {
-                    Multithreading.runAsync {
+                    Multithreading.submit {
                         serverGetter()?.let(this::ping)
                     }
                 }
@@ -92,9 +83,9 @@ object ServerPinger {
 
             networkmanager.sendPacket(
                 C00Handshake(
-                        //#if MC<11200
-                        47,
-                        //#endif
+                    //#if MC<11200
+                    47,
+                    //#endif
                     serverAddress.ip,
                     serverAddress.port,
                     EnumConnectionState.STATUS

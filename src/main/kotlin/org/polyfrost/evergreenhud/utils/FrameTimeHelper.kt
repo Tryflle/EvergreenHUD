@@ -1,32 +1,20 @@
 package org.polyfrost.evergreenhud.utils
 
-import org.polyfrost.oneconfig.api.event.v1.EventManager
-import org.polyfrost.oneconfig.api.event.v1.events.event.RenderEvent
-import org.polyfrost.oneconfig.api.event.v1.events.event.Stage
-import org.polyfrost.oneconfig.api.event.v1.events.event.TickEvent
-import org.polyfrost.oneconfig.libs.eventbus.Subscribe
+import org.polyfrost.oneconfig.api.event.v1.eventHandler
+import org.polyfrost.oneconfig.api.event.v1.events.RenderEvent
+import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 
 object FrameTimeHelper {
     private var lastTime = System.currentTimeMillis().toDouble()
-    val frameTimes = mutableListOf<Double>()
+    val frameTimes = ArrayList<Double>(60)
 
     init {
-        EventManager.INSTANCE.register(this)
-    }
-
-    @Subscribe
-    private fun onRenderTick(event: RenderEvent) {
-        if (event.stage == Stage.END) {
+        eventHandler { _: RenderEvent.End ->
             frameTimes += System.currentTimeMillis() - lastTime
             lastTime = System.currentTimeMillis().toDouble()
         }
-    }
-
-    @Subscribe
-    private fun onTick(event: TickEvent) {
-        if (event.stage == Stage.END) {
+        eventHandler { _: TickEvent.End ->
             frameTimes.clear()
         }
     }
-
 }
