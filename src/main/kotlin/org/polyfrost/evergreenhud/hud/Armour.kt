@@ -19,19 +19,19 @@ import net.minecraft.item.Item
 import net.minecraft.item.ItemBow
 import net.minecraft.item.ItemStack
 import org.polyfrost.evergreenhud.config.HudConfig
+import org.polyfrost.oneconfig.api.hud.v1.Hud
+import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
+import org.polyfrost.polyui.component.Drawable
 import kotlin.math.ceil
 
 //#if MC>=10900
 //$$ import net.minecraft.inventory.EntityEquipmentSlot
 //#endif
 
-class Armour : HudConfig("ArmourHud", "evergreenhud/armour.json", false) {
-    @HUD(name = "Main")
-    var hud = ArmourHud()
+class Armour : LegacyHud() {
 
-    init {
-        initialize()
-        addDependency("showOffhand", "Minecraft Version 1.9 or later") { Platform.getInstance().minecraftVersion >= 10900 }
+    override fun initialize() {
+        if(isReal) hideIf("showOffhand") { Platform.getInstance().minecraftVersion >= 10900 }
     }
 
     class ArmourHud : BasicHud(true, 1920f - 5, 1080f - 5) {

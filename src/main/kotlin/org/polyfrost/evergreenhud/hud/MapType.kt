@@ -1,35 +1,35 @@
 package org.polyfrost.evergreenhud.hud
 
 import org.polyfrost.evergreenhud.utils.PinkuluAPIManager
-import org.polyfrost.oneconfig.api.config.v1.annotations.*
-import org.polyfrost.oneconfig.hud.SingleTextHud
-import org.polyfrost.oneconfig.api.hypixel.v1.*
-import org.polyfrost.evergreenhud.config.HudConfig
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.event.v1.eventHandler
+import org.polyfrost.oneconfig.api.event.v1.events.HypixelLocationEvent
+import org.polyfrost.oneconfig.api.hud.v1.TextHud
+import kotlin.jvm.optionals.getOrNull
 
-class MapType : HudConfig("Map Type", "evergreenhud/maptype.json", false) {
+class MapType : TextHud("Map Type:") {
 
-    @HUD(
-        name = "Main"
-    )
-    var hud = MapTypeHud()
+    private var mapName: String? = null
 
     init {
-        initialize()
+        eventHandler { event: HypixelLocationEvent ->
+            this.mapName = event.location.mapName.getOrNull()?.ifEmpty { null }
+            if (shouldHide) hidden = this.mapName == null
+            update()
+        }
     }
 
-    class MapTypeHud : SingleTextHud("Map Type", true, 180, 110) {
+    @Switch(title = "Hide If Not In-Game or Supported")
+    var shouldHide = true
 
-        @Switch(
-            name = "Hide If Not In-Game or Supported"
-        )
-        var hide = true
+    override fun id() = "evergreenhud/map.json"
 
-        override fun getText(example: Boolean): String {
-            return PinkuluAPIManager.getMapPool() ?: "Unknown"
-        }
+    override fun title() = "Hypixel Map"
 
-        override fun shouldShow(): Boolean {
-            return super.shouldShow() && (!hide || (LocrawUtil.INSTANCE.locrawInfo?.mapName?.isNotBlank() == true && PinkuluAPIManager.getMapPool() != null))
-        }
+    override fun category() = Category.INFO
+
+    override fun getText(): String {
+        sb.append(PinkuluAPIManager.getMapPool() ?: "Unknown")
+        return null
     }
 }

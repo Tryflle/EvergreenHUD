@@ -6,12 +6,9 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Checkbox
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
-import org.polyfrost.oneconfig.api.hud.v1.Hud
-import org.polyfrost.polyui.component.impl.Text
-import org.polyfrost.polyui.utils.dont
-import org.polyfrost.polyui.utils.translated
+import org.polyfrost.oneconfig.api.hud.v1.TextHud
 
-class Coordinates : Hud<Text>() {
+class Coordinates : TextHud("XYZ") {
     @RadioButton(
         title = "Mode",
         options = ["Vertical", "Horizontal"]
@@ -19,7 +16,7 @@ class Coordinates : Hud<Text>() {
     var displayMode = 0
 
     @Switch(title = "Show Axis")
-    var showAxis = true
+    var showAxis = false
 
     @Switch(title = "Show Direction")
     var showDirection = false
@@ -43,11 +40,8 @@ class Coordinates : Hud<Text>() {
     @Switch(title = "Trailing Zeros")
     var trailingZeros = false
 
-    private val sb = StringBuilder()
     private var df = decimalFormat(accuracy, trailingZeros)
     private var facing: Facing = Facing.NORTH
-
-    override fun create() = Text("".translated().dont(), fontSize = 12f)
 
     override fun initialize() {
         if (isReal) {

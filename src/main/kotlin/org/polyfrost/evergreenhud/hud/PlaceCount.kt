@@ -1,59 +1,43 @@
 package org.polyfrost.evergreenhud.hud
 
+import net.minecraft.client.Minecraft
 import org.polyfrost.evergreenhud.ClientPlaceBlockEvent
-import org.polyfrost.oneconfig.api.config.v1.annotations.*
-import org.polyfrost.oneconfig.api.event.v1.EventManager
-import org.polyfrost.oneconfig.api.event.v1.events.event.*
-import org.polyfrost.oneconfig.hud.SingleTextHud
-import org.polyfrost.oneconfig.libs.eventbus.Subscribe
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
-import org.polyfrost.evergreenhud.config.HudConfig
+import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
+import org.polyfrost.oneconfig.api.event.v1.eventHandler
+import org.polyfrost.oneconfig.api.hud.v1.TextHud
+import org.polyfrost.polyui.utils.fastRemoveIfReversed
 
-class PlaceCount: HudConfig("Block Place Count", "evergreenhud/placecount.json", false) {
-    @HUD(name = "Main")
-    var hud = PlaceCountHud()
+class PlaceCount : TextHud("Blocks /s") {
+    @Slider(title = "Interval (ms)", min = 500F, max = 3000F)
+    var interval = 1000
+
+    private val blockCount = ArrayList<Long>()
 
     init {
-        initialize()
+        eventHandler { event: ClientPlaceBlockEvent ->
+            if (event.player == Minecraft.getMinecraft().thePlayer) {
+                blockCount.add(System.nanoTime())
+            }
+        }
     }
 
-    class PlaceCountHud : SingleTextHud("Blocks", true, 120, 30) {
-        @Slider(
-            name = "Interval",
-            min = 500F,
-            max = 3000F
-        )
-        var interval = 1000
+    override fun id() = "evergreenhud/placecount.json"
 
-        init {
-            EventManager.INSTANCE.register(this)
+    override fun title() = "Block Place Count"
+
+    override fun category() = Category.COMBAT
+
+    override fun getText(): String {
+        process()
+        sb.append(blockCount.size)
+        return null
+    }
+
+    private fun process() {
+        val current = System.nanoTime()
+        blockCount.fastRemoveIfReversed {
+            if (current - it > interval * 1000) true
+            else return
         }
-
-        private val blockCount = ArrayDeque<Long>()
-
-        @Subscribe
-        private fun onTick(event: TickEvent) {
-            if (event.stage == Stage.START) {
-                val currentTime = System.currentTimeMillis()
-                if (!blockCount.isEmpty()) {
-                    while ((currentTime - blockCount.first()) > interval) {
-                        blockCount.removeFirst()
-                        if (blockCount.isEmpty()) break
-                    }
-                }
-            }
-        }
-
-        @Subscribe
-        private fun onBlockPlace(event: ClientPlaceBlockEvent) {
-            if (event.player == mc.thePlayer) {
-                blockCount.addLast(System.currentTimeMillis())
-            }
-        }
-
-        override fun getText(example: Boolean): String {
-            return blockCount.size.toString()
-        }
-
     }
 }

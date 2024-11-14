@@ -1,36 +1,44 @@
 package org.polyfrost.evergreenhud.hud
 
 import org.polyfrost.evergreenhud.utils.decimalFormat
-import org.polyfrost.oneconfig.api.config.v1.annotations.*
-import org.polyfrost.oneconfig.hud.SingleTextHud
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
-import org.polyfrost.evergreenhud.config.HudConfig
+import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.hud.v1.TextHud
 
-class Pitch: HudConfig("Pitch", "evergreenhud/pitch.json", false) {
-    @HUD(name = "Main")
-    var hud = PitchHud()
+class Pitch : TextHud("Pitch: ", "\u00b0") {
+    @Slider(title = "Accuracy", min = 0F, max = 8F)
+    var accuracy = 2
 
-    init {
-        initialize()
-    }
+    @Switch(title = "Trailing Zeros")
+    var trailingZeros = true
 
-    class PitchHud: SingleTextHud("Pitch", true, 180, 50) {
+    private var df = decimalFormat(accuracy, trailingZeros)
+    private var pitch = 0f
 
-        @Slider(
-            name = "Accuracy",
-            min = 0F,
-            max = 8F
-        )
-        var accuracy = 2
-
-        @Switch(
-            name = "Trailing Zeros"
-        )
-        var trailingZeros = true
-
-        override fun getText(example: Boolean): String {
-            return decimalFormat(accuracy, trailingZeros).format(mc.thePlayer?.rotationPitch ?: 0f )
+    override fun initialize() {
+        if (isReal) {
+            addCallback("accuracy") { value: Int ->
+                df = decimalFormat(value, trailingZeros)
+            }
+            addCallback("trailingZeros") { state: Boolean ->
+                df = decimalFormat(accuracy, state)
+            }
         }
-
     }
+
+    fun update(pitch: Float) {
+        this.pitch = pitch
+        update()
+    }
+
+    override fun getText(): String {
+        sb.append(df.format(pitch))
+        return null
+    }
+
+    override fun title() = "Ping"
+
+    override fun category() = Category.INFO
+
+    override fun id() = "evergreenhud/pitch.json"
 }

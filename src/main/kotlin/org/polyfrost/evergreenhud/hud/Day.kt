@@ -9,7 +9,7 @@ class Day : TextHud("Day: ", "") {
         return Minecraft.getMinecraft().theWorld?.worldTime?.div(24000L)?.toString() ?: "0"
     }
 
-    override fun updateFrequency() = 1.seconds
+    override fun updateFrequency() = 5.seconds
 
     override fun title() = "Day"
 

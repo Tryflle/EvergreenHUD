@@ -1,61 +1,74 @@
 package org.polyfrost.evergreenhud.hud
 
 import org.polyfrost.evergreenhud.utils.decimalFormat
-import org.polyfrost.oneconfig.api.config.v1.annotations.*
-import org.polyfrost.oneconfig.hud.SingleTextHud
-import org.polyfrost.evergreenhud.config.HudConfig
+import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.hud.v1.TextHud
+import org.polyfrost.polyui.unit.seconds
+import java.text.DecimalFormat
 
-class Memory: HudConfig("Memory", "evergreenhud/memory.json", false) {
-    @HUD(name = "Main")
-    var hud = MemoryHud()
+class Memory : TextHud("Memory: ", " GB") {
+    @RadioButton(
+        title = "Display Type",
+        options = ["Absolute", "Percentage"]
+    )
+    var displayType = 0
 
-    init {
-        initialize()
-    }
+    @Switch(title = "Trailing Zeros")
+    var trailingZeros = false
 
-    class MemoryHud: SingleTextHud("Memory", true, 60, 90) {
-        @DualOption(
-            name = "Display Type",
-            left = "Absolute",
-            right = "Percentage"
-        )
-        var displayType = false
+    private var df: DecimalFormat = decimalFormat(1, trailingZeros)
 
-        @Switch(
-            name = "Trailing Zeros"
-        )
-        var trailingZeros = false
-
-        private fun bytesToMb(bytes: Long): Long {
-            return bytes / 1024L / 1024L
-        }
-
-        override fun getText(example: Boolean): String {
-            return if (!displayType) {
-                val df = decimalFormat(1, trailingZeros)
-
-                df.format(bytesToMb(Runtime.getRuntime().totalMemory() -
-                        Runtime.getRuntime().freeMemory()) / 1024f) + " GB"
-            } else {
-                val df = decimalFormat(1, trailingZeros, true)
-
-                df.format(getPercent(bytesToMb(Runtime.getRuntime().totalMemory() -
-                        Runtime.getRuntime().freeMemory()), 0, bytesToMb(Runtime.getRuntime().maxMemory())))
+    override fun initialize() {
+        if (isReal) {
+            addCallback("trailingZeroes") { state: Boolean ->
+                df = decimalFormat(1, state, displayType == 1)
+            }
+            addCallback("displayType") { value: Int ->
+                suffix = when (value) {
+                    1 -> "%"
+                    else -> " GB"
+                }
+                df = decimalFormat(1, trailingZeros, value == 1)
             }
         }
+    }
 
-        /**
-         * Returns number between 0 - 1 depending on the range and value given
-         *
-         * @param num the value
-         * @param min minimum of what the value can be
-         * @param max maximum of what the value can be
-         * @return converted percentage
-         * @author isXander
-         */
-        private fun getPercent(num: Long, min: Long = 0, max: Long = 100): Long {
-            return (num - min) / (max - min)
-        }
+    override fun id() = "evergreenhud/memory.json"
 
+    override fun title() = "Memory"
+
+    override fun category() = Category.INFO
+
+    override fun updateFrequency() = 1.seconds
+
+    override fun getText(): String {
+        val usedBytes = bytesToMb(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())
+        sb.append(
+            df.format(
+                when (displayType) {
+                    1 -> getPercent(usedBytes, 0, bytesToMb(Runtime.getRuntime().maxMemory()))
+                    else -> usedBytes / 1024f
+                }
+            )
+        )
+        return null
+    }
+
+    /**
+     * Returns number between 0 - 1 depending on the range and value given
+     *
+     * @param num the value
+     * @param min minimum of what the value can be
+     * @param max maximum of what the value can be
+     * @return converted percentage
+     * @author isXander
+     */
+    private fun getPercent(num: Long, min: Long = 0L, max: Long = 100L): Long {
+        return (num - min) / (max - min)
+    }
+
+    private fun bytesToMb(bytes: Long): Long {
+        return bytes / 1024L / 1024L
     }
 }

@@ -1,43 +1,29 @@
 package org.polyfrost.evergreenhud.hud
 
+import net.minecraft.client.Minecraft
 import org.polyfrost.evergreenhud.utils.ServerPinger
-import org.polyfrost.oneconfig.api.config.v1.annotations.*
-import org.polyfrost.oneconfig.hud.SingleTextHud
-import org.polyfrost.universal.UMatrixStack
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
-import org.polyfrost.evergreenhud.config.HudConfig
+import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.hud.v1.TextHud
 
-class Ping: HudConfig("Ping", "evergreenhud/ping.json", false) {
-    @HUD(name = "Main")
-    var hud = PingHud()
+class Ping : TextHud("Ping: ", "ms") {
 
-    init {
-        initialize()
-    }
+    @Slider(title = "Ping Period", min = 20F, max = 120F)
+    var interval = 20
 
-    class PingHud : SingleTextHud("Ping", true, 60, 70) {
+    @Switch(title = "Show in Single Player")
+    var showInSinglePlayer = true
 
-        @Slider(
-            name = "Ping Period",
-            min = 20F,
-            max = 120F
-        )
-        var interval = 20
+    private val ping = ServerPinger.createListener({ interval * 20 }) { Minecraft.getMinecraft().currentServerData }
 
-        @Switch(
-            name = "Show in Single Player"
-        )
-        var showInSinglePlayer = true
+    override fun title() = "Ping"
 
-        private val ping = ServerPinger.createListener({ interval * 20 }) { mc.currentServerData }
-        override fun draw(matrices: UMatrixStack?, x: Float, y: Float, scale: Float, example: Boolean) {
-            if (mc.isSingleplayer && !showInSinglePlayer && !example) return
-            super.draw(matrices, x, y, scale, example)
-        }
+    override fun id() = "evergreenhud/ping.json"
 
-        override fun getText(example: Boolean): String {
-            return ping.ping?.toString() ?: "N/A"
-        }
+    override fun category() = Category.INFO
 
+    override fun getText(): String {
+        sb.append(ping.ping?.toString() ?: "???")
+        return null
     }
 }

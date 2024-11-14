@@ -1,37 +1,32 @@
 package org.polyfrost.evergreenhud.utils
 
-import org.polyfrost.oneconfig.api.event.v1.EventManager
-import org.polyfrost.oneconfig.api.event.v1.events.event.WorldLoadEvent
-import org.polyfrost.oneconfig.libs.eventbus.Subscribe
-import org.polyfrost.oneconfig.utils.v1.Multithreading
-import org.polyfrost.oneconfig.utils.v1.NetworkUtils
-import org.polyfrost.oneconfig.api.hypixel.v1.LocrawUtil
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import org.polyfrost.oneconfig.api.event.v1.eventHandler
+import org.polyfrost.oneconfig.api.event.v1.events.WorldLoadEvent
+import org.polyfrost.oneconfig.utils.v1.JsonUtils
+import org.polyfrost.oneconfig.utils.v1.Multithreading
+import org.polyfrost.oneconfig.utils.v1.NetworkUtils
 
 object PinkuluAPIManager {
     private var rawJson: JsonArray? = null
     private var cachedMap: JsonObject? = null
     fun initialize() {
-        EventManager.INSTANCE.register(this)
-        Multithreading.runAsync {
+        Multithreading.submit {
             try {
-                rawJson = NetworkUtils.getJsonElement("https://maps.pinkulu.com/trans-rights-are-human-rights.json").asJsonArray // so true bestie
+                rawJson = JsonUtils.PARSER.parse(NetworkUtils.getString("https://maps.pinkulu.com/trans-rights-are-human-rights.json")).asJsonArray // so true bestie
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
-    }
-
-    @Subscribe
-    private fun onWorldJoin(event: WorldLoadEvent) {
-        cachedMap = null
+        eventHandler { _: WorldLoadEvent ->
+            cachedMap = null
+        }
     }
 
     fun getMapPool(): String? {
         checkCached()
-        if (cachedMap == null) return null
-        return when (cachedMap!!.get("pool").asString) {
+        return when (cachedMap?.get("pool")?.asString) {
             "BEDWARS_4TEAMS_FAST" -> "Fast 4 Teams"
             "BEDWARS_4TEAMS_SLOW" -> "Slow 4 Teams"
             "BEDWARS_8TEAMS_FAST" -> "Fast 8 Teams"
@@ -43,15 +38,15 @@ object PinkuluAPIManager {
         }
     }
 
-    fun getMapHeight(): Int? {
+    fun getMapHeight(): Int {
         checkCached()
-        if (cachedMap == null) return null
-        return cachedMap!!.get("maxBuild").asInt
+        return cachedMap?.get("maxBuild")?.asInt ?: -1
     }
 
     private fun checkCached() {
         if (rawJson == null) return
         try {
+            val cachedMap = cachedMap
             val locraw = LocrawUtil.INSTANCE.locrawInfo
             if (locraw == null || locraw.mapName.isNullOrBlank() || locraw.gameType == null) return
             if (cachedMap == null || (cachedMap!!.get("name").asString != locraw.mapName && cachedMap!!.get("gameType").asString != locraw.gameType.serverName)) {

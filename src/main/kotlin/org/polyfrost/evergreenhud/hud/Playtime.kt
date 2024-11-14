@@ -1,29 +1,28 @@
 package org.polyfrost.evergreenhud.hud
 
-import org.polyfrost.evergreenhud.hook.PlaytimeHook
-import org.polyfrost.oneconfig.api.config.v1.annotations.*
-import org.polyfrost.oneconfig.hud.SingleTextHud
-import org.polyfrost.evergreenhud.config.HudConfig
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.hud.v1.TextHud
+import org.polyfrost.polyui.unit.seconds
 
-class Playtime: HudConfig("Playtime", "evergreenhud/playtime.json", false) {
-    @HUD(name = "Main")
-    var hud = PlaytimeHud()
+class Playtime : TextHud("Time Played: ") {
+    @Switch(title = "Show Seconds")
+    var seconds = true
 
-    init {
-        initialize()
+    private var time: Long = 0L
+
+    override fun id() = "evergreenhud/playtime.json"
+
+    override fun category() = Category.INFO
+
+    override fun title() = "Playtime"
+
+    override fun getText(): String {
+        time++
+        sb.append(time / 60L / 60L).append(':')
+        sb.append(time / 60L)
+        if (seconds) sb.append(':').append(time)
+        return null
     }
 
-    class PlaytimeHud: SingleTextHud("Playtime", true, 0, 130) {
-        @Switch(name = "Show Seconds")
-        var seconds = true
-        override fun getText(example: Boolean): String {
-            val timePlayed = System.currentTimeMillis() - PlaytimeHook.startTime
-            val formattedTime = if (seconds) {
-                String.format("%d:%02d:%02d", timePlayed / 3600000, (timePlayed % 3600000) / 60000, (timePlayed % 60000) / 1000)
-            } else {
-                String.format("%d:%02d", timePlayed / 3600000, (timePlayed % 3600000) / 60000)
-            }
-            return formattedTime
-        }
-    }
+    override fun updateFrequency() = 1.seconds
 }

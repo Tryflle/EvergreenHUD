@@ -1,10 +1,8 @@
 package org.polyfrost.evergreenhud.config
 
 import org.polyfrost.oneconfig.api.config.v1.Config
-import org.polyfrost.oneconfig.api.config.v1.annotations.Exclude
 import org.polyfrost.oneconfig.api.config.v1.annotations.SubConfig
 import org.polyfrost.oneconfig.api.config.v1.data.*
-import org.polyfrost.oneconfig.gui.pages.ModsPage
 import org.polyfrost.evergreenhud.EvergreenHUD
 import org.polyfrost.evergreenhud.hud.*
 
@@ -22,7 +20,7 @@ object ModConfig : Config(Mod(EvergreenHUD.NAME, ModType.HUD, "/assets/evergreen
     @SubConfig var customImages = CustomImages()
     @SubConfig var customTexts = CustomTexts()
     @SubConfig var day = Day()
-    @SubConfig var direction = Direction()
+    @SubConfig var direction = LookVecHud()
     @SubConfig var eCounter = ECounter()
     @SubConfig var fps = FPS()
     @SubConfig var gameMode = GameMode()
