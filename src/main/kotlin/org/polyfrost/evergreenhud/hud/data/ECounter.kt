@@ -7,8 +7,8 @@ class ECounter : TextHud("E: ") {
     @Switch(title = "Show total entities")
     var showTotal = true
 
-    var renderedEntities: Int = 0
-    var totalEntities: Int = 0
+    private var renderedEntities: Int = 0
+    private var totalEntities: Int = 0
 
     fun update(renderedEntities: Int, totalEntities: Int) {
         this.renderedEntities = renderedEntities

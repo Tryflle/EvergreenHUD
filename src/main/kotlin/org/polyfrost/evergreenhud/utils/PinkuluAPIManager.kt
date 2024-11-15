@@ -3,6 +3,7 @@ package org.polyfrost.evergreenhud.utils
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
+import org.polyfrost.oneconfig.api.event.v1.events.HypixelLocationEvent
 import org.polyfrost.oneconfig.api.event.v1.events.WorldLoadEvent
 import org.polyfrost.oneconfig.utils.v1.JsonUtils
 import org.polyfrost.oneconfig.utils.v1.Multithreading
@@ -19,8 +20,10 @@ object PinkuluAPIManager {
                 e.printStackTrace()
             }
         }
-        eventHandler { _: WorldLoadEvent ->
-            cachedMap = null
+        eventHandler { event: HypixelLocationEvent ->
+            val location = event.location
+            val cachedMap = cachedMap
+
         }
     }
 

@@ -4,7 +4,7 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.config.v1.annotations.Text
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
 
-class ServerIP : TextHud("IP:") {
+class ServerIP : TextHud("IP: ") {
     @Switch(title = "Show in Single Player")
     var showInSinglePlayer = true
 
