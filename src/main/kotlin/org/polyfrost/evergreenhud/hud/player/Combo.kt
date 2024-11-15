@@ -11,17 +11,10 @@ import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
 
 
-class Combo : TextHud(prefix = "Combo:", suffix = "blocks") {
-
-    inline val mc get() = Minecraft.getMinecraft()
-
+class Combo : TextHud(prefix = "Combo: ", suffix = " blocks") {
     // you can include config options here like normal, just as if it was a config. all the methods like addDependency, loadFrom
     // etc all work here as HUD extends from Config.
-    @Slider(
-        title = "Discard Time",
-        min = 0F,
-        max = 10F
-    )
+    @Slider(title = "Discard Time", min = 0F, max = 10F)
     var discardTime = 3
 
     @Text(title = "No Hit Message")
@@ -44,13 +37,13 @@ class Combo : TextHud(prefix = "Combo:", suffix = "blocks") {
         set(value) {
             if (field == value) return
             field = value
-            update()
+            updateAndRecalculate()
         }
 
     init {
         // using the new kotlin syntax purely because it looks so much nicer.
         eventHandler { (attacker, target): ClientDamageEntityEvent ->
-            if (attacker != mc.thePlayer) {
+            if (attacker != Minecraft.getMinecraft().thePlayer) {
                 return@eventHandler
             }
             sentAttack = target.entityId
@@ -58,6 +51,7 @@ class Combo : TextHud(prefix = "Combo:", suffix = "blocks") {
         }.register()
 
         eventHandler { event: ReceivePacketEvent ->
+            val mc = Minecraft.getMinecraft()
             val packet = event.getPacket() as? S19PacketEntityStatus ?: return@eventHandler
             if (packet.opCode.toInt() != 2) return@eventHandler
             val target = packet.getEntity(mc.theWorld) ?: return@eventHandler
@@ -99,8 +93,5 @@ class Combo : TextHud(prefix = "Combo:", suffix = "blocks") {
     override fun id() = "evergreenhud/combo.json"
 
     // This is the title of the HUD, it is displayed in the HUD manager.
-    override fun title() = "Combo HUD"
-
-    // this HUD does not periodically update, so we return a negative number.
-    override fun updateFrequency() = -1L
+    override fun title() = "Combo"
 }

@@ -21,18 +21,18 @@ class CPS : TextHud("CPS: ", "") {
     fun onLeftClick() {
         if (mode != 1) {
             left.add(System.nanoTime())
-            update()
+            updateAndRecalculate()
         }
     }
 
     fun onRightClick() {
         if (mode > 0) {
             right.add(System.nanoTime())
-            update()
+            updateAndRecalculate()
         }
     }
 
-    override fun getText(): String {
+    override fun getText(): String? {
         val cur = System.nanoTime()
         process(left, cur)
         process(right, cur)

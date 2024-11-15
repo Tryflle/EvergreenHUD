@@ -1,14 +1,12 @@
 package org.polyfrost.evergreenhud.hud.player
 
+import org.polyfrost.evergreenhud.hud.GenericHUD1f
 import org.polyfrost.evergreenhud.utils.Facing
-import org.polyfrost.evergreenhud.utils.decimalFormat
 import org.polyfrost.oneconfig.api.config.v1.annotations.Checkbox
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
-import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
-import org.polyfrost.oneconfig.api.hud.v1.TextHud
 
-class Coordinates : TextHud("XYZ") {
+class Coordinates : GenericHUD1f("Coordinates") {
     @RadioButton(
         title = "Mode",
         options = ["Vertical", "Horizontal"]
@@ -30,35 +28,15 @@ class Coordinates : TextHud("XYZ") {
     @Checkbox(title = "Show Z")
     var showZ = true
 
-    @Slider(
-        title = "Accuracy",
-        min = 0f, max = 16f,
-        step = 1f
-    )
-    var accuracy = 0
-
-    @Switch(title = "Trailing Zeros")
-    var trailingZeros = false
-
-    private var df = decimalFormat(accuracy, trailingZeros)
-    private var facing: Facing = Facing.NORTH
-
-    override fun initialize() {
-        if (isReal) {
-            addCallback("accuracy") { value: Int ->
-                df = decimalFormat(value, trailingZeros)
-            }
-            addCallback("trailingZeros") { state: Boolean ->
-                df = decimalFormat(accuracy, state)
-            }
-        }
-    }
+    private val facing get() = Facing.parseExact(value)
+    private var x: Double = 0.0
+    private var y: Double = 0.0
+    private var z: Double = 0.0
 
     fun update(x: Double, y: Double, z: Double) {
-        sb.clear()
-        if (showX) createString('X', x, if (facing.isEast) '+' else if (facing.isWest) '-' else ' ')
-        if (showY) createString('Y', y, '\u0000')
-        if (showZ) createString('Z', z, if (facing.isSouth) '+' else if (facing.isNorth) '-' else ' ')
+        this.x = x
+        this.y = y
+        this.z = z
     }
 
     private fun createString(axis: Char, value: Double, sign: Char) {
@@ -70,15 +48,11 @@ class Coordinates : TextHud("XYZ") {
         if (showDirection && sign != '\u0000') sb.append('(').append(sign).append(')')
     }
 
-    fun updateFacing(yaw: Float) {
-        facing = Facing.parseExact(yaw)
+    override fun getText(): String? {
+        val facing = this.facing
+        if (showX) createString('X', x, if (facing.isEast) '+' else if (facing.isWest) '-' else ' ')
+        if (showY) createString('Y', y, '\u0000')
+        if (showZ) createString('Z', z, if (facing.isSouth) '+' else if (facing.isNorth) '-' else ' ')
+        return null
     }
-
-    override fun update() = false
-
-    override fun id() = "evergreenhud/coordinates.json"
-
-    override fun title() = "Coordinates"
-
-    override fun category() = Category.INFO
 }

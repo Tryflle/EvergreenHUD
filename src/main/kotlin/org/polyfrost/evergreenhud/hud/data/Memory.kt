@@ -23,6 +23,7 @@ class Memory : TextHud("Memory: ", " GB") {
         if (isReal) {
             addCallback("trailingZeroes") { state: Boolean ->
                 df = decimalFormat(1, state, displayType == 1)
+                false
             }
             addCallback("displayType") { value: Int ->
                 suffix = when (value) {
@@ -30,6 +31,7 @@ class Memory : TextHud("Memory: ", " GB") {
                     else -> " GB"
                 }
                 df = decimalFormat(1, trailingZeros, value == 1)
+                false
             }
         }
     }
@@ -42,7 +44,7 @@ class Memory : TextHud("Memory: ", " GB") {
 
     override fun updateFrequency() = 1.seconds
 
-    override fun getText(): String {
+    override fun getText(): String? {
         val usedBytes = bytesToMb(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())
         sb.append(
             df.format(

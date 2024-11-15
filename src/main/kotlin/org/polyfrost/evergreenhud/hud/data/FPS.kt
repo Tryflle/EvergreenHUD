@@ -1,107 +1,49 @@
 package org.polyfrost.evergreenhud.hud.data
 
-import org.polyfrost.evergreenhud.utils.FrameTimeHelper
-import org.polyfrost.oneconfig.api.config.v1.annotations.*
-import org.polyfrost.oneconfig.hud.SingleTextHud
 import net.minecraft.client.Minecraft
-import org.polyfrost.evergreenhud.config.HudConfig
-import kotlin.math.abs
+import org.polyfrost.evergreenhud.utils.FrameTimeHelper
+import org.polyfrost.oneconfig.api.config.v1.annotations.Dropdown
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.hud.v1.TextHud
+import org.polyfrost.polyui.unit.milliseconds
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 
-class FPS : HudConfig("FPS", "evergreenhud/fps.json", false) {
-    @HUD(name = "FPS", category = "FPS")
-    var fps = FPSHud()
+class FPS : TextHud("FPS: ") {
 
-    @HUD(name = "Frame Consistency", category = "Frame Consistency")
-    var frameConsistency = FrameConsistencyHud()
+    @Switch(title = "Use more Accurate method")
+    var fast = false
 
-    @HUD(name = "Frame Time", category = "Frame Time")
-    var frameTime = FrameTimeHud()
+    @Dropdown(
+        title = "Average Method",
+        options = ["Mean", "Median", "99th Percentile", "95th Percentile"]
+    )
+    var averageMethod = 0
 
-    init {
-        initialize()
+    private fun average(list: List<Float>): Float = when (averageMethod) {
+        0 -> list.average().toFloat()
+        1 -> percentile(list, 0.5f)
+        2 -> percentile(list, 0.99f)
+        3 -> percentile(list, 0.95f)
+        else -> 0f
     }
 
-    class FPSHud : SingleTextHud("FPS", true, 60, 50) {
-        @Switch(
-            name = "Update Fast"
-        )
-        var updateFast = false
-
-        @Dropdown(
-            name = "Average Method",
-            options = ["Mean", "Median", "99th Percentile", "95th Percentile"]
-        )
-        var averageMethod = 0
-
-        private fun average(list: List<Double>): Double = when (averageMethod) {
-            0 -> list.average()
-            1 -> percentile(list, 0.5)
-            2 -> percentile(list, 0.99)
-            3 -> percentile(list, 0.95)
-            else -> 0.0
-        }
-
-        private fun percentile(list: List<Double>, percentile: Double): Double {
-            val index = ceil(list.size * percentile).toInt() - 1
-            return list.sorted()[index]
-        }
-
-        override fun getText(example: Boolean): String {
-            return if (updateFast) {
-                (1000 / (average(FrameTimeHelper.frameTimes).takeUnless { it.isNaN() } ?: 1.0)).roundToInt().toString()
-            } else {
-                Minecraft.getDebugFPS().toString()
-            }
-        }
+    private fun percentile(list: List<Float>, percentile: Float): Float {
+        val index = ceil(list.size * percentile).toInt() - 1
+        return list.sorted()[index]
     }
 
-    class FrameConsistencyHud : SingleTextHud("Frame Consistency", false) {
+    override fun updateFrequency() = 200.milliseconds
 
-        private fun List<Double>.consistency(): Double {
-            if (this.size <= 1) return 0.0
-            var change = 0.0
-            var count = 0
-            var previous: Double? = null
-            this.forEach {
-                if (previous != null) {
-                    change += abs(it - previous!!)
-                    count++
-                }
-                previous = it
-            }
-            return change / count / this.sum()
-        }
-
-        override fun getText(example: Boolean): String {
-            return "${((1 - FrameTimeHelper.frameTimes.consistency()) * 100).roundToInt()}%"
-        }
+    override fun getText(): String? {
+        if (fast) sb.append((1000f / (average(FrameTimeHelper.frameTimes).takeUnless { it.isNaN() } ?: 1f)).roundToInt())
+        else sb.append(Minecraft.getDebugFPS())
+        return null
     }
 
-    class FrameTimeHud : SingleTextHud("Frame Time", false) {
+    override fun id() = "evergreenhud/fps.json"
 
-        @Dropdown(
-            name = "Average Method",
-            options = ["Mean", "Median", "99th Percentile", "95th Percentile"]
-        )
-        var averageMethod = 0
+    override fun title() = "FPS"
 
-        private fun average(list: List<Double>): Double = when (averageMethod) {
-            0 -> list.average()
-            1 -> percentile(list, 0.5)
-            2 -> percentile(list, 0.99)
-            3 -> percentile(list, 0.95)
-            else -> 0.0
-        }
-
-        private fun percentile(list: List<Double>, percentile: Double): Double {
-            val index = ceil(list.size * percentile).toInt() - 1
-            return list.sorted()[index]
-        }
-
-        override fun getText(example: Boolean): String {
-            return (average(FrameTimeHelper.frameTimes).takeUnless { it.isNaN() } ?: 1.0).roundToInt().toString() + "ms"
-        }
-    }
+    override fun category() = Category.INFO
 }

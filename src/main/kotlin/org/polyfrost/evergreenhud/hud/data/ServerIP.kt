@@ -1,5 +1,6 @@
 package org.polyfrost.evergreenhud.hud.data
 
+import net.minecraft.client.Minecraft
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.config.v1.annotations.Text
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
@@ -14,11 +15,12 @@ class ServerIP : TextHud("IP: ") {
     private var currentIP: String? = null
 
     fun update(ip: String?) {
+        if (!showInSinglePlayer) hidden = Minecraft.getMinecraft().isIntegratedServerRunning
         this.currentIP = ip
-        update()
+        updateAndRecalculate()
     }
 
-    override fun getText(): String {
+    override fun getText(): String? {
         sb.append(currentIP ?: noServerText)
         return null
     }

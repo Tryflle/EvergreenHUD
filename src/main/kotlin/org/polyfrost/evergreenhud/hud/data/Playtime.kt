@@ -16,7 +16,7 @@ class Playtime : TextHud("Time Played: ") {
 
     override fun title() = "Playtime"
 
-    override fun getText(): String {
+    override fun getText(): String? {
         time++
         sb.append(time / 60L / 60L).append(':')
         sb.append(time / 60L)

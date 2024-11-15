@@ -1,87 +1,61 @@
 package org.polyfrost.evergreenhud.hud.player
 
-import org.polyfrost.evergreenhud.utils.decimalFormat
-import org.polyfrost.oneconfig.api.config.v1.annotations.*
-import org.polyfrost.oneconfig.hud.SingleTextHud
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
-import org.polyfrost.evergreenhud.config.HudConfig
+import net.minecraft.client.Minecraft
+import org.polyfrost.evergreenhud.hud.GenericHUD1f
+import org.polyfrost.oneconfig.api.config.v1.annotations.Dropdown
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import kotlin.math.sqrt
 
-class Speed: HudConfig("Speed", "evergreenhud/speed.json", false) {
-    @HUD(name = "Main")
-    var hud = SpeedHud()
+class Speed : GenericHUD1f("Speed: ", "m/s") {
+    @Switch(title = "Use X")
+    var useX = true
 
-    init {
-        initialize()
-    }
+    @Switch(title = "Use Y")
+    var useY = true
 
-    class SpeedHud: SingleTextHud("Speed", true, 0, 110) {
+    @Switch(title = "Use Z")
+    var useZ = true
 
-        @Switch(name = "Use X")
-        var useX = true
+    @Dropdown(
+        title = "Speed Unit",
+        options = ["Meters per tick", "Meters per second", "Kilometers per hour", "Miles per hour"],
+    )
+    var speedUnit = 0
 
-        @Switch(name = "Use Y")
-        var useY = true
-
-        @Switch(name = "Use Z")
-        var useZ = true
-
-        @Dropdown(
-            name = "Speed Unit",
-            options = ["Meters per tick", "Meters per second", "Kilometers per hour", "Miles per hour"],
-        )
-        var speedUnit = 0
-
-        @Slider(
-            name = "Accuracy",
-            min = 0F,
-            max = 8F
-        )
-        var accuracy = 2
-
-        @Switch(name = "Trailing Zeros")
-        var trailingZeros = true
-
-        @Switch(name = "Suffix")
-        var suffix = true
-
-        private fun convertSpeed(speed: Double): Double =
-            when (speedUnit) {
-                0 -> speed
-                1 -> speed * 20
-                2 -> speed * 3.6 * 20
-                3 -> speed * 2.237 * 20
-                else -> throw IllegalStateException()
-            }
-
-        private val Int.name: String
-            get() {
-                return when (this) {
-                    0 -> "m/t"
+    override fun initialize() {
+        if (isReal) {
+            addCallback("speedUnit") { value: Int ->
+                suffix = when (value) {
                     1 -> "m/s"
                     2 -> "kph"
                     3 -> "mph"
-                    else -> throw IllegalStateException()
+                    else -> "m/t"
                 }
+                false
             }
-
-        override fun getText(example: Boolean): String {
-            var speed = 0.0
-
-            if (mc.thePlayer != null) {
-                val dx = if (useX) mc.thePlayer!!.posX - mc.thePlayer!!.prevPosX else 0.0
-                val dy = if (useY) mc.thePlayer!!.posY - mc.thePlayer!!.prevPosY else 0.0
-                val dz = if (useZ) mc.thePlayer!!.posZ - mc.thePlayer!!.prevPosZ else 0.0
-
-                // I usually don't leave out whitespaces, but in this case it greatly improved readability
-                speed = convertSpeed(sqrt(dx*dx + dy*dy + dz*dz))
-            }
-
-            var formattedSpeed = decimalFormat(accuracy, trailingZeros).format(speed)
-
-            if (suffix) formattedSpeed += " ${speedUnit.name}"
-            return formattedSpeed
         }
-
     }
+
+    private fun convertSpeed(speed: Float): Float = when (speedUnit) {
+        1 -> speed * 20f
+        2 -> speed * 3.6f * 20f
+        3 -> speed * 2.237f * 20f
+        else -> speed
+    }
+
+    override fun getText(): String? {
+        val player = Minecraft.getMinecraft().thePlayer
+        if (player == null) {
+            value = 0f
+        } else {
+            val dx = if (useX) (player.posX - player.prevPosX).toFloat() else 0f
+            val dy = if (useY) (player.posY - player.prevPosY).toFloat() else 0f
+            val dz = if (useZ) (player.posZ - player.prevPosZ).toFloat() else 0f
+
+            // I usually don't leave out whitespaces, but in this case it greatly improved readability
+            value = convertSpeed(sqrt(dx * dx + dy * dy + dz * dz))
+        }
+        return super.getText()
+    }
+
 }

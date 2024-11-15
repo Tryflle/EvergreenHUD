@@ -1,30 +1,26 @@
 package org.polyfrost.evergreenhud.hud.data
 
-import org.polyfrost.oneconfig.api.config.v1.annotations.*
-import org.polyfrost.oneconfig.hud.SingleTextHud
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
-import org.polyfrost.evergreenhud.config.HudConfig
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.hud.v1.TextHud
 
-class CCounter: HudConfig("C Counter", "evergreenhud/ccounter.json", false) {
-    @HUD(name = "Main")
-    var hud = CCounterHud()
+class CCounter : TextHud("C: ") {
+    @Switch(title = "Simplified")
+    var simplified = true
 
-    init {
-        initialize()
+    private var c: Int = 0
+
+    fun update(c: Int) {
+        this.c = c
     }
 
-    class CCounterHud: SingleTextHud("C", true, 400, 70) {
-
-        @Switch(
-                name = "Simplified"
-        )
-        var simplified = true
-
-        override fun getText(example: Boolean): String {
-            if (mc.thePlayer == null) return "Unknown"
-            return if (simplified) mc.renderGlobal.debugInfoRenders.split("/")[0].replace("C: ", "")
-                else mc.renderGlobal.debugInfoRenders.split(" ")[1]
-        }
+    override fun getText(): String? {
+        sb.append(c)
+        return null
     }
 
+    override fun id() = "evergreenhud/ccounter.json"
+
+    override fun title() = "C Counter"
+
+    override fun category() = Category.INFO
 }

@@ -22,7 +22,7 @@ class Ping : TextHud("Ping: ", "ms") {
 
     override fun category() = Category.INFO
 
-    override fun getText(): String {
+    override fun getText(): String? {
         sb.append(ping.ping?.toString() ?: "???")
         return null
     }

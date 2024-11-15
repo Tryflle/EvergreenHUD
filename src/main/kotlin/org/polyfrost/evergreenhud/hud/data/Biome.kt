@@ -1,24 +1,22 @@
 package org.polyfrost.evergreenhud.hud.data
 
-import org.polyfrost.oneconfig.api.config.v1.annotations.HUD
-import org.polyfrost.oneconfig.hud.SingleTextHud
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
-import org.polyfrost.evergreenhud.config.HudConfig
+import org.polyfrost.oneconfig.api.hud.v1.TextHud
 
-class Biome: HudConfig("Biome", "evergreenhud/biome.json", false) {
-    @HUD(name = "Main")
-    var hud = BiomeHud()
+class Biome : TextHud("Biome: ") {
+    private var biome = "Unknown"
 
-    init {
-        initialize()
+    fun update(biomeName: String?) {
+        this.biome = biomeName ?: "Unknown"
     }
 
-    class BiomeHud: SingleTextHud("Biome", true, 400, 50) {
-        override fun getText(example: Boolean): String {
-            val player = mc.thePlayer ?: return "Unknown"
-            
-            return mc.theWorld.getBiomeGenForCoords(player.position).biomeName
-        }
-
+    override fun getText(): String? {
+        sb.append(biome)
+        return null
     }
+
+    override fun id() = "evergreenhud/biome.json"
+
+    override fun title() = "Biome"
+
+    override fun category() = Category.INFO
 }

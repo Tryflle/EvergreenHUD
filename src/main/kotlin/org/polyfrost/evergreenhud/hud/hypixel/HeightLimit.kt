@@ -1,5 +1,5 @@
 package org.polyfrost.evergreenhud.hud.hypixel
-
+/*
 import org.polyfrost.evergreenhud.utils.PinkuluAPIManager
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.hud.SingleTextHud
@@ -38,4 +38,4 @@ class HeightLimit : HudConfig("Height Limit", "evergreenhud/heightlimit.json", f
             return super.shouldShow() && (!hide || (LocrawUtil.INSTANCE.locrawInfo?.mapName?.isNotBlank() == true && PinkuluAPIManager.getMapHeight() != null)) && mc.thePlayer != null && mc.theWorld != null
         }
     }
-}
+}*/

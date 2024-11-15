@@ -1,5 +1,5 @@
 package org.polyfrost.evergreenhud.hud.player
-
+/*
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.api.config.v1.annotations.Number
 import org.polyfrost.oneconfig.api.config.v1.core.OneColor
@@ -179,4 +179,4 @@ class HeldItemLore : HudConfig("Held Item Lore", "evergreenhud/helditemlore.json
         }
     }
 
-}
+}*/

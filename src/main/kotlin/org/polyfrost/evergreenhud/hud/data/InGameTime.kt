@@ -1,33 +1,39 @@
 package org.polyfrost.evergreenhud.hud.data
 
-import org.polyfrost.oneconfig.api.config.v1.annotations.*
-import org.polyfrost.oneconfig.hud.SingleTextHud
-import org.polyfrost.universal.UMinecraft
-import org.polyfrost.evergreenhud.config.HudConfig
+import net.minecraft.client.Minecraft
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.hud.v1.TextHud
+import org.polyfrost.polyui.unit.seconds
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
 
-class InGameTime : HudConfig("In Game Time", "evergreenhud/ingametime.json", false) {
-    @HUD(name = "Main")
-    var hud = InGameTimeHud()
+class InGameTime : TextHud("Time: ") {
+    @Switch(title = "Twelve Hour Time")
+    var twelveHour = false
 
-    init {
-        initialize()
-    }
+    private var sdf = SimpleDateFormat(if (twelveHour) "hh:mm a" else "HH:mm")
 
-    class InGameTimeHud : SingleTextHud("Time", true, 400, 10) {
-
-        @Switch(name = "Twelve Hour Time")
-        var twelveHour = false
-
-        override fun getText(example: Boolean): String {
-            UMinecraft.getWorld()?.let {
-                // ticks to ticks in day to seconds to millis plus six hours (time 0 = 6am)
-                val date = Date(it.worldTime / 20 * 1000 + 21_600_000) // 6 hours == 21,600,000 milliseconds
-                return SimpleDateFormat(if (twelveHour) "hh:mm a" else "HH:mm")
-                    .format(date).uppercase()
+    override fun initialize() {
+        if (isReal) {
+            addCallback("twelveHour") { state: Boolean ->
+                sdf = SimpleDateFormat(if (state) "hh:mm a" else "HH:mm")
+                false
             }
-            return "06:00 AM"
         }
     }
+
+    override fun getText(): String? {
+        val world = Minecraft.getMinecraft().theWorld ?: return "06:00 AM"
+        // ticks to ticks in day to seconds to millis plus six hours (time 0 = 6am)
+        val date = Date(world.worldTime / 20 * 1000 + 21_600_000) // 6 hours == 21,600,000 milliseconds
+        return sdf.format(date).uppercase()
+    }
+
+    override fun updateFrequency() = 1.seconds
+
+    override fun title() = "In Game Time"
+
+    override fun id() = "evergreenhud/ingametime.json"
+
+    override fun category() = Category.INFO
 }

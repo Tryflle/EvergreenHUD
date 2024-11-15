@@ -1,44 +1,46 @@
-package org.polyfrost.evergreenhud.hud.player
+package org.polyfrost.evergreenhud.hud
 
 import org.polyfrost.evergreenhud.utils.decimalFormat
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
 
-class Pitch : TextHud("Pitch: ", "\u00b0") {
+open class GenericHUD1f(private var title: String, suffix: String = "", prefix: String = "$title: ") : TextHud(prefix, suffix) {
     @Slider(title = "Accuracy", min = 0F, max = 8F)
     var accuracy = 2
 
     @Switch(title = "Trailing Zeros")
     var trailingZeros = true
 
-    private var df = decimalFormat(accuracy, trailingZeros)
-    private var pitch = 0f
+    protected var df = decimalFormat(accuracy, trailingZeros)
+    protected var value = 0f
 
     override fun initialize() {
         if (isReal) {
             addCallback("accuracy") { value: Int ->
                 df = decimalFormat(value, trailingZeros)
+                false
             }
             addCallback("trailingZeros") { state: Boolean ->
                 df = decimalFormat(accuracy, state)
+                false
             }
         }
     }
 
-    fun update(pitch: Float) {
-        this.pitch = pitch
-        update()
+    fun update(value: Float) {
+        this.value = value
+        updateAndRecalculate()
     }
 
-    override fun getText(): String {
-        sb.append(df.format(pitch))
+    override fun getText(): String? {
+        sb.append(df.format(value))
         return null
     }
 
-    override fun title() = "Pitch"
+    override fun title() = title
 
     override fun category() = Category.INFO
 
-    override fun id() = "evergreenhud/pitch.json"
+    override fun id() = "evergreenhud/${title.replace(' ', '_').lowercase()}.json"
 }

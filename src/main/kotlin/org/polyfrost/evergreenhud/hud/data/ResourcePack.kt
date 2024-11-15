@@ -1,5 +1,5 @@
 package org.polyfrost.evergreenhud.hud.data
-
+/*
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.api.config.v1.core.OneColor
 import org.polyfrost.oneconfig.hud.BasicHud
@@ -98,4 +98,4 @@ class ResourcePack: HudConfig("Resource Pack", "evergreenhud/resourcepack.json",
 
     }
 
-}
+}*/

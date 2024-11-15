@@ -1,5 +1,5 @@
 package org.polyfrost.evergreenhud.hud.player
-
+/*
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.gui.inventory.GuiChest
 import net.minecraft.client.renderer.GlStateManager
@@ -173,3 +173,4 @@ class Inventory : HudConfig("Inventory", "evergreenhud/inventory.json", false) {
 private const val VANILLA = false
 private val vanillaBackgroundTexture: ResourceLocation = ResourceLocation("textures/gui/container/inventory.png")
 
+*/

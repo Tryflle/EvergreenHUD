@@ -1,5 +1,5 @@
 package org.polyfrost.evergreenhud.hud.player
-
+/*
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.hud.BasicHud
 import org.polyfrost.universal.UMatrixStack
@@ -112,4 +112,4 @@ class PlayerPreview : HudConfig("Player Preview", "evergreenhud/playerpreview.js
         override fun getHeight(scale: Float, example: Boolean): Float = (120 + nametagExtend) * scale
     }
 
-}
+}*/

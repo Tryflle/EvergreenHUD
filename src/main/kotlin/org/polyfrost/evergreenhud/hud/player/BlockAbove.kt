@@ -1,78 +1,75 @@
 package org.polyfrost.evergreenhud.hud.player
 
-import org.polyfrost.oneconfig.api.config.v1.annotations.*
-import org.polyfrost.oneconfig.hud.SingleTextHud
-import org.polyfrost.universal.USound
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
-import net.minecraft.block.*
+import net.minecraft.block.BlockBanner
+import net.minecraft.block.BlockSign
+import net.minecraft.block.BlockVine
+import net.minecraft.client.Minecraft
 import net.minecraft.init.Blocks
 import net.minecraft.util.BlockPos
-import org.polyfrost.evergreenhud.config.HudConfig
+import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.hud.v1.TextHud
+import org.polyfrost.universal.USound
 
-class BlockAbove: HudConfig("Block Above", "evergreenhud/blockabove.json", false) {
-    @HUD(name = "Main")
-    var hud = BlockAboveHud()
+class BlockAbove : TextHud("Block Above: ", " remaining") {
+    private var above = 0
+    private var notified = false
 
-    init {
-        initialize()
-    }
+    @Switch(title = "Notify With Sound")
+    var notify = false
 
-    class BlockAboveHud: SingleTextHud("Above", true, 120, 50) {
-        @Switch(
-            name = "Notify With Sound"
-        )
-        var notify = false
+    @Slider(title = "Notify Height", min = 1F, max = 10F, step = 1F)
+    var notifyHeight = 3
 
-        @Slider(
-            name = "Notify Height",
-            min = 1F,
-            max = 10F,
-            step = 1
-        )
-        var notifyHeight = 3
+    @Slider(title = "Check Height", min = 1F, max = 30F, step = 1F)
+    var checkHeight = 10
 
-        @Slider(
-            name = "Check Height",
-            min = 1F,
-            max = 30F,
-            step = 1
-        )
-        var checkHeight = 10
+    fun update(x: Double, y: Double, z: Double) {
+        val world = Minecraft.getMinecraft().theWorld
+        if (world == null) {
+            above = 0
+            return
+        }
 
-        @Exclude
-        private var notified = false
+        var above = 0
+        for (i in 1..checkHeight) {
+            val pos = BlockPos(x, y + 1 + i, z)
+            if (pos.y > world.height) break
 
-        override fun getText(example: Boolean): String {
-            if (mc.theWorld == null || mc.thePlayer == null) return "0"
+            val state = world.getBlockState(pos) ?: continue
+            if (state.block == Blocks.air
+                || state.block == Blocks.water
+                || state.block is BlockSign
+                || state.block is BlockVine
+                || state.block is BlockBanner
+            ) continue
 
-            var above = 0
-            for (i in 1..checkHeight) {
-                val pos = BlockPos(mc.thePlayer.posX, mc.thePlayer.posY + 1 + i, mc.thePlayer.posZ)
-                if (pos.y > mc.theWorld!!.height) break
+            above = i
 
-                val state = mc.theWorld!!.getBlockState(pos) ?: continue
-                if (state.block == Blocks.air
-                    || state.block == Blocks.water
-                    || state.block is BlockSign
-                    || state.block is BlockVine
-                    || state.block is BlockBanner)
-                    continue
-
-                above = i
-
-                if (above <= notifyHeight && notify) {
-                    if (!notified) {
-                        USound.playExpSound()
-                        notified = true
-                    }
-                } else {
-                    notified = false
+            if (above <= notifyHeight && notify) {
+                if (!notified) {
+                    USound.playExpSound()
+                    notified = true
                 }
-
-                break
+            } else {
+                notified = false
             }
 
-            return above.toString()
+            break
         }
+
+        this.above = above
+        updateAndRecalculate()
     }
+
+    override fun getText(): String? {
+        sb.append(above)
+        return null
+    }
+
+    override fun id() = "evergreenhud/blockabove.json"
+
+    override fun title() = "Block Above"
+
+    override fun category() = Category.PLAYER
 }

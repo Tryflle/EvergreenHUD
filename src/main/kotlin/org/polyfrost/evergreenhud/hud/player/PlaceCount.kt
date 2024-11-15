@@ -17,7 +17,7 @@ class PlaceCount : TextHud("Blocks: ") {
         eventHandler { event: ClientPlaceBlockEvent ->
             if (event.player == Minecraft.getMinecraft().thePlayer) {
                 blockCount.add(System.nanoTime())
-                update()
+                updateAndRecalculate()
             }
         }
     }
@@ -28,7 +28,7 @@ class PlaceCount : TextHud("Blocks: ") {
 
     override fun category() = Category.COMBAT
 
-    override fun getText(): String {
+    override fun getText(): String? {
         process()
         sb.append(blockCount.size)
         return null

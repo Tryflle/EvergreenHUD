@@ -1,5 +1,5 @@
 package org.polyfrost.evergreenhud.hud.player
-
+/*
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.api.config.v1.core.OneColor
 import org.polyfrost.oneconfig.hud.BasicHud
@@ -338,4 +338,4 @@ class Armour : LegacyHud() {
             return super.shouldShow() && getItems(false).isNotEmpty()
         }
     }
-}
+}*/

@@ -1,5 +1,6 @@
 package org.polyfrost.evergreenhud.hud.hypixel
 
+/*
 import net.minecraft.client.gui.inventory.GuiChest
 import net.minecraft.client.renderer.RenderHelper
 import net.minecraft.init.Items
@@ -228,4 +229,4 @@ class BedwarsResource : HudConfig("Bedwars Resource", "evergreenhud/bedwarsresou
                 && LocrawUtil.INSTANCE.locrawInfo?.mapName?.isNotBlank() == true
                 && LocrawUtil.INSTANCE.locrawInfo?.gameType == LocrawInfo.GameType.BEDWARS
     }
-}
+}*/

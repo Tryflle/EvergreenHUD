@@ -1,5 +1,5 @@
 package org.polyfrost.evergreenhud.hud.data
-
+/*
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.api.config.v1.core.OneColor
 import org.polyfrost.oneconfig.hud.BasicHud
@@ -116,4 +116,4 @@ class Clock : HudConfig("Clock", "evergreenhud/clock.json", false) {
     }
 
     data class LineInfo(var degree: Double, var start: Float, var end: Float, var width: Int)
-}
+}*/

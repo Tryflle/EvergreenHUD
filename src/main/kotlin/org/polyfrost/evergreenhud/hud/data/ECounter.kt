@@ -13,10 +13,10 @@ class ECounter : TextHud("E: ") {
     fun update(renderedEntities: Int, totalEntities: Int) {
         this.renderedEntities = renderedEntities
         this.totalEntities = totalEntities
-        update()
+        updateAndRecalculate()
     }
 
-    override fun getText(): String {
+    override fun getText(): String? {
         sb.append(renderedEntities)
         if (showTotal) sb.append('/').append(totalEntities)
         return null
