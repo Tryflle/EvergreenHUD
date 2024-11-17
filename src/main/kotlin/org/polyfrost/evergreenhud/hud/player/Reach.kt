@@ -24,10 +24,11 @@ class Reach : GenericHUD1f("Reach", " blocks") {
         eventHandler { event: ClientDamageEntityEvent ->
             if (event.attacker == Minecraft.getMinecraft().thePlayer) {
                 val reach = getReachDistanceFromEntity(event.target)
-                if (reach == 0f) return
+                if (reach == 0f) return@eventHandler false
                 this.value = reach
                 lastTime = System.currentTimeMillis()
             }
+            return@eventHandler false
         }
     }
 

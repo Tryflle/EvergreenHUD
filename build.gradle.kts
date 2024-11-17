@@ -58,7 +58,7 @@ loom {
         runConfigs {
             "client" {
                 programArgs("--tweakClass", "org.polyfrost.oneconfig.internal.legacy.OneConfigTweaker")
-                programArgs("--tweakClass", "org.spongepowered.asm.launch.MixinTweaker")
+                //programArgs("--tweakClass", "org.spongepowered.asm.launch.MixinTweaker")
                 property("mixin.debug.export", "true")
             }
         }
@@ -103,6 +103,7 @@ dependencies {
     implementation("org.polyfrost.oneconfig:ui:$oneconfig")
     implementation("org.polyfrost.oneconfig:hud:$oneconfig")
     implementation("org.polyfrost.oneconfig:internal:$oneconfig")
+    compileOnly("org.spongepowered:mixin:0.7.11-SNAPSHOT")
     modImplementation("org.polyfrost.oneconfig:$platform:$oneconfig")
 
     modRuntimeOnly("me.djtheredstoner:DevAuth-${if (platform.isFabric) "fabric" else if (platform.isLegacyForge) "forge-legacy" else "forge-latest"}:1.2.0")

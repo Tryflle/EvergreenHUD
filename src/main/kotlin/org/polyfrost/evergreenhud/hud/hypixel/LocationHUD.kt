@@ -6,7 +6,7 @@ import org.polyfrost.oneconfig.api.event.v1.events.HypixelLocationEvent
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
 import org.polyfrost.oneconfig.api.hypixel.v1.HypixelUtils.Location
 
-class GenericLocationHUD(private val title: String, prefix: String = "$title: ", suffix: String = "", private val getter: Location.() -> String?) : TextHud(prefix, suffix) {
+class LocationHUD(private val title: String, prefix: String = "$title: ", suffix: String = "", private val getter: Location.() -> String?) : TextHud(prefix, suffix) {
     private var string: String? = null
 
     init {

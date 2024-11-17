@@ -7,15 +7,16 @@
     "maxShiftBy": 5
   },
   "verbose": true,
-  "client": [
-    "EntityPlayerMixin",
-    "ForgeHooksMixin",
-    "GuiIngameAccessor",
-    "LevelheadAboveHeadRenderMixin",
-    "MainMixin",
-    "RendererLivingEntityMixin"
-  ],
   "mixins": [
-    "HUDUtilsMixin"
+    "C04PacketPlayerPositionMixin",
+    "C05PacketPlayerLookMixin",
+    "C06PacketPlayerPosLookMixin",
+    "InventoryPlayerMixin"
+  ],
+  "client": [
+    "ContainerLocalRenderInformationAccessor",
+    "MinecraftMixin",
+    "RenderGlobalAccessor",
+    "RenderGlobalMixin"
   ]
 }

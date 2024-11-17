@@ -15,6 +15,6 @@ public abstract class RenderGlobalMixin {
 
     @Inject(method = "renderEntities", at = @At("TAIL"))
     private void evergreen$readEntityRenderCount(CallbackInfo ci) {
-        ECounter.update(countEntitiesRendered, countEntitiesTotal);
+        //ECounter.update(countEntitiesRendered, countEntitiesTotal);
     }
 }

@@ -9,19 +9,19 @@ class TPS : GenericHUD1f("TPS") {
 
     override fun initialize() {
         eventHandler { event: ReceivePacketEvent ->
-            if (event.getPacket<Any>() !is
-                        //#if MC>=11202
-                        //$$ net.minecraft.network.play.server.SPacketTimeUpdate
-                        //#else
-                        net.minecraft.network.play.server.S03PacketTimeUpdate
-            //#endif
-            ) return
-
-            val now = System.currentTimeMillis()
-            val timeTaken = now - lastUpdated
-            lastUpdated = now
-            value = (20000f / timeTaken).coerceIn(0f, 20f)
-            updateAndRecalculate()
+            if (event.getPacket<Any>() is
+                    //#if MC>=11202
+                    //$$ net.minecraft.network.play.server.SPacketTimeUpdate
+                    //#else
+                    net.minecraft.network.play.server.S03PacketTimeUpdate
+                    //#endif
+            ) {
+                val now = System.currentTimeMillis()
+                val timeTaken = now - lastUpdated
+                lastUpdated = now
+                value = (20000f / timeTaken).coerceIn(0f, 20f)
+                updateAndRecalculate()
+            }
         }
     }
 }

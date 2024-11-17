@@ -1,43 +1,56 @@
 package org.polyfrost.evergreenhud.hud.data
 
-import net.minecraft.client.Minecraft
+import org.polyfrost.evergreenhud.hud.GenericHUD1f
 import org.polyfrost.evergreenhud.utils.FrameTimeHelper
-import org.polyfrost.oneconfig.api.config.v1.annotations.Dropdown
-import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
-import org.polyfrost.oneconfig.api.hud.v1.TextHud
-import org.polyfrost.polyui.unit.milliseconds
-import kotlin.math.ceil
-import kotlin.math.roundToInt
+import org.polyfrost.oneconfig.api.config.v1.annotations.Text
+import org.polyfrost.oneconfig.api.event.v1.eventHandler
 
-class FPS : TextHud("FPS: ") {
+class FPS : GenericHUD1f("FPS") {
+    private var event: FrameTimeHelper.FrameData? = null
 
-    @Switch(title = "Use more Accurate method")
-    var fast = false
+    @Text(title = "Format String", description = "Use #avg for average, #med for median, ")
+    private var formatString = "#avg"
 
-    @Dropdown(
-        title = "Average Method",
-        options = ["Mean", "Median", "99th Percentile", "95th Percentile"]
-    )
-    var averageMethod = 0
+    private var fpsIndex = -1
+    private var avgIndex = -1
+    private var medIndex = -1
+    private var cstIndex = -1
+    private var p99Index = -1
+    private var p95Index = -1
 
-    private fun average(list: List<Float>): Float = when (averageMethod) {
-        0 -> list.average().toFloat()
-        1 -> percentile(list, 0.5f)
-        2 -> percentile(list, 0.99f)
-        3 -> percentile(list, 0.95f)
-        else -> 0f
+    override fun initialize() {
+        eventHandler { ev: FrameTimeHelper.FrameData ->
+            event = ev
+            updateAndRecalculate()
+        }
+        if (isReal) {
+            addCallback(formatString) { value: String ->
+                fpsIndex = value.indexOf("#fps")
+                avgIndex = value.indexOf("#avg")
+                medIndex = value.indexOf("#med")
+                cstIndex = value.indexOf("#cst")
+                p99Index = value.indexOf("#p99")
+                p95Index = value.indexOf("#p95")
+                true
+            }
+        }
     }
-
-    private fun percentile(list: List<Float>, percentile: Float): Float {
-        val index = ceil(list.size * percentile).toInt() - 1
-        return list.sorted()[index]
-    }
-
-    override fun updateFrequency() = 200.milliseconds
 
     override fun getText(): String? {
-        if (fast) sb.append((1000f / (average(FrameTimeHelper.frameTimes).takeUnless { it.isNaN() } ?: 1f)).roundToInt())
-        else sb.append(Minecraft.getDebugFPS())
+        val event = event
+        if (event == null) {
+            sb.append("???")
+            return null
+        }
+        val i = sb.length
+        sb.append(formatString)
+        val (cst, avg, med, p95, p99) = event
+        sb.replace(i + fpsIndex, i + fpsIndex + 4, df.format((1_000_000.0 / avg)))
+        sb.replace(i + cstIndex, i + cstIndex + 4, df.format(((1 - cst) * 100.0)))
+        sb.replace(i + avgIndex, i + avgIndex + 4, df.format(avg / 1_000.0))
+        sb.replace(i + p95Index, i + p95Index + 4, df.format(p95 / 1_000.0))
+        sb.replace(i + p99Index, i + p99Index + 4, df.format(p99 / 1_000.0))
+        sb.replace(i + medIndex, i + medIndex + 4, df.format(med / 1_000.0))
         return null
     }
 

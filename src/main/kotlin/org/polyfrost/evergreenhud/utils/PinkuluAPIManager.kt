@@ -23,13 +23,14 @@ object PinkuluAPIManager {
         eventHandler { event: HypixelLocationEvent ->
             cachedMap = null
             val location = event.location
-            val mapName = location.mapName.getOrNull() ?: return
-            val gameType = location.gameType.getOrNull()?.databaseName ?: return
+            val mapName = location.mapName.getOrNull() ?: return@eventHandler false
+            val gameType = location.gameType.getOrNull()?.databaseName ?: return@eventHandler false
             cachedMap = rawJson?.firstOrNull {
-                if (!it.isJsonObject) return@eventHandler
+                if (!it.isJsonObject) return@eventHandler false
                 val obj = it.asJsonObject
                 obj.get("name")?.asString == mapName && obj.get("gameType")?.asString == gameType
             }?.asJsonObject
+            return@eventHandler false
         }
     }
 

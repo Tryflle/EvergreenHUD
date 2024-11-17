@@ -1,6 +1,8 @@
 package org.polyfrost.evergreenhud.mixins;
 
 import net.minecraft.network.play.client.C03PacketPlayer;
+import org.polyfrost.evergreenhud.PlayerPosEvent;
+import org.polyfrost.oneconfig.api.event.v1.EventManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -10,8 +12,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class C05PacketPlayerLookMixin {
     @Inject(method = "<init>(FFZ)V", at = @At("RETURN"))
     private void evergreen$readPosition(float yaw, float pitch, boolean onGround, CallbackInfo ci) {
-        Coordinates.updateFacing(yaw);
-        LookVecHud.update(yaw, pitch);
-        Facing.update(yaw);
+        EventManager.INSTANCE.post(new PlayerPosEvent(0.0, 0.0, 0.0, yaw, pitch));
     }
 }

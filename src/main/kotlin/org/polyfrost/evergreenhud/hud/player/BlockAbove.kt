@@ -6,8 +6,10 @@ import net.minecraft.block.BlockVine
 import net.minecraft.client.Minecraft
 import net.minecraft.init.Blocks
 import net.minecraft.util.BlockPos
+import org.polyfrost.evergreenhud.PlayerPosEvent
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
 import org.polyfrost.universal.USound
 
@@ -24,7 +26,12 @@ class BlockAbove : TextHud("Block Above: ", " remaining") {
     @Slider(title = "Check Height", min = 1F, max = 30F, step = 1F)
     var checkHeight = 10
 
-    fun update(x: Double, y: Double, z: Double) {
+    override fun initialize() {
+        eventHandler(this::check)
+    }
+
+    fun check(event: PlayerPosEvent) {
+        val (x, y, z) = event
         val world = Minecraft.getMinecraft().theWorld
         if (world == null) {
             above = 0

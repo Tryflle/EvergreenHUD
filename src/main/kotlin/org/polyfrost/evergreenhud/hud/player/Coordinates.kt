@@ -1,10 +1,14 @@
 package org.polyfrost.evergreenhud.hud.player
 
+import org.polyfrost.evergreenhud.PlayerPosEvent
 import org.polyfrost.evergreenhud.hud.GenericHUD1f
 import org.polyfrost.evergreenhud.utils.Facing
 import org.polyfrost.oneconfig.api.config.v1.annotations.Checkbox
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.event.v1.eventHandler
+
+// TODO implement the facing stuff and pitch/yaw
 
 class Coordinates : GenericHUD1f("Coordinates") {
     @RadioButton(
@@ -33,10 +37,12 @@ class Coordinates : GenericHUD1f("Coordinates") {
     private var y: Double = 0.0
     private var z: Double = 0.0
 
-    fun update(x: Double, y: Double, z: Double) {
-        this.x = x
-        this.y = y
-        this.z = z
+    override fun initialize() {
+        eventHandler { (x, y, z): PlayerPosEvent ->
+            this.x = x
+            this.y = y
+            this.z = z
+        }
     }
 
     private fun createString(axis: Char, value: Double, sign: Char) {
