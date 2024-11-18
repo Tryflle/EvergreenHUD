@@ -10,6 +10,13 @@ class ECounter : TextHud("E: ") {
     private var renderedEntities: Int = 0
     private var totalEntities: Int = 0
 
+    override fun initialize() {
+        if (isReal) {
+            updateWhenChanged("showTotal")
+        }
+        super.initialize()
+    }
+
     fun update(renderedEntities: Int, totalEntities: Int) {
         this.renderedEntities = renderedEntities
         this.totalEntities = totalEntities

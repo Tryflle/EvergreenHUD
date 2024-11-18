@@ -13,4 +13,11 @@ class Direction : GenericHUD1f("Direction") {
         sb.append(if (abbreviated) facing.abbreviated else facing.full)
         return null
     }
+
+    override fun initialize() {
+        super.initialize()
+        if (isReal) {
+            updateWhenChanged("abbreviated")
+        }
+    }
 }

@@ -28,6 +28,7 @@ object ServerPinger {
         return pinger
     }
 
+    // todo rewrite
     class Pinger(private val interval: () -> Int, private val serverGetter: () -> ServerData?) {
         var ping: Int? = null
             private set
@@ -38,14 +39,14 @@ object ServerPinger {
             Multithreading.submit {
                 serverGetter()?.let(this::ping)
             }
-            eventHandler { event: TickEvent.Start ->
+            eventHandler { _: TickEvent.Start ->
                 ticks++
                 if (ticks % interval() == 0) {
                     Multithreading.submit {
                         serverGetter()?.let(this::ping)
                     }
                 }
-            }
+            }.register()
         }
 
         private fun ping(server: ServerData) {

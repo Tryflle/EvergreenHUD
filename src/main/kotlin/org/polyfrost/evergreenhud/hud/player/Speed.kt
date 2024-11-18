@@ -6,7 +6,7 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Dropdown
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import kotlin.math.sqrt
 
-class Speed : GenericHUD1f("Speed: ", "m/s") {
+class Speed : GenericHUD1f("Speed", "m/s") {
     @Switch(title = "Use X")
     var useX = true
 
@@ -31,9 +31,14 @@ class Speed : GenericHUD1f("Speed: ", "m/s") {
                     3 -> "mph"
                     else -> "m/t"
                 }
+                updateAndRecalculate()
                 false
             }
+            updateWhenChanged("useX")
+            updateWhenChanged("useY")
+            updateWhenChanged("useZ")
         }
+        super.initialize()
     }
 
     private fun convertSpeed(speed: Float): Float = when (speedUnit) {

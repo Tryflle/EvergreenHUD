@@ -10,6 +10,13 @@ class Playtime : TextHud("Time Played: ") {
 
     private var time: Long = 0L
 
+    override fun initialize() {
+        if (isReal) {
+            updateWhenChanged("seconds")
+        }
+        super.initialize()
+    }
+
     override fun id() = "evergreenhud/playtime.json"
 
     override fun category() = Category.INFO

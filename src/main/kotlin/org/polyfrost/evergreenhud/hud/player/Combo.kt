@@ -40,7 +40,7 @@ class Combo : TextHud(prefix = "Combo: ", suffix = " blocks") {
             updateAndRecalculate()
         }
 
-    init {
+    override fun initialize() {
         // using the new kotlin syntax purely because it looks so much nicer.
         eventHandler { (attacker, target): ClientDamageEntityEvent ->
             if (attacker != Minecraft.getMinecraft().thePlayer) {
@@ -80,6 +80,16 @@ class Combo : TextHud(prefix = "Combo: ", suffix = " blocks") {
                 currentCombo = 0
             }
         }.register()
+
+        if(isReal) {
+            // if this hud is 'real', meaning it is not the one in the hud picker screen,
+            // we add a simple callback to update the HUD text when the noHitMessage option
+            // is modified by the user.
+            updateWhenChanged("noHitMessage")
+        }
+
+        // required for setting up callbacks.
+        super.initialize()
     }
 
     // these are no longer fields and instead these methods as there is no point in saving them in memory

@@ -16,6 +16,13 @@ class Ping : TextHud("Ping: ", "ms") {
 
     private val ping = ServerPinger.createListener({ interval * 20 }) { Minecraft.getMinecraft().currentServerData }
 
+    override fun initialize() {
+        if (isReal) {
+            updateWhenChanged("showInSinglePlayer")
+        }
+        super.initialize()
+    }
+
     override fun title() = "Ping"
 
     override fun id() = "evergreenhud/ping.json"

@@ -28,6 +28,10 @@ class BlockAbove : TextHud("Block Above: ", " remaining") {
 
     override fun initialize() {
         eventHandler(this::check)
+        super.initialize()
+        if (isReal) {
+            updateWhenChanged("checkHeight")
+        }
     }
 
     fun check(event: PlayerPosEvent) {

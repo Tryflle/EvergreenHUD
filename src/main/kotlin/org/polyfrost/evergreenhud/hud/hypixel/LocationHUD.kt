@@ -9,16 +9,20 @@ import org.polyfrost.oneconfig.api.hypixel.v1.HypixelUtils.Location
 class LocationHUD(private val title: String, prefix: String = "$title: ", suffix: String = "", private val getter: Location.() -> String?) : TextHud(prefix, suffix) {
     private var string: String? = null
 
-    init {
+    @Switch(title = "Hide If Not In-Game or Supported")
+    var shouldHide = true
+
+    override fun initialize() {
+        super.initialize()
         eventHandler { event: HypixelLocationEvent ->
             this.string = event.location.getter()
             if (shouldHide) hidden = this.string == null
             updateAndRecalculate()
+        }.register()
+        if(isReal) {
+            updateWhenChanged("shouldHide")
         }
     }
-
-    @Switch(title = "Hide If Not In-Game or Supported")
-    var shouldHide = true
 
     override fun id() = "evergreenhud/${title.replace(' ', '_').lowercase()}.json"
 
@@ -27,7 +31,8 @@ class LocationHUD(private val title: String, prefix: String = "$title: ", suffix
     override fun category() = Category.INFO
 
     override fun getText(): String? {
-        sb.append(string)
+        if (string == null) sb.append("Unknown")
+        else sb.append(string)
         return null
     }
 }

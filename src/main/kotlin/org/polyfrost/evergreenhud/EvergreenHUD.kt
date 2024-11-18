@@ -21,7 +21,7 @@ class EvergreenHUD {
         println("<clinit>")
         PinkuluAPIManager.initialize()
         HudManager.register(
-            Biome(), CCounter(), /* Clock(), */ Day(), ECounter(), FPS(), InGameTime(), Memory(), Ping(), Playtime(), /* ResourcePack(), */ServerIP(), TPS(),
+            Biome(), CCounter(), Clock(), Day(), ECounter(), FPS(), InGameTime(), Memory(), Ping(), Playtime(), /* ResourcePack(), */ ServerIP(), TPS(),
             /* BedwarsResource(), */ LocationHUD("Map Name") { mapName.getOrNull() }, LocationHUD("Game Type") { gameType.getOrNull()?.name }, LocationHUD("Game Mode") { mode.getOrNull() }, /* HeightLimit(), */
             /* Armour(), */ BlockAbove(), Combo(), Coordinates(), CPS(), Direction(), /* HeldItemLore(), Inventory(), */ PlaceCount(), /* PlayerPreview(), */ Reach(), Speed() /* Saturation(), */
         )
@@ -32,4 +32,4 @@ class EvergreenHUD {
 data class ClientDamageEntityEvent(val attacker: Entity, val target: Entity) : Event
 data class ClientPlaceBlockEvent(val player: EntityPlayer, val world: World) : Event
 data class PlayerPosEvent(val x: Double, val y: Double, val z: Double, val yaw: Float, val pitch: Float) : Event
-data class ServerChangedEvent(val ip: String, val name: String, val motd: String) : Event
+data class ServerChangedEvent(val ip: String?, val name: String?, val motd: String?) : Event

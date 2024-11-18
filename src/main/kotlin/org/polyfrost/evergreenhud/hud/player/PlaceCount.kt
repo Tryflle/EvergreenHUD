@@ -19,7 +19,7 @@ class PlaceCount : TextHud("Blocks: ") {
                 blockCount.add(System.nanoTime())
                 updateAndRecalculate()
             }
-        }
+        }.register()
     }
 
     override fun id() = "evergreenhud/placecount.json"

@@ -23,6 +23,7 @@ class Memory : TextHud("Memory: ", " GB") {
         if (isReal) {
             addCallback("trailingZeroes") { state: Boolean ->
                 df = decimalFormat(1, state, displayType == 1)
+                updateAndRecalculate()
                 false
             }
             addCallback("displayType") { value: Int ->
@@ -31,9 +32,11 @@ class Memory : TextHud("Memory: ", " GB") {
                     else -> " GB"
                 }
                 df = decimalFormat(1, trailingZeros, value == 1)
+                updateAndRecalculate()
                 false
             }
         }
+        super.initialize()
     }
 
     override fun id() = "evergreenhud/memory.json"

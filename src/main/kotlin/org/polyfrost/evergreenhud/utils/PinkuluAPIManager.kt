@@ -31,7 +31,7 @@ object PinkuluAPIManager {
                 obj.get("name")?.asString == mapName && obj.get("gameType")?.asString == gameType
             }?.asJsonObject
             return@eventHandler false
-        }
+        }.register()
     }
 
     fun getMapPool() = when (cachedMap?.get("pool")?.asString) {

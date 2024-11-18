@@ -9,6 +9,13 @@ class CCounter : TextHud("C: ") {
 
     private var c: Int = 0
 
+    override fun initialize() {
+        if (isReal) {
+            updateWhenChanged("simplified")
+        }
+        super.initialize()
+    }
+
     fun update(c: Int) {
         this.c = c
     }

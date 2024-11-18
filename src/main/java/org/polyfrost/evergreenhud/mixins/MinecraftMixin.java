@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MinecraftMixin {
     @Inject(method = "setServerData", at = @At("HEAD"))
     private void evergreen$readServerData(ServerData data, CallbackInfo ci) {
-        EventManager.INSTANCE.post(new ServerChangedEvent(data.serverIP, data.serverName, data.serverMOTD));
+        if (data == null) EventManager.INSTANCE.post(new ServerChangedEvent(null, null, null));
+        else EventManager.INSTANCE.post(new ServerChangedEvent(data.serverIP, data.serverName, data.serverMOTD));
     }
 }

@@ -19,18 +19,16 @@ open class GenericHUD1f(private var title: String, suffix: String = "", prefix: 
         if (isReal) {
             addCallback("accuracy") { value: Int ->
                 df = decimalFormat(value, trailingZeros)
+                updateAndRecalculate()
                 false
             }
             addCallback("trailingZeros") { state: Boolean ->
                 df = decimalFormat(accuracy, state)
+                updateAndRecalculate()
                 false
             }
         }
-    }
-
-    fun update(value: Float) {
-        this.value = value
-        updateAndRecalculate()
+        super.initialize()
     }
 
     override fun getText(): String? {

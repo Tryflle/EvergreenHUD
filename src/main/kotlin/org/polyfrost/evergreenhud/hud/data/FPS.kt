@@ -22,7 +22,7 @@ class FPS : GenericHUD1f("FPS") {
         eventHandler { ev: FrameTimeHelper.FrameData ->
             event = ev
             updateAndRecalculate()
-        }
+        }.register()
         if (isReal) {
             addCallback(formatString) { value: String ->
                 fpsIndex = value.indexOf("#fps")
@@ -31,9 +31,11 @@ class FPS : GenericHUD1f("FPS") {
                 cstIndex = value.indexOf("#cst")
                 p99Index = value.indexOf("#p99")
                 p95Index = value.indexOf("#p95")
+                updateAndRecalculate()
                 true
             }
         }
+        super.initialize()
     }
 
     override fun getText(): String? {
