@@ -1,119 +1,51 @@
 package org.polyfrost.evergreenhud.hud.data
-/*
-import org.polyfrost.oneconfig.api.config.v1.annotations.*
-import org.polyfrost.oneconfig.api.config.v1.core.OneColor
-import org.polyfrost.oneconfig.hud.BasicHud
-import org.polyfrost.universal.UMatrixStack
-import org.polyfrost.oneconfig.utils.v1.dsl.*
-import org.lwjgl.util.vector.Vector2f
-import org.polyfrost.evergreenhud.config.HudConfig
-import java.util.*
-import kotlin.math.*
 
-class Clock : HudConfig("Clock", "evergreenhud/clock.json", false) {
+import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
+import org.polyfrost.oneconfig.api.hud.v1.Hud
+import org.polyfrost.polyui.color.Colors
+import org.polyfrost.polyui.component.Drawable
+import org.polyfrost.polyui.unit.Vec2
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 
-    @HUD(
-        name = "Main"
-    )
-    var hud = ClockHud()
+class Clock : Hud<Drawable>() {
+    override fun category() = Category.INFO
+    override fun title() = "Clock"
+    override fun id() = "evergreenhud/clock.json"
 
-    init {
-        initialize()
+    @Slider(title = "Hand Width", min = 1F, max = 10F)
+    var handWidth = 2f
+
+    override fun create() = ClockDrawable(System.currentTimeMillis(), 100f, handWidth)
+
+    override fun update() = false
+
+    class ClockDrawable(timeMillis: Long, radius: Float, var handWidth: Float = 2f, at: Vec2 = Vec2.ZERO, visibleSize: Vec2 = Vec2.ZERO, palette: Colors.Palette? = null) : Drawable(at = at, size = Vec2(radius * 2f, radius * 2f), visibleSize = visibleSize, palette = palette) {
+        var time: Long = timeMillis
+
+        override fun preRender(delta: Long) {
+            time += delta / 1_000_000L
+            super.preRender(delta)
+        }
+
+        override fun render() {
+            val radius = width / 2f
+            val cx = x + radius
+            val cy = y + radius
+
+            val secs = time / 1000.0
+            val sA = (2 * PI * (secs % 60.0 / 60.0) - PI / 2).toFloat()
+            val mA = (2 * PI * ((secs / 60.0) % 60.0 / 60.0) - PI / 2).toFloat()
+            val hA = (2 * PI * ((secs / 3600.0) % 12.0 / 12.0) - PI / 2).toFloat()
+            val sL = radius * 0.9f
+            val mL = radius * 0.75f
+            val hL = radius * 0.4f
+            val bars = polyUI.colors.text
+            renderer.line(cx, cy, cx + sL * cos(sA), cy + sL * sin(sA), bars.secondary.normal, handWidth * 0.6f)
+            renderer.line(cx, cy, cx + mL * cos(mA), cy + mL * sin(mA), bars.primary.hovered, handWidth * 0.9f)
+            renderer.line(cx, cy, cx + hL * cos(hA), cy + hL * sin(hA), bars.primary.normal, handWidth)
+        }
     }
 
-    class ClockHud : BasicHud(true) {
-
-        var padding = 4f
-
-        @Exclude
-        val radius = 40f
-
-        @Exclude
-        var caches: ArrayList<LineInfo> = ArrayList()
-
-        init {
-            runAsync {
-                caches.clear()
-                for (i in 0..59) {
-                    caches.add(LineInfo(i * 6.0, radius, radius - if (i % 5 == 0) 8 else 4, 1.5f))
-                }
-            }
-        }
-
-        @Color(
-            name = "Hour Color"
-        )
-        var hourColor = OneColor(255, 255, 255)
-
-        @Color(
-            name = "Minute Color"
-        )
-        var minuteColor = OneColor(255, 255, 255)
-
-        @Color(
-            name = "Second Color"
-        )
-        var secondColor = OneColor(255, 0, 0, 255)
-
-        @Color(
-            name = "Lines Color"
-        )
-        var linesColor = OneColor(255, 255, 255)
-
-        private fun degreeToPosition(degree: Number, length: Float): Vector2f {
-            val radian = Math.toRadians(degree.toDouble())
-            return Vector2f(sin(radian).toFloat() * length, -cos(radian).toFloat() * length)
-        }
-
-        override fun drawAll(matrices: UMatrixStack?, example: Boolean) {
-            paddingX = padding
-            paddingY = padding
-            super.drawAll(matrices, example)
-        }
-
-        override fun draw(matrices: UMatrixStack?, x: Float, y: Float, scale: Float, example: Boolean) {
-            val calendar = Calendar.getInstance()
-            val sec = calendar[Calendar.SECOND] + calendar[Calendar.MILLISECOND] / 1000f
-            val min = calendar[Calendar.MINUTE] + sec / 60f
-            val hr = calendar[Calendar.HOUR] + min / 60f
-            val hour = LineInfo(hr * 30.0, 0f, 12f, 1.5)
-            val minute = LineInfo(min * 6.0, 0f, 21f, 1)
-            val second = LineInfo(sec * 6.0, -6f, 30f, 0.5)
-            nanoVG(true) {
-                translate(x + radius * scale, y + radius * scale)
-                scale(scale, scale)
-                for (line in caches) {
-                    drawLine(this, line, linesColor)
-                }
-                drawLine(this, hour, hourColor)
-                drawLine(this, minute, minuteColor)
-                drawLine(this, second, secondColor)
-                drawCircle(0, 0, 2, linesColor.rgb)
-                if (shouldDrawBackground() && background && border) nanoVGHelper.drawHollowEllipse(this.instance, 0f, 0f, radius + padding, radius + padding, borderColor.rgb, borderSize)
-            }
-        }
-
-        override fun drawBackground(x: Float, y: Float, width: Float, height: Float, scale: Float) {
-            nanoVG(true) {
-                drawCircle(x + (radius + padding) * scale, y + (radius + padding) * scale, (radius + padding) * scale, bgColor.rgb)
-            }
-        }
-
-        private fun drawLine(vg: VG, lineInfo: LineInfo, color: OneColor) {
-            nanoVGHelper.rotate(vg.instance, lineInfo.degree)
-            vg.drawLine(0, - lineInfo.start, 0, - lineInfo.end, lineInfo.width, color.rgb)
-            nanoVGHelper.rotate(vg.instance, - lineInfo.degree)
-        }
-
-        override fun getWidth(scale: Float, example: Boolean): Float {
-            return radius * 2 * scale
-        }
-
-        override fun getHeight(scale: Float, example: Boolean): Float {
-            return radius * 2 * scale
-        }
-
-    }
-
-    data class LineInfo(var degree: Double, var start: Float, var end: Float, var width: Int)
-}*/
+}
