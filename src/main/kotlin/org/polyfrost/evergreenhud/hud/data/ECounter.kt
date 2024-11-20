@@ -31,7 +31,7 @@ class ECounter : TextHud("E: ") {
 
     override fun title() = "E Counter"
 
-    override fun id() = "evergreenhud/entity_count.json"
+    override fun id() = "entity_count.json"
 
     override fun category() = Category.INFO
 

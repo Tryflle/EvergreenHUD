@@ -14,7 +14,7 @@ class Biome : TextHud("Biome: ") {
         return null
     }
 
-    override fun id() = "evergreenhud/biome.json"
+    override fun id() = "biome.json"
 
     override fun title() = "Biome"
 

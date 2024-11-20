@@ -25,7 +25,7 @@ class CCounter : TextHud("C: ") {
         return null
     }
 
-    override fun id() = "evergreenhud/ccounter.json"
+    override fun id() = "ccounter.json"
 
     override fun title() = "C Counter"
 

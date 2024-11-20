@@ -40,5 +40,5 @@ open class GenericHUD1f(private var title: String, suffix: String = "", prefix: 
 
     override fun category() = Category.INFO
 
-    override fun id() = "evergreenhud/${title.replace(' ', '_').lowercase()}.json"
+    override fun id() = "${title.replace(' ', '_').lowercase()}.json"
 }

@@ -17,14 +17,16 @@ object FrameTimeHelper {
         }.register()
         eventHandler { _: TickEvent.End ->
             val ft = frameTimes
-            ft.sort()
-            val consistency = (ft.last() - ft.first()).toDouble() / ft.size / ft.sum()
-            val avg = ft.average().run { if (isFinite()) this else 1.0 }
-            val p50 = percentile(ft, 0.50)
-            val p95 = percentile(ft, 0.95)
-            val p99 = percentile(ft, 0.99)
-            EventManager.INSTANCE.post(FrameData(consistency, avg, p50, p95, p99))
-            ft.clear()
+            if (ft.size > 1) {
+                ft.sort()
+                val consistency = (ft.last() - ft.first()).toDouble() / ft.size / ft.sum()
+                val avg = ft.average().run { if (isFinite()) this else 1.0 }
+                val p50 = percentile(ft, 0.50)
+                val p95 = percentile(ft, 0.95)
+                val p99 = percentile(ft, 0.99)
+                EventManager.INSTANCE.post(FrameData(consistency, avg, p50, p95, p99))
+                ft.clear()
+            }
         }.register()
     }
 

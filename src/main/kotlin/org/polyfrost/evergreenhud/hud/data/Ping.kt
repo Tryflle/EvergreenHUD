@@ -25,7 +25,7 @@ class Ping : TextHud("Ping: ", "ms") {
 
     override fun title() = "Ping"
 
-    override fun id() = "evergreenhud/ping.json"
+    override fun id() = "ping.json"
 
     override fun category() = Category.INFO
 

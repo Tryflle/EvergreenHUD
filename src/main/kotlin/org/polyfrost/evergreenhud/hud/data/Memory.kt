@@ -21,7 +21,7 @@ class Memory : TextHud("Memory: ", " GB") {
 
     override fun initialize() {
         if (isReal) {
-            addCallback("trailingZeroes") { state: Boolean ->
+            addCallback("trailingZeros") { state: Boolean ->
                 df = decimalFormat(1, state, displayType == 1)
                 updateAndRecalculate()
                 false
@@ -39,7 +39,7 @@ class Memory : TextHud("Memory: ", " GB") {
         super.initialize()
     }
 
-    override fun id() = "evergreenhud/memory.json"
+    override fun id() = "memory.json"
 
     override fun title() = "Memory"
 

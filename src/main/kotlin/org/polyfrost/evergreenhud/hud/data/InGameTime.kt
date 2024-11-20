@@ -36,7 +36,7 @@ class InGameTime : TextHud("Ingame Time: ") {
 
     override fun title() = "In Game Time"
 
-    override fun id() = "evergreenhud/ingametime.json"
+    override fun id() = "ingametime.json"
 
     override fun category() = Category.INFO
 }

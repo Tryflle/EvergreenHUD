@@ -17,9 +17,9 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import org.lwjgl.opengl.GL11
 import org.polyfrost.evergreenhud.config.HudConfig
 
-class ResourcePack: HudConfig("Resource Pack", "evergreenhud/resourcepack.json", false) {
+class ResourcePack: HudConfig("Resource Pack", "resourcepack.json", false) {
 
-    @HUD(name = "Main")
+    @HUD(title = "Main")
     var hud = ResourcePackHUD()
 
     init {
@@ -44,24 +44,24 @@ class ResourcePack: HudConfig("Resource Pack", "evergreenhud/resourcepack.json",
             pack = getResourcePack()
         }
 
-        @Switch(name = "Ignore Overlay Pack", description = "Use only the first pack applied in the resource pack list.")
+        @Switch(title = "Ignore Overlay Pack", description = "Use only the first pack applied in the resource pack list.")
         var ignoreOverlay = true
 
-        @Color(name = "Text Color")
+        @Color(title = "Text Color")
         var color = OneColor(255, 255, 255)
 
-        @Dropdown(name = "Text Type", options = ["No Shadow", "Shadow", "Full Shadow"])
+        @Dropdown(title = "Text Type", options = ["No Shadow", "Shadow", "Full Shadow"])
         var textType = 0
 
         @Slider(
-            name = "Icon Size",
+            title = "Icon Size",
             min = 10f, max = 40f
         )
         var iconSize = 24
 
 
         @Slider(
-            name = "Icon Padding",
+            title = "Icon Padding",
             min = 0f, max = 10f
         )
         var iconPadding = 5

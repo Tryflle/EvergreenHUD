@@ -78,7 +78,7 @@ class BlockAbove : TextHud("Block Above: ", " remaining") {
         return null
     }
 
-    override fun id() = "evergreenhud/blockabove.json"
+    override fun id() = "blockabove.json"
 
     override fun title() = "Block Above"
 

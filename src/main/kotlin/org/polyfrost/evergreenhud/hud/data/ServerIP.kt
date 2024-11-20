@@ -38,5 +38,5 @@ class ServerIP : TextHud("IP: ") {
 
     override fun category() = Category.INFO
 
-    override fun id() = "evergreenhud/server_ip.json"
+    override fun id() = "server_ip.json"
 }

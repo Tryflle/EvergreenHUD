@@ -11,7 +11,7 @@ class Day : TextHud("Day: ", "") {
 
     override fun title() = "Day"
 
-    override fun id() = "evergreenhud/day.json"
+    override fun id() = "day.json"
 
     override fun category() = Category.INFO
 }

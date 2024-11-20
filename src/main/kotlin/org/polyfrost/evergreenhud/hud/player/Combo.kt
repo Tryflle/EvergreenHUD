@@ -100,7 +100,7 @@ class Combo : TextHud(prefix = "Combo: ", suffix = " blocks") {
     override fun getText() = if (currentCombo == 0) noHitMessage else currentCombo.toString()
 
     // this is the tree ID of the HUD, which is the same as the ID you supply as if it were a config.
-    override fun id() = "evergreenhud/combo.json"
+    override fun id() = "combo.json"
 
     // This is the title of the HUD, it is displayed in the HUD manager.
     override fun title() = "Combo"

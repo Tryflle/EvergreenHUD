@@ -17,9 +17,9 @@ private val DIAMOND = ItemStack(Items.diamond)
 private val EMERALD = ItemStack(Items.emerald)
 private var enderChest: IInventory? = null
 
-class BedwarsResource : HudConfig("Bedwars Resource", "evergreenhud/bedwarsresource.json", false) {
+class BedwarsResource : HudConfig("Bedwars Resource", "bedwarsresource.json", false) {
 
-    @HUD(name = "Main")
+    @HUD(title = "Main")
     var hud = BedwarsResourceHud()
 
     init {
@@ -50,74 +50,74 @@ class BedwarsResource : HudConfig("Bedwars Resource", "evergreenhud/bedwarsresou
 
     class BedwarsResourceHud : BasicHud(true, 1920f - 400, 1080f - 21) {
         @Checkbox(
-            name = "Show Irons"
+            title = "Show Irons"
         )
         var showIron = true
 
         @Checkbox(
-            name = "Show Golds"
+            title = "Show Golds"
         )
         var showGold = true
 
         @Checkbox(
-            name = "Show Diamonds"
+            title = "Show Diamonds"
         )
         var showDiamond = true
 
         @Checkbox(
-            name = "Show Emeralds"
+            title = "Show Emeralds"
         )
         var showEmerald = true
 
         @Switch(
-            name = "Show Ender Chest"
+            title = "Show Ender Chest"
         )
         var showEnderChest = true
 
         @Switch(
-            name = "Hide When Zero"
+            title = "Hide When Zero"
         )
         var hideZero = true
 
         @Slider(
-            name = "Item Padding",
+            title = "Item Padding",
             min = 0F,
             max = 10F
         )
         var padding = 5
 
         @Slider(
-            name = "Icon Padding",
+            title = "Icon Padding",
             min = 0F,
             max = 10F
         )
         var iconPadding = 5
 
         @DualOption(
-            name = "Type",
+            title = "Type",
             left = "Horizontal",
             right = "Vertical"
         )
         var type = false
 
         @DualOption(
-            name = "Display Type",
+            title = "Display Type",
             left = "Down",
             right = "Up"
         )
         var displayType = false
 
         @DualOption(
-            name = "Text Alignment",
+            title = "Text Alignment",
             left = "Left", right = "Right"
         )
         var alignment = true
 
-        @Dropdown(name = "Text Type", options = ["No Shadow", "Shadow", "Full Shadow"])
+        @Dropdown(title = "Text Type", options = ["No Shadow", "Shadow", "Full Shadow"])
         var textType = 0
 
         @Color(
-            name = "Text Color"
+            title = "Text Color"
         )
         var textColor = OneColor(255, 255, 255)
 

@@ -8,9 +8,9 @@ import net.minecraft.client.renderer.*
 import net.minecraft.entity.EntityLivingBase
 import org.polyfrost.evergreenhud.config.HudConfig
 
-class PlayerPreview : HudConfig("Player Preview", "evergreenhud/playerpreview.json", false) {
+class PlayerPreview : HudConfig("Player Preview", "playerpreview.json", false) {
     @HUD(
-        name = "Self Preview"
+        title = "Self Preview"
     )
     var selfPreview = SelfPreviewHud()
 
@@ -21,12 +21,12 @@ class PlayerPreview : HudConfig("Player Preview", "evergreenhud/playerpreview.js
     class SelfPreviewHud : BasicHud(true, 1920 - 80f, 1080 - 120f) {
 
         @Switch(
-            name = "Show Nametag"
+            title = "Show Nametag"
         )
         var showNametag = false
 
         @Slider(
-            name = "Rotation",
+            title = "Rotation",
             min = 0F,
             max = 360F,
         )

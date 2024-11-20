@@ -12,7 +12,7 @@ import kotlin.math.sin
 class Clock : Hud<Drawable>() {
     override fun category() = Category.INFO
     override fun title() = "Clock"
-    override fun id() = "evergreenhud/clock.json"
+    override fun id() = "clock.json"
 
     @Slider(title = "Hand Width", min = 1F, max = 10F)
     var handWidth = 2f

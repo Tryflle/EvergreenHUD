@@ -12,12 +12,12 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.event.v1.EventManager
 
-class Inventory : HudConfig("Inventory", "evergreenhud/inventory.json", false) {
+class Inventory : HudConfig("Inventory", "inventory.json", false) {
 
-    @HUD(name = "Player Inventory", category = "Player Inventory")
+    @HUD(title = "Player Inventory", category = "Player Inventory")
     var playerInventoryHUD = PlayerInventoryHUD()
 
-    @HUD(name = "Ender Chest", category = "Ender Chest")
+    @HUD(title = "Ender Chest", category = "Ender Chest")
     var enderChestHUD = EnderChestHUD()
 
     init {
@@ -30,13 +30,13 @@ class Inventory : HudConfig("Inventory", "evergreenhud/inventory.json", false) {
         y: Int,
     ) : BasicHud(enabled, x.toFloat(), y.toFloat()) {
 
-        @DualOption(name = "Background Type", left = "Vanilla", right = "OneConfig")
+        @DualOption(title = "Background Type", left = "Vanilla", right = "OneConfig")
         protected var backgroundType = false
 
-        @Switch(name = "Dynamic Rows")
+        @Switch(title = "Dynamic Rows")
         protected var dynamic = false
 
-        @Slider(name = "Items Spacing", min = 0f, max = 10f)
+        @Slider(title = "Items Spacing", min = 0f, max = 10f)
         protected var spacing = 4f
 
         @Transient

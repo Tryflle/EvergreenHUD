@@ -14,8 +14,8 @@ import org.polyfrost.evergreenhud.mixins.GuiIngameAccessor
 import org.polyfrost.evergreenhud.utils.ItemStackUtils.getLore
 import kotlin.math.min
 
-class HeldItemLore : HudConfig("Held Item Lore", "evergreenhud/helditemlore.json", false) {
-    @HUD(name = "Main")
+class HeldItemLore : HudConfig("Held Item Lore", "helditemlore.json", false) {
+    @HUD(title = "Main")
     var hud = HeldItemLoreHud()
 
     init {
@@ -24,19 +24,19 @@ class HeldItemLore : HudConfig("Held Item Lore", "evergreenhud/helditemlore.json
 
     class HeldItemLoreHud : TextHud(true, 50, 50) {
 
-        @Switch(name = "Fade Out", description = "If disabled, the held item lore HUD will persist indefinitely.")
+        @Switch(title = "Fade Out", description = "If disabled, the held item lore HUD will persist indefinitely.")
         var fadeOut: Boolean = false
 
-        @Switch(name = "Remove Empty Lines")
+        @Switch(title = "Remove Empty Lines")
         var removeEmptyLines: Boolean = false
 
-        @Switch(name = "Skip Item Name")
+        @Switch(title = "Skip Item Name")
         var skipItemName: Boolean = false
 
-        @Number(name = "Stop After Line", min = 0F, max = 100F, description = "The HUD will stop rendering lore lines after this amount. Leave at 0 to render all lines in an item lore.\nThis setting won't count the item's display name as a line.")
+        @Number(title = "Stop After Line", min = 0F, max = 100F, description = "The HUD will stop rendering lore lines after this amount. Leave at 0 to render all lines in an item lore.\nThis setting won't count the item's display name as a line.")
          var stopAfterLine: Int = 0
 
-         // @Number(name = "Extra Seconds", min = 0F, max = 60F, description = "The number of extra seconds the tooltip will remain on screen before fading out.")
+         // @Number(title = "Extra Seconds", min = 0F, max = 60F, description = "The number of extra seconds the tooltip will remain on screen before fading out.")
          // var extraSeconds: Int = 0
         // above line is my attempt at extending the time a tooltip had before fading out -ery
 

@@ -74,7 +74,7 @@ class CPS : TextHud("CPS: ", "") {
 
     override fun title() = "CPS"
 
-    override fun id() = "evergreenhud/cps.json"
+    override fun id() = "cps.json"
 
     override fun category() = Category.INFO
 }

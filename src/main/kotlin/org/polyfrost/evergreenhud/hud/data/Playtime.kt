@@ -17,7 +17,7 @@ class Playtime : TextHud("Time Played: ") {
         super.initialize()
     }
 
-    override fun id() = "evergreenhud/playtime.json"
+    override fun id() = "playtime.json"
 
     override fun category() = Category.INFO
 
@@ -25,9 +25,19 @@ class Playtime : TextHud("Time Played: ") {
 
     override fun getText(): String? {
         time++
-        sb.append(time / 60L / 60L).append(':')
-        sb.append(time / 60L)
-        if (seconds) sb.append(':').append(time)
+        val hours = time / 60L / 60L % 60L
+        if (hours < 10L) sb.append('0')
+        sb.append(hours).append(':')
+
+        val mins = time / 60L % 60L
+        if (mins < 10L) sb.append('0')
+        sb.append(mins)
+
+        if (seconds) {
+            sb.append(':')
+            if (time < 10L) sb.append('0')
+            sb.append(time % 60L)
+        }
         return null
     }
 

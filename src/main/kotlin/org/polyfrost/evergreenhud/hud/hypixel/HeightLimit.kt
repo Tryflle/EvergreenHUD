@@ -7,10 +7,10 @@ import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.polyfrost.oneconfig.api.hypixel.v1.*
 import org.polyfrost.evergreenhud.config.HudConfig
 
-class HeightLimit : HudConfig("Height Limit", "evergreenhud/heightlimit.json", false) {
+class HeightLimit : HudConfig("Height Limit", "heightlimit.json", false) {
 
     @HUD(
-        name = "Main"
+        title = "Main"
     )
     var hud = HeightLimitHud()
 
@@ -21,12 +21,12 @@ class HeightLimit : HudConfig("Height Limit", "evergreenhud/heightlimit.json", f
     class HeightLimitHud : SingleTextHud("Height Limit", true, 180, 150) {
 
         @Switch(
-            name = "Hide If Not In-Game or Supported"
+            title = "Hide If Not In-Game or Supported"
         )
         var hide = true
 
         @Switch(
-            name = "Show Distance To Limit"
+            title = "Show Distance To Limit"
         )
         var showDistance = false
 

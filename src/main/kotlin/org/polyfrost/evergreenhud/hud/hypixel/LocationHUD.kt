@@ -24,7 +24,7 @@ class LocationHUD(private val title: String, prefix: String = "$title: ", suffix
         }
     }
 
-    override fun id() = "evergreenhud/${title.replace(' ', '_').lowercase()}.json"
+    override fun id() = "${title.replace(' ', '_').lowercase()}.json"
 
     override fun title() = title
 

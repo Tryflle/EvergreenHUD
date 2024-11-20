@@ -22,7 +22,7 @@ class PlaceCount : TextHud("Blocks: ") {
         }.register()
     }
 
-    override fun id() = "evergreenhud/placecount.json"
+    override fun id() = "placecount.json"
 
     override fun title() = "Block Place Count"
 

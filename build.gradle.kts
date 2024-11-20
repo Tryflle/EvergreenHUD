@@ -96,7 +96,7 @@ repositories {
 
 // Configures the libraries/dependencies for your mod.
 dependencies {
-    val oneconfig = "1.0.0-alpha.37"
+    val oneconfig = "1.0.0-alpha.38"
     implementation("org.polyfrost.oneconfig:config-impl:$oneconfig")
     implementation("org.polyfrost.oneconfig:commands:$oneconfig")
     implementation("org.polyfrost.oneconfig:events:$oneconfig")
