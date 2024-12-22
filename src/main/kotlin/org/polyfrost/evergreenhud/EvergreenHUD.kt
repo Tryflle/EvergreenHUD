@@ -21,7 +21,7 @@ class EvergreenHUD {
         println("<clinit>")
         PinkuluAPIManager.initialize()
         HudManager.register(
-            Biome(), CCounter(), Clock(), Day(), ECounter(), FPS(), InGameTime(), Memory(), Ping(), Playtime(), /* ResourcePack(), */ ServerIP(), TPS(),
+            Biome(), CCounter(), Clock(), Day(), ECounter(), FPS(), InGameTime(), Memory(), Ping(), Playtime(), /* ResourcePack(), */ ServerIP(), TPS(), ItemHUD(),
             /* BedwarsResource(), */ LocationHUD("Map Name") { mapName.getOrNull() }, LocationHUD("Game Type") { gameType.getOrNull()?.name }, LocationHUD("Game Mode") { mode.getOrNull() }, /* HeightLimit(), */
             /* Armour(), */ BlockAbove(), Combo(), Coordinates(), CPS(), Direction(), /* HeldItemLore(), Inventory(), */ PlaceCount(), /* PlayerPreview(), */ Reach(), Speed() /* Saturation(), */
         )
