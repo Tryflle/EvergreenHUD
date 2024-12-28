@@ -3,13 +3,11 @@ package org.polyfrost.evergreenhud.utils
 import net.minecraft.item.ItemStack
 
 object ItemStackUtils {
-    fun ItemStack.getLore(): List<String> {
-        val list = ArrayList<String>()
-        val theTagCompound = this.tagCompound ?: return list
-        val theTagList = theTagCompound.getCompoundTag("display").getTagList("Lore", 8)
-        for (i in 0..<theTagList.tagCount()) {
-            list.add(theTagList.getStringTagAt(i))
+    @Suppress("UNNECESSARY_SAFE_CALL")
+    inline fun ItemStack.forEachLore(consumer: (String) -> Unit) {
+        val tags = this.tagCompound?.getCompoundTag("display")?.getTagList("Lore", 8) ?: return
+        for (i in 0..<tags.tagCount()) {
+            consumer(tags.getStringTagAt(i))
         }
-        return list
     }
 }

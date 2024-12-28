@@ -7,7 +7,7 @@ import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
 import org.polyfrost.polyui.utils.fastRemoveIfReversed
 
-class PlaceCount : TextHud("Blocks: ") {
+class PlaceCount : TextHud("Blocks: ", "/s") {
     @Slider(title = "Interval (ms)", min = 500F, max = 3000F)
     var interval = 1000
 

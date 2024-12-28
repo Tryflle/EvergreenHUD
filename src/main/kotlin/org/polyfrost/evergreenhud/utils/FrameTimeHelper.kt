@@ -8,7 +8,7 @@ import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 
 object FrameTimeHelper {
     private var lastTime = System.nanoTime()
-    val frameTimes = ArrayList<Long>(40)
+    private val frameTimes = ArrayList<Long>(40)
 
     init {
         eventHandler { _: RenderEvent.End ->

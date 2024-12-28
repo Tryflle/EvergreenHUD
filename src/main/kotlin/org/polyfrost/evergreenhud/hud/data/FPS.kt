@@ -11,70 +11,32 @@ class FPS : GenericHUD1f("FPS") {
     @Text(title = "Format String", description = "Use #avg for average, #med for median, ")
     private var formatString = "#avg"
 
-    private var fpsIndex = -1
-    private var avgIndex = -1
-    private var medIndex = -1
-    private var cstIndex = -1
-    private var p99Index = -1
-    private var p95Index = -1
-
     override fun initialize() {
         FrameTimeHelper
         eventHandler { ev: FrameTimeHelper.FrameData ->
             event = ev
             updateAndRecalculate()
         }.register()
-        if (isReal) addCallback("formatString") { value: String ->
-            processIndices(value)
-            updateAndRecalculate()
-            false
-        }
-        processIndices(formatString)
+        if (isReal) updateWhenChanged("formatString")
         super.initialize()
     }
 
-    private fun processIndices(value: String) {
-        fpsIndex = value.indexOf("#fps")
-        avgIndex = value.indexOf("#avg")
-        medIndex = value.indexOf("#med")
-        cstIndex = value.indexOf("#cst")
-        p99Index = value.indexOf("#p99")
-        p95Index = value.indexOf("#p95")
+    override fun getText(): String? {
+        val (cst, avg, med, p95, p99) = event ?: return "???"
+        sb.append(formatString)
+            .replace("#avg", df.format(avg / 1_000.0))
+            .replace("#med", df.format(med / 1_000.0))
+            .replace("#p95", df.format(p95 / 1_000.0))
+            .replace("#p99", df.format(p99 / 1_000.0))
+            .replace("#cst", df.format((1 - cst) * 100.0))
+            .replace("#fps", df.format(1_000_000.0 / avg))
+        return null
     }
 
-    override fun getText(): String? {
-        val event = event
-        if (event == null) {
-            sb.append("???")
-            return null
-        }
-        sb.append(formatString)
-        val (cst, avg, med, p95, p99) = event
-        var i = sb.length
-        if (fpsIndex != -1) {
-            sb.replace(i + fpsIndex, i + fpsIndex + 4, df.format((1_000_000.0 / avg)))
-            i = sb.length
-        }
-        if (cstIndex != -1) {
-            sb.replace(i + cstIndex, i + cstIndex + 4, df.format(((1 - cst) * 100.0)))
-            i = sb.length
-        }
-        if (avgIndex != -1) {
-            sb.replace(i + avgIndex, i + avgIndex + 4, df.format(avg / 1_000.0))
-            i = sb.length
-        }
-        if (p95Index != -1) {
-            sb.replace(i + p95Index, i + p95Index + 4, df.format(p95 / 1_000.0))
-            i = sb.length
-        }
-        if (p99Index != -1) {
-            sb.replace(i + p99Index, i + p99Index + 4, df.format(p99 / 1_000.0))
-            i = sb.length
-        }
-        if (medIndex != -1) {
-            sb.replace(i + medIndex, i + medIndex + 4, df.format(med / 1_000.0))
-        }
-        return null
+    private fun StringBuilder.replace(string: String, value: String): StringBuilder {
+        val index = indexOf(string)
+        if (index != -1) replace(index, index + string.length, value)
+        return this
     }
 
     override fun id() = "fps.json"

@@ -1,40 +1,42 @@
 package org.polyfrost.evergreenhud.utils
 
-import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import org.polyfrost.oneconfig.api.event.v1.eventHandler
-import org.polyfrost.oneconfig.api.event.v1.events.HypixelLocationEvent
+import org.polyfrost.oneconfig.api.hypixel.v1.HypixelUtils.Location
 import org.polyfrost.oneconfig.utils.v1.JsonUtils
 import org.polyfrost.oneconfig.utils.v1.Multithreading
 import org.polyfrost.oneconfig.utils.v1.NetworkUtils
 import kotlin.jvm.optionals.getOrNull
 
 object PinkuluAPIManager {
-    private var rawJson: JsonArray? = null
-    private var cachedMap: JsonObject? = null
-    fun initialize() {
+    private var rawJson: List<JsonObject>? = null
+    private var prevLoc: Location? = null
+    private var prevData: JsonObject? = null
+
+    init {
         Multithreading.submit {
             try {
-                rawJson = JsonUtils.PARSER.parse(NetworkUtils.getString("https://maps.pinkulu.com/trans-rights-are-human-rights.json")).asJsonArray // so true bestie
+                rawJson = JsonUtils.PARSER.parse(NetworkUtils.getString("https://maps.pinkulu.com/trans-rights-are-human-rights.json")).asJsonArray.mapNotNull { if (it.isJsonObject) it.asJsonObject else null } // so true bestie
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
-        eventHandler { event: HypixelLocationEvent ->
-            cachedMap = null
-            val location = event.location
-            val mapName = location.mapName.getOrNull() ?: return@eventHandler false
-            val gameType = location.gameType.getOrNull()?.databaseName ?: return@eventHandler false
-            cachedMap = rawJson?.firstOrNull {
-                if (!it.isJsonObject) return@eventHandler false
-                val obj = it.asJsonObject
-                obj.get("name")?.asString == mapName && obj.get("gameType")?.asString == gameType
-            }?.asJsonObject
-            return@eventHandler false
-        }.register()
     }
 
-    fun getMapPool() = when (cachedMap?.get("pool")?.asString) {
+    fun getRawMapData(location: Location): JsonObject? {
+        if (location == prevLoc) return prevData
+        val mapName = location.mapName.getOrNull() ?: return null
+        val gameType = location.gameType.getOrNull()?.databaseName?.uppercase() ?: return null
+        val out = rawJson?.firstOrNull {
+            it.get("name")?.asString == mapName && it.get("gameType")?.asString == gameType
+        }
+        return if (out != null) {
+            prevLoc = location
+            prevData = out
+            out
+        } else null
+    }
+
+    fun getMapPool(location: Location) = when (getRawMapData(location)?.get("pool")?.asString) {
         "BEDWARS_4TEAMS_FAST" -> "Fast 4 Teams"
         "BEDWARS_4TEAMS_SLOW" -> "Slow 4 Teams"
         "BEDWARS_8TEAMS_FAST" -> "Fast 8 Teams"
@@ -45,5 +47,5 @@ object PinkuluAPIManager {
         else -> null
     }
 
-    fun getMapHeight() = cachedMap?.get("maxBuild")?.asInt ?: -1
+    fun getMapHeight(location: Location) = getRawMapData(location)?.get("maxBuild")?.asInt ?: -1
 }

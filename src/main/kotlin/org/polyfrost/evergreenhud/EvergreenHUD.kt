@@ -6,7 +6,7 @@ import net.minecraft.world.World
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import org.polyfrost.evergreenhud.hud.data.*
-import org.polyfrost.evergreenhud.hud.hypixel.*
+import org.polyfrost.evergreenhud.hud.hypixel.LocationHUD
 import org.polyfrost.evergreenhud.hud.player.*
 import org.polyfrost.evergreenhud.utils.PinkuluAPIManager
 import org.polyfrost.oneconfig.api.event.v1.events.Event
@@ -19,11 +19,10 @@ class EvergreenHUD {
     @Mod.EventHandler
     fun onFMLInitialization(event: FMLInitializationEvent) {
         println("<clinit>")
-        PinkuluAPIManager.initialize()
         HudManager.register(
-            Biome(), CCounter(), Clock(), Day(), ECounter(), FPS(), InGameTime(), Memory(), Ping(), Playtime(), /* ResourcePack(), */ ServerIP(), TPS(), ItemHUD(),
-            /* BedwarsResource(), */ LocationHUD("Map Name") { mapName.getOrNull() }, LocationHUD("Game Type") { gameType.getOrNull()?.name }, LocationHUD("Game Mode") { mode.getOrNull() }, /* HeightLimit(), */
-            /* Armour(), */ BlockAbove(), Combo(), Coordinates(), CPS(), Direction(), /* HeldItemLore(), Inventory(), */ PlaceCount(), /* PlayerPreview(), */ Reach(), Speed() /* Saturation(), */
+            Biome(), CCounter(), Clock(), Day(), ECounter(), FPS(), InGameTime(), Memory(), Ping(), Playtime(), /* ResourcePack(), */ ServerIP(), TPS(), ItemHUD(), LoreHud(),
+            /* BedwarsResource(), */ LocationHUD("Map Name") { mapName.getOrNull() }, LocationHUD("Game Type") { gameType.getOrNull()?.name }, LocationHUD("Game Mode") { mode.getOrNull() }, LocationHUD("Build Remaining") { PinkuluAPIManager.getMapHeight(this).let { if (it == -1) "Unknown" else it.toString() } },
+            BlockAbove(), Combo(), Coordinates(), CPS(), Direction(), /* Inventory(), */ PlaceCount(), /* PlayerPreview(), */ Reach(), Speed() /* Saturation(), */
         )
 
     }
