@@ -30,7 +30,7 @@ class Reach : GenericHUD1f("Reach", " blocks") {
             }
             return@eventHandler false
         }.register()
-        if(isReal) {
+        if (isReal) {
             updateWhenChanged("noHitMessage")
         }
     }

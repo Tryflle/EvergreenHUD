@@ -1,6 +1,7 @@
 package org.polyfrost.evergreenhud.hud.data
 
 import org.polyfrost.evergreenhud.hud.GenericHUD1f
+import org.polyfrost.evergreenhud.replace
 import org.polyfrost.evergreenhud.utils.FrameTimeHelper
 import org.polyfrost.oneconfig.api.config.v1.annotations.Text
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
@@ -31,12 +32,6 @@ class FPS : GenericHUD1f("FPS") {
             .replace("#cst", df.format((1 - cst) * 100.0))
             .replace("#fps", df.format(1_000_000.0 / avg))
         return null
-    }
-
-    private fun StringBuilder.replace(string: String, value: String): StringBuilder {
-        val index = indexOf(string)
-        if (index != -1) replace(index, index + string.length, value)
-        return this
     }
 
     override fun id() = "fps.json"

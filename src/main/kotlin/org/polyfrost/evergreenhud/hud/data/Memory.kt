@@ -1,6 +1,7 @@
 package org.polyfrost.evergreenhud.hud.data
 
 import org.polyfrost.evergreenhud.utils.decimalFormat
+import org.polyfrost.oneconfig.api.config.v1.annotations.Number
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
@@ -16,6 +17,9 @@ class Memory : TextHud("Memory: ", " GB") {
 
     @Switch(title = "Trailing Zeros")
     var trailingZeros = false
+
+    @Number(title = "Update Frequency (requires restart)", min = 0.5F, max = 5F)
+    var updateFrequency = 0.5F
 
     private var df: DecimalFormat = decimalFormat(1, trailingZeros)
 
@@ -45,32 +49,20 @@ class Memory : TextHud("Memory: ", " GB") {
 
     override fun category() = Category.INFO
 
-    override fun updateFrequency() = 1.seconds
+    override fun updateFrequency() = updateFrequency.seconds
 
     override fun getText(): String? {
-        val usedBytes = bytesToMb(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())
+        val r = Runtime.getRuntime()
+        val usedBytes = bytesToMb(r.totalMemory() - r.freeMemory())
         sb.append(
             df.format(
                 when (displayType) {
-                    1 -> getPercent(usedBytes, 0, bytesToMb(Runtime.getRuntime().maxMemory()))
-                    else -> usedBytes / 1024f
+                    1 -> usedBytes.toDouble() / bytesToMb(r.maxMemory()).toDouble()
+                    else -> usedBytes / 1024.0
                 }
             )
         )
         return null
-    }
-
-    /**
-     * Returns number between 0 - 1 depending on the range and value given
-     *
-     * @param num the value
-     * @param min minimum of what the value can be
-     * @param max maximum of what the value can be
-     * @return converted percentage
-     * @author isXander
-     */
-    private fun getPercent(num: Long, min: Long = 0L, max: Long = 100L): Long {
-        return (num - min) / (max - min)
     }
 
     private fun bytesToMb(bytes: Long): Long {

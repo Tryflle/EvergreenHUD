@@ -49,11 +49,13 @@ class LoreHud : TextHud("") {
     // todo setting
     var theItem: ItemStack? = null
         set(value) {
+            @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
+            if (ItemStack.areItemStacksEqual(field, value)) return
             field = value
-            get().alpha = 1f
+            val it = get()
+            it.alpha = 1f
             updateAndRecalculate()
             if (fadeOut) {
-                val it = get()
                 it.polyUI.addExecutor(Clock.Bomb(showDuration.milliseconds) {
                     Fade(it, 0f, animation = Animations.Default.create(fadeDuration.milliseconds)).add()
                 })
@@ -63,11 +65,9 @@ class LoreHud : TextHud("") {
     override fun getText(): String? {
         val item = theItem ?: return null
 
-        if (showName) {
-            if (item.hasDisplayName()) {
-                val name = item.displayName
-                if (!name.isNullOrEmpty()) sb.append(item.displayName).append('\n')
-            }
+        if (showName && item.hasDisplayName()) {
+            val name = item.displayName
+            if (!name.isNullOrEmpty()) sb.append(item.displayName).append('\n')
         }
 
         var i = 0

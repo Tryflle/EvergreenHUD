@@ -26,6 +26,10 @@ class BlockAbove : TextHud("Block Above: ", " remaining") {
     @Slider(title = "Check Height", min = 1F, max = 30F, step = 1F)
     var checkHeight = 10
 
+    private var ppx = 0
+    private var ppy = 0
+    private var ppz = 0
+
     override fun initialize() {
         eventHandler(this::check)
         super.initialize()
@@ -36,6 +40,10 @@ class BlockAbove : TextHud("Block Above: ", " remaining") {
 
     fun check(event: PlayerPosEvent) {
         val (x, y, z) = event
+        if (x.toInt() == ppx && y.toInt() == ppy && z.toInt() == ppz) return
+        ppx = x.toInt()
+        ppy = y.toInt()
+        ppz = z.toInt()
         val world = Minecraft.getMinecraft().theWorld
         if (world == null) {
             above = 0
@@ -44,7 +52,7 @@ class BlockAbove : TextHud("Block Above: ", " remaining") {
 
         var above = 0
         for (i in 1..checkHeight) {
-            val pos = BlockPos(x, y + 1 + i, z)
+            val pos = BlockPos(x, y + 1.0 + i, z)
             if (pos.y > world.height) break
 
             val state = world.getBlockState(pos) ?: continue

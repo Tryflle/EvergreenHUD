@@ -13,7 +13,8 @@ class PlaceCount : TextHud("Blocks: ", "/s") {
 
     private val blockCount = ArrayList<Long>()
 
-    init {
+    override fun initialize() {
+        super.initialize()
         eventHandler { event: ClientPlaceBlockEvent ->
             if (event.player == Minecraft.getMinecraft().thePlayer) {
                 blockCount.add(System.nanoTime())

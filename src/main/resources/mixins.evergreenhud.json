@@ -8,15 +8,13 @@
   },
   "verbose": true,
   "mixins": [
-    "C04PacketPlayerPositionMixin",
-    "C05PacketPlayerLookMixin",
-    "C06PacketPlayerPosLookMixin",
-    "InventoryPlayerMixin"
+    "PositionCallback_C04PacketPlayerPositionMixin",
+    "PositionCallback_C05PacketPlayerLookMixin",
+    "PositionCallback_C06PacketPlayerPosLookMixin",
+    "SaturationCallback_FoodStatsMixin"
   ],
   "client": [
-    "ContainerLocalRenderInformationAccessor",
-    "MinecraftMixin",
-    "RenderGlobalAccessor",
-    "RenderGlobalMixin"
+    "ServerInfoCallback_MinecraftMixin",
+    "ECounterCallback_RenderGlobalMixin"
   ]
 }

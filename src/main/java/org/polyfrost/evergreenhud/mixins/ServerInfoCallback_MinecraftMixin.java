@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Minecraft.class)
-public class MinecraftMixin {
+public class ServerInfoCallback_MinecraftMixin {
     @Inject(method = "setServerData", at = @At("HEAD"))
     private void evergreen$readServerData(ServerData data, CallbackInfo ci) {
         if (data == null) EventManager.INSTANCE.post(new ServerChangedEvent(null, null, null));

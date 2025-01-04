@@ -20,9 +20,9 @@ class EvergreenHUD {
     fun onFMLInitialization(event: FMLInitializationEvent) {
         println("<clinit>")
         HudManager.register(
-            Biome(), CCounter(), Clock(), Day(), ECounter(), FPS(), InGameTime(), Memory(), Ping(), Playtime(), /* ResourcePack(), */ ServerIP(), TPS(), ItemHUD(), LoreHud(),
+            Biome(), CCounter(), Clock(), Day(), ECounter(), FPS(), InGameTime(), Memory(), Ping(), Playtime(), ResourcePack(), ServerIP(), TPS(), ItemHUD(), LoreHud(),
             /* BedwarsResource(), */ LocationHUD("Map Name") { mapName.getOrNull() }, LocationHUD("Game Type") { gameType.getOrNull()?.name }, LocationHUD("Game Mode") { mode.getOrNull() }, LocationHUD("Build Remaining") { PinkuluAPIManager.getMapHeight(this).let { if (it == -1) "Unknown" else it.toString() } },
-            BlockAbove(), Combo(), Coordinates(), CPS(), Direction(), /* Inventory(), */ PlaceCount(), /* PlayerPreview(), */ Reach(), Speed() /* Saturation(), */
+            BlockAbove(), Combo(), Coordinates(), CPS(), Direction(), /* Inventory(), */ PlaceCount(), /* PlayerPreview(), */ Reach(), Speed(), Saturation()
         )
 
     }
@@ -32,3 +32,16 @@ data class ClientDamageEntityEvent(val attacker: Entity, val target: Entity) : E
 data class ClientPlaceBlockEvent(val player: EntityPlayer, val world: World) : Event
 data class PlayerPosEvent(val x: Double, val y: Double, val z: Double, val yaw: Float, val pitch: Float) : Event
 data class ServerChangedEvent(val ip: String?, val name: String?, val motd: String?) : Event
+data class SaturationChangedEvent(val saturation: Float) : Event
+class ECounterEvent : Event {
+    var total = 0
+    var rendered = 0
+}
+
+val eCounter = ECounterEvent()
+
+fun StringBuilder.replace(string: String, value: String): StringBuilder {
+    val index = indexOf(string)
+    if (index != -1) replace(index, index + string.length, value)
+    return this
+}

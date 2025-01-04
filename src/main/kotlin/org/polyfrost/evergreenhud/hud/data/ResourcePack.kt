@@ -1,101 +1,74 @@
 package org.polyfrost.evergreenhud.hud.data
-/*
-import org.polyfrost.oneconfig.api.config.v1.annotations.*
-import org.polyfrost.oneconfig.api.config.v1.core.OneColor
-import org.polyfrost.oneconfig.hud.BasicHud
-import org.polyfrost.universal.UMatrixStack
-import org.polyfrost.oneconfig.renderer.TextRenderer
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
-import net.minecraft.client.gui.Gui
-import net.minecraft.client.renderer.GlStateManager
-import net.minecraft.client.renderer.texture.DynamicTexture
+
+import net.minecraft.client.Minecraft
 import net.minecraft.client.resources.ResourcePackRepository
 import net.minecraftforge.client.event.TextureStitchEvent
 import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.event.entity.EntityJoinWorldEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import org.lwjgl.opengl.GL11
-import org.polyfrost.evergreenhud.config.HudConfig
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.hud.v1.Hud
+import org.polyfrost.polyui.component.extensions.setFont
+import org.polyfrost.polyui.component.impl.Group
+import org.polyfrost.polyui.component.impl.Image
+import org.polyfrost.polyui.component.impl.Text
+import org.polyfrost.polyui.data.PolyImage
+import org.polyfrost.polyui.unit.Align
+import org.polyfrost.polyui.unit.Vec2
+import java.io.ByteArrayOutputStream
+import javax.imageio.ImageIO
 
-class ResourcePack: HudConfig("Resource Pack", "resourcepack.json", false) {
+class ResourcePack : Hud<Group>() {
 
-    @HUD(title = "Main")
-    var hud = ResourcePackHUD()
+    @Switch(title = "Ignore Overlay")
+    var ignoreOverlay = true
+
+    override fun category() = Category.INFO
+
+    private val default = PolyImage("pack.png")
 
     init {
-        initialize()
+        MinecraftForge.EVENT_BUS.register(this)
     }
 
-    class ResourcePackHUD: BasicHud(true, 100f, 0f){
-
-        init {
-            MinecraftForge.EVENT_BUS.register(this)
-        }
-
-        @SubscribeEvent
-        fun onEntityJoin(e: EntityJoinWorldEvent) {
-            if (e.entity.equals(mc.thePlayer)) {
-                pack = getResourcePack()
-            }
-        }
-
-        @SubscribeEvent
-        fun onPackChange(e: TextureStitchEvent.Post) {
-            pack = getResourcePack()
-        }
-
-        @Switch(title = "Ignore Overlay Pack", description = "Use only the first pack applied in the resource pack list.")
-        var ignoreOverlay = true
-
-        @Color(title = "Text Color")
-        var color = OneColor(255, 255, 255)
-
-        @Dropdown(title = "Text Type", options = ["No Shadow", "Shadow", "Full Shadow"])
-        var textType = 0
-
-        @Slider(
-            title = "Icon Size",
-            min = 10f, max = 40f
-        )
-        var iconSize = 24
-
-
-        @Slider(
-            title = "Icon Padding",
-            min = 0f, max = 10f
-        )
-        var iconPadding = 5
-
-        @Exclude
-        var pack: ResourcePackRepository.Entry? = getResourcePack()
-
-        @Exclude
-        val defaultIcon = mc.textureManager.getDynamicTextureLocation("texturepackicon", DynamicTexture(mc.resourcePackRepository.rprDefaultResourcePack.packImage))
-
-        override fun draw(matrices: UMatrixStack?, x: Float, y: Float, scale: Float, example: Boolean) {
-            GlStateManager.pushMatrix()
-            GlStateManager.translate(x, y, 0f)
-            GlStateManager.scale(scale, scale, 1f)
-            GlStateManager.enableBlend()
-            GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0)
-            GL11.glColor4f(1f, 1f, 1f, 1f)
-            pack?.bindTexturePackIcon(mc.textureManager) ?: mc.textureManager.bindTexture(defaultIcon)
-            Gui.drawScaledCustomSizeModalRect(0, 0, 0f, 0f, 64, 64, iconSize, iconSize, 64f, 64f)
-            TextRenderer.drawScaledString(pack?.resourcePackName ?: "Default", (iconSize + iconPadding).toFloat(), (iconSize - 8) / 2f, color.rgb, TextRenderer.TextType.toType(textType), 1f)
-            GlStateManager.disableBlend()
-            GlStateManager.popMatrix()
-        }
-
-        override fun getWidth(scale: Float, example: Boolean): Float {
-            return (iconSize + iconPadding + mc.fontRendererObj.getStringWidth(pack?.resourcePackName ?: "Default")) * scale
-        }
-
-        override fun getHeight(scale: Float, example: Boolean): Float = iconSize * scale
-
-        fun getResourcePack(): ResourcePackRepository.Entry? {
-            return mc.resourcePackRepository.repositoryEntries.getOrNull(if (ignoreOverlay) 0 else mc.resourcePackRepository.repositoryEntries.size - 1)
-        }
-
+    @SubscribeEvent
+    fun onPackChange(e: TextureStitchEvent.Post) {
+        updatePack()
     }
 
-}*/
+    private fun pack2poly(pack: ResourcePackRepository.Entry): PolyImage = object : PolyImage("evergreen_pack_placeholder.png", type = Type.Raster) {
+        override fun bytes(): ByteArray {
+            val out = ByteArrayOutputStream(512)
+            ImageIO.write(pack.resourcePack.packImage, "png", out)
+            return out.toByteArray()
+        }
+    }
+
+
+    override fun create() = Group(
+        Image(default, size = Vec2(64f, 64f)),
+        Group(
+            Text("Default", fontSize = 18f).setFont { medium },
+            Text("The classic Minecraft experience."),
+        ),
+        alignment = Align(pad = Vec2.ZERO)
+    )
+
+    fun updatePack() {
+        val entries = Minecraft.getMinecraft().resourcePackRepository.repositoryEntries
+        val pack = if (ignoreOverlay) entries.firstOrNull() else entries.lastOrNull()
+        val it = get()
+        if (pack == null) {
+            it[0] = Image(default, size = Vec2(64f, 64f))
+            (it[1][0] as Text).text = "Default"
+            (it[1][1] as Text).text = "The classic Minecraft experience."
+        } else {
+            it[0] = Image(pack2poly(pack), size = Vec2(64f, 64f))
+            (it[1][0] as Text).text = pack.resourcePackName
+            (it[1][1] as Text).text = pack.texturePackDescription
+        }
+    }
+
+    override fun title() = "Resource Pack"
+
+    override fun update() = false
+}

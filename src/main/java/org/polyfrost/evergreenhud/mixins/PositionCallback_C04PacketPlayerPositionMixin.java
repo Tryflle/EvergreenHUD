@@ -8,11 +8,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(C03PacketPlayer.C06PacketPlayerPosLook.class)
-public class C06PacketPlayerPosLookMixin {
-
-    @Inject(method = "<init>(DDDFFZ)V", at = @At("RETURN"))
-    private void evergreen$readPositionAndLook(double x, double y, double z, float yaw, float pitch, boolean onGround, CallbackInfo ci) {
-        EventManager.INSTANCE.post(new PlayerPosEvent(x, y, z, yaw, pitch));
+@Mixin(C03PacketPlayer.C04PacketPlayerPosition.class)
+public class PositionCallback_C04PacketPlayerPositionMixin {
+    @Inject(method = "<init>(DDDZ)V", at = @At("RETURN"))
+    private void evergreen$readPosition(double x, double y, double z, boolean onGround, CallbackInfo ci) {
+        EventManager.INSTANCE.post(new PlayerPosEvent(x, y, z, 0f, 0f));
     }
 }
