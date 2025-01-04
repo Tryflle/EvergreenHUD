@@ -35,8 +35,9 @@ class Playtime : TextHud("Time Played: ") {
 
         if (seconds) {
             sb.append(':')
-            if (time < 10L) sb.append('0')
-            sb.append(time % 60L)
+            val secs = time % 60L
+            if (secs < 10L) sb.append('0')
+            sb.append(secs)
         }
         return null
     }

@@ -1,115 +1,84 @@
 package org.polyfrost.evergreenhud.hud.player
-/*
-import org.polyfrost.oneconfig.api.config.v1.annotations.*
-import org.polyfrost.oneconfig.hud.BasicHud
+
+import net.minecraft.client.Minecraft
+import net.minecraft.client.entity.AbstractClientPlayer
+import net.minecraft.client.renderer.OpenGlHelper
+import net.minecraft.client.renderer.RenderHelper
+import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.universal.UMatrixStack
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
-import net.minecraft.client.renderer.*
-import net.minecraft.entity.EntityLivingBase
-import org.polyfrost.evergreenhud.config.HudConfig
+import net.minecraft.client.renderer.GlStateManager as GL
 
-class PlayerPreview : HudConfig("Player Preview", "playerpreview.json", false) {
-    @HUD(
-        title = "Self Preview"
-    )
-    var selfPreview = SelfPreviewHud()
+class PlayerPreview : LegacyHud() {
 
-    init {
-        initialize()
+    @Switch(title = "Show Nametag")
+    var showNametag = false
+
+    @Slider(title = "Rotation", min = 0F, max = 360F)
+    var rotation = 20f
+
+    override var width: Float
+        get() = 80f
+        set(_) {}
+
+    override var height: Float
+        get() = 120f
+        set(_) {}
+
+
+    override fun render(stack: UMatrixStack, x: Float, y: Float, scaleX: Float, scaleY: Float) {
+        // modified version of GuiInventory#drawEntityOnScreen
+        // added scaling and removed mouse-based rotation, replaced with static rotation; added nametag rendering
+        val ent = Minecraft.getMinecraft().thePlayer ?: return
+        GL.enableColorMaterial()
+        GL.pushMatrix()
+        GL.translate(x + (40f * scaleX), y + (107f + if (showNametag) 26f else 0f) * scaleY, 50f)
+        GL.scale(-(scaleX * 50f), scaleY * 50f, scaleX * 50f)
+        GL.rotate(180.0f, 0.0f, 0.0f, 1.0f)
+        val prevYawOffset = ent.renderYawOffset
+        val prevYaw = ent.rotationYaw
+        val prevPitch = ent.rotationPitch
+        val prevPrevHeadYaw = ent.prevRotationYawHead
+        val prevHeadYaw = ent.rotationYawHead
+        GL.rotate(135.0f, 0.0f, 1.0f, 0.0f)
+        RenderHelper.enableStandardItemLighting()
+        GL.rotate(-135.0f, 0.0f, 1.0f, 0.0f)
+        val actualRotation = 360F - rotation
+        ent.renderYawOffset = actualRotation
+        ent.rotationYaw = actualRotation
+        ent.rotationYawHead = ent.rotationYaw
+        ent.prevRotationYawHead = ent.rotationYaw
+        val rm = Minecraft.getMinecraft().renderManager
+        rm.playerViewX = 0f
+        rm.setPlayerViewY(180.0f)
+        rm.isRenderShadow = false
+        rm.doRenderEntity(ent, 0.0, 0.0, 0.0, 0.0f, 1.0f, false)
+        if (showNametag) playerRenderer.renderName(ent, 0.0, 0.0, 0.0)
+        rm.isRenderShadow = true
+        ent.renderYawOffset = prevYawOffset
+        ent.rotationYaw = prevYaw
+        ent.rotationPitch = prevPitch
+        ent.prevRotationYawHead = prevPrevHeadYaw
+        ent.rotationYawHead = prevHeadYaw
+        GL.popMatrix()
+        RenderHelper.disableStandardItemLighting()
+        GL.disableRescaleNormal()
+        GL.setActiveTexture(OpenGlHelper.lightmapTexUnit)
+        GL.disableTexture2D()
+        GL.setActiveTexture(OpenGlHelper.defaultTexUnit)
     }
 
-    class SelfPreviewHud : BasicHud(true, 1920 - 80f, 1080 - 120f) {
+    private val playerRenderer = Minecraft.getMinecraft().renderManager.skinMap["default"]!!
 
-        @Switch(
-            title = "Show Nametag"
-        )
-        var showNametag = false
+    private fun renderLiving(ent: AbstractClientPlayer, stack: UMatrixStack?, x: Float, y: Float, scale: Float, rotation: Float) {
 
-        @Slider(
-            title = "Rotation",
-            min = 0F,
-            max = 360F,
-        )
-        var rotation = 0
-
-        @Exclude
-        private var nametagExtend = 0
-            get() = if (showNametag) 26 else 0
-
-        @Transient
-        private var drawBackground = false
-
-        @Transient
-        var renderingNametag = false
-            private set
-
-        override fun shouldDrawBackground() = drawBackground
-
-        override fun draw(matrices: UMatrixStack?, x: Float, y: Float, scale: Float, example: Boolean) {
-            if (drawBackground) return
-            GlStateManager.pushMatrix()
-            GlStateManager.enableDepth()
-            drawBackground = true
-            try {
-                drawAll(matrices, example)
-            } finally {
-                drawBackground = false
-            }
-            if (mc.thePlayer == null) {
-                GlStateManager.disableDepth()
-                GlStateManager.popMatrix()
-                return
-            }
-
-            GlStateManager.color(1f, 1f, 1f, 1f)
-            renderLiving(mc.thePlayer, matrices, x, y, scale, rotation)
-            RenderHelper.disableStandardItemLighting()
-            GlStateManager.disableRescaleNormal()
-            GlStateManager.setActiveTexture(OpenGlHelper.lightmapTexUnit)
-            GlStateManager.disableTexture2D()
-            GlStateManager.setActiveTexture(OpenGlHelper.defaultTexUnit)
-            GlStateManager.popMatrix()
-        }
-
-        private fun renderLiving(ent: EntityLivingBase, matrices: UMatrixStack?, x: Float, y: Float, scale: Float, rotation: Int) {
-            GlStateManager.enableColorMaterial()
-            GlStateManager.pushMatrix()
-            GlStateManager.translate(x.toDouble() + (40 * scale), y.toDouble() + (107 + nametagExtend) * scale, 50.0)
-            GlStateManager.scale(-(scale * 50), scale * 50, scale * 50)
-            GlStateManager.rotate(180.0f, 0.0f, 0.0f, 1.0f)
-            val f = ent.renderYawOffset
-            val f1 = ent.rotationYaw
-            val f2 = ent.rotationPitch
-            val f3 = ent.prevRotationYawHead
-            val f4 = ent.rotationYawHead
-            GlStateManager.rotate(135.0f, 0.0f, 1.0f, 0.0f)
-            RenderHelper.enableStandardItemLighting()
-            GlStateManager.rotate(-135.0f, 0.0f, 1.0f, 0.0f)
-            val actualRotation = 360F - rotation
-            ent.renderYawOffset = actualRotation
-            ent.rotationYaw = actualRotation
-            ent.rotationYawHead = ent.rotationYaw
-            ent.prevRotationYawHead = ent.rotationYaw
-            GlStateManager.translate(0.0f, 0.0f, 0.0f)
-            val rendermanager = mc.renderManager
-            rendermanager.playerViewX = 0f
-            rendermanager.setPlayerViewY(180.0f)
-            rendermanager.isRenderShadow = false
-            renderingNametag = true
-            rendermanager.doRenderEntity(ent, 0.0, 0.0, 0.0, 0.0f, 1.0f, false)
-            renderingNametag = false
-            rendermanager.isRenderShadow = true
-            ent.renderYawOffset = f
-            ent.rotationYaw = f1
-            ent.rotationPitch = f2
-            ent.prevRotationYawHead = f3
-            ent.rotationYawHead = f4
-            GlStateManager.popMatrix()
-        }
-
-        override fun getWidth(scale: Float, example: Boolean): Float = 80 * scale
-
-        override fun getHeight(scale: Float, example: Boolean): Float = (120 + nametagExtend) * scale
     }
 
-}*/
+    override fun title() = "Player Preview"
+
+    override fun category() = Category.PLAYER
+
+    override fun update() = false
+
+}

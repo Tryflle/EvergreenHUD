@@ -21,8 +21,8 @@ class EvergreenHUD {
         println("<clinit>")
         HudManager.register(
             Biome(), CCounter(), Clock(), Day(), ECounter(), FPS(), InGameTime(), Memory(), Ping(), Playtime(), ResourcePack(), ServerIP(), TPS(), ItemHUD(), LoreHud(),
-            /* BedwarsResource(), */ LocationHUD("Map Name") { mapName.getOrNull() }, LocationHUD("Game Type") { gameType.getOrNull()?.name }, LocationHUD("Game Mode") { mode.getOrNull() }, LocationHUD("Build Remaining") { PinkuluAPIManager.getMapHeight(this).let { if (it == -1) "Unknown" else it.toString() } },
-            BlockAbove(), Combo(), Coordinates(), CPS(), Direction(), /* Inventory(), */ PlaceCount(), /* PlayerPreview(), */ Reach(), Speed(), Saturation()
+            LocationHUD("Map Name") { mapName.getOrNull() }, LocationHUD("Game Type") { gameType.getOrNull()?.name }, LocationHUD("Game Mode") { mode.getOrNull() }, LocationHUD("Build Remaining") { PinkuluAPIManager.getMapHeight(this).let { if (it == -1) "Unknown" else it.toString() } },
+            BlockAbove(), Combo(), Coordinates(), CPS(), Direction(), /* Inventory(), */ PlaceCount(), PlayerPreview(), Reach(), Speed(), Saturation()
         )
 
     }

@@ -19,19 +19,15 @@ import net.minecraft.client.renderer.GlStateManager as GL
 //#endif
 
 class ItemHUD : LegacyHud() {
-    private val initial = ItemStack(Items.diamond_sword)
-
-    init {
-        initial.addEnchantment(Enchantment.sharpness, 1)
-    }
-
     @Dropdown(
         title = "Item",
-        //#if MC>=10900
-        //$$ options = ["Feet", "Legs", "Chest", "Head", "Main Hand", "Off Hand"]
-        //#else
-        options = ["Feet", "Legs", "Chest", "Head", "Main Hand"]
-        //#endif
+        options = [
+            "Feet", "Legs", "Chest", "Head", "Main Hand",
+            "Iron Ingot", "Gold Ingot", "Diamond", "Emerald",
+            //#if MC>=10900
+            "Off Hand"
+            //#endif
+        ],
     )
     var option = 4
 
@@ -105,11 +101,16 @@ class ItemHUD : LegacyHud() {
             //$$ 2 -> player.getItemStackFromSlot(EntityEquipmentSlot.CHEST).let { if(it.isEmpty) null else it }
             //$$ 3 -> player.getItemStackFromSlot(EntityEquipmentSlot.HEAD).let { if(it.isEmpty) null else it }
             //$$ 4 -> player.getItemStackFromSlot(EntityEquipmentSlot.MAINHAND).let { if(it.isEmpty) null else it }
-            //$$ 5 -> player.getItemStackFromSlot(EntityEquipmentSlot.OFFHAND).let { if(it.isEmpty) null else it }
+            //$$ 9 -> player.getItemStackFromSlot(EntityEquipmentSlot.OFFHAND).let { if(it.isEmpty) null else it }
             //#else
             in 0..3 -> player.inventory?.armorInventory?.get(index)
             4 -> player.heldItem
             //#endif
+
+            5 -> iron
+            6 -> gold
+            7 -> diamond
+            8 -> emerald
             else -> null
         }
     }
@@ -123,7 +124,7 @@ class ItemHUD : LegacyHud() {
         //#endif
     } ?: 0
 
-    fun ItemStack.renderDurabilityBar(xIn: Float, yIn: Float) {
+    private fun ItemStack.renderDurabilityBar(xIn: Float, yIn: Float) {
         if (this.isItemDamaged) {
             val health = this.itemDamage.toFloat() / this.maxDamage.toFloat()
             val length = (13f - health * 13f).roundToInt()
@@ -141,7 +142,7 @@ class ItemHUD : LegacyHud() {
         }
     }
 
-    fun ItemStack.renderOverlayText(x: Float, y: Float) {
+    private fun ItemStack.renderOverlayText(x: Float, y: Float) {
         val fr = Minecraft.getMinecraft().fontRendererObj
         val text = if (isItemStackDamageable) when (duraDisplay) {
             1 -> duraColor() + "${maxDamage - itemDamage}"
@@ -182,4 +183,16 @@ class ItemHUD : LegacyHud() {
     }
 
     private fun getRGB(r: Int, g: Int, b: Int) = (r and 0xFF shl 16) or (g and 0xFF shl 8) or (b and 0xFF shl 0) or (255 shl 24)
+
+    private companion object Constants {
+        val initial = ItemStack(Items.diamond_sword)
+        val iron = ItemStack(Items.iron_ingot)
+        val gold = ItemStack(Items.gold_ingot)
+        val diamond = ItemStack(Items.diamond)
+        val emerald = ItemStack(Items.emerald)
+
+        init {
+            initial.addEnchantment(Enchantment.sharpness, 69)
+        }
+    }
 }
