@@ -1,176 +1,72 @@
 package org.polyfrost.evergreenhud.hud.player
-/*
-import net.minecraft.client.gui.Gui
-import net.minecraft.client.gui.inventory.GuiChest
-import net.minecraft.client.renderer.GlStateManager
+
+import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.RenderHelper
-import net.minecraft.inventory.ContainerChest
 import net.minecraft.inventory.IInventory
-import net.minecraft.item.ItemStack
 import net.minecraft.util.ResourceLocation
-import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
-import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
-import org.polyfrost.oneconfig.api.event.v1.EventManager
+import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
+import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
+import org.polyfrost.universal.UMatrixStack
+import net.minecraft.client.renderer.GlStateManager as GL
 
-class Inventory : HudConfig("Inventory", "inventory.json", false) {
+class Inventory : LegacyHud() {
+    override var width: Float
+        get() = 400f
+        set(_) {}
 
-    @HUD(title = "Player Inventory", category = "Player Inventory")
-    var playerInventoryHUD = PlayerInventoryHUD()
+    override var height = 200f
 
-    @HUD(title = "Ender Chest", category = "Ender Chest")
-    var enderChestHUD = EnderChestHUD()
+    @RadioButton(title = "Inventory", options = ["Player", "Ender Chest"])
+    var type = 0
 
-    init {
-        initialize()
+    private val inventory: IInventory?
+        get() {
+            val player = Minecraft.getMinecraft().thePlayer
+            return if (type == 0) player?.inventory else player?.inventoryEnderChest
+        }
+
+    private val inventoryBackground = ResourceLocation("textures/gui/container/generic_54.png")
+
+
+    @Suppress("SENSELESS_COMPARISON", "NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
+    override fun render(stack: UMatrixStack, x: Float, y: Float, scaleX: Float, scaleY: Float) {
+        val mc = Minecraft.getMinecraft()
+        val fr = mc.fontRendererObj
+        val ri = mc.renderItem
+        val gui = mc.ingameGUI
+        mc.textureManager.bindTexture(inventoryBackground)
+        GL.color(1.0f, 1.0f, 1.0f, 1.0f)
+        GL.enableRescaleNormal()
+        // todo positioning and scaling
+        gui.drawTexturedModalRect(0, 0, 0, 0, 176, 3 * 18 + 17)
+        gui.drawTexturedModalRect(0, 3 * 18 + 17, 0, 215, 176, 22)
+        fr.drawString("Inventory", 8, 6, 0)
+
+        RenderHelper.enableGUIStandardItemLighting()
+
+        val inv = inventory ?: return
+        val xi = 0
+        val yi = 0
+        val base = if (type == 0) 9 else 0
+        for (i in base until base + 27) {
+            val row = i / 9
+            val column = i % 9
+            val item = inv.getStackInSlot(i)
+            if (item != null) {
+                val itemX = xi + 8 + column * 18
+                val itemY = yi + row * 18
+                ri.renderItemAndEffectIntoGUI(item, itemX, itemY)
+                ri.renderItemOverlayIntoGUI(fr, item, itemX, itemY, null)
+            }
+        }
+        RenderHelper.disableStandardItemLighting()
+        GL.disableBlend()
+        GL.disableRescaleNormal()
     }
 
-    abstract class InventoryHUD(
-        enabled: Boolean = false,
-        x: Int,
-        y: Int,
-    ) : BasicHud(enabled, x.toFloat(), y.toFloat()) {
+    override fun category() = Category.PLAYER
 
-        @DualOption(title = "Background Type", left = "Vanilla", right = "OneConfig")
-        protected var backgroundType = false
+    override fun title() = "Inventory"
 
-        @Switch(title = "Dynamic Rows")
-        protected var dynamic = false
-
-        @Slider(title = "Items Spacing", min = 0f, max = 10f)
-        protected var spacing = 4f
-
-        @Transient
-        protected var height = 0F
-
-        override fun draw(matrices: UMatrixStack, x: Float, y: Float, scale: Float, example: Boolean) {
-            GL.pushMatrix()
-            GL.translate(x, y, 100f)
-            GL.scale(scale, scale, 1.0f)
-            GlStateManager.enableRescaleNormal()
-            UGraphics.enableBlend()
-            UGraphics.tryBlendFuncSeparate(770, 771, 1, 0)
-            if (backgroundType == VANILLA) {
-                mc.textureManager.bindTexture(vanillaBackgroundTexture)
-                Gui.drawScaledCustomSizeModalRect(0, 0, 0f, 0f, 176, 7, 176, 7, 256f, 256f)
-                Gui.drawScaledCustomSizeModalRect(0, 7, 0f, 83f, 176, 54, 176, 54, 256f, 256f)
-                Gui.drawScaledCustomSizeModalRect(0, 61, 0f, 159f, 176, 7, 176, 7, 256f, 256f)
-                GL.translate(8f, 8f, 8f)
-            }
-            RenderHelper.enableGUIStandardItemLighting()
-
-            val padding = if (backgroundType == VANILLA) 18f else 16f + spacing
-            var i = 0
-            var biggestHeight = 0F
-            for (row in 0..2) {
-                val itemY = i * padding
-
-                if (dynamic && !getRowAreShownList()[row] && backgroundType) continue
-
-                val thisHeight = itemY + 16f
-
-                if (thisHeight > biggestHeight) biggestHeight = thisHeight
-
-                GL.pushMatrix()
-                GL.translate(0f, itemY, 0f)
-                for (column in 0..8) {
-                    val index = row * 9 + column
-                    drawItem(getItem(index))
-                    GL.translate(padding, 0f, 0f)
-                }
-                GL.translate(-padding * 9, padding, 0f)
-                GL.popMatrix()
-
-                i++
-            }
-
-            height = biggestHeight
-
-            RenderHelper.disableStandardItemLighting()
-            UGraphics.disableBlend()
-            GlStateManager.disableRescaleNormal()
-            UGraphics.enableAlpha()
-            GL.popMatrix()
-        }
-
-        private fun drawItem(item: ItemStack?) {
-            item ?: return
-            with(mc.renderItem) {
-                renderItemAndEffectIntoGUI(item, 0, 0)
-                renderItemOverlayIntoGUI(mc.fontRendererObj, item, 0, 0, null)
-            }
-        }
-
-        abstract fun getItem(index: Int): ItemStack?
-
-        private fun getRowAreShownList() =
-            (0..2).map { row ->
-                (0..8).any { column ->
-                    getItem(row * 9 + column) != null
-                }
-            }
-
-        override fun getWidth(scale: Float, example: Boolean): Float =
-            if (backgroundType) {
-                spacing * 8 + 144f
-            } else {
-                176f
-            }
-
-        override fun getHeight(scale: Float, example: Boolean): Float =
-            if (dynamic && !example && backgroundType) {
-                height
-            } else if (backgroundType) {
-                spacing * 2 + 48f
-            } else {
-                68f
-            }
-
-        override fun shouldShow(): Boolean =
-            super.shouldShow() && (!dynamic || true in getRowAreShownList())
-
-        override fun shouldDrawBackground() = super.shouldDrawBackground() && backgroundType
-    }
-
-    class PlayerInventoryHUD : InventoryHUD(true, 104, 180) {
-        override fun getItem(index: Int): ItemStack? =
-            mc.thePlayer?.inventory?.mainInventory?.get(index + 9)
-    }
-
-    class EnderChestHUD : InventoryHUD(false, 280, 180) {
-        @Transient
-        private var enderChest: IInventory? = null
-
-        init {
-            EventManager.INSTANCE.register(this)
-        }
-
-        @Subscribe
-        fun onOpenContainer(e: ScreenOpenEvent) {
-            if (e.screen !is GuiChest) return
-            val chestGUI = e.screen as GuiChest?
-            val chestContainer = chestGUI!!.inventorySlots as ContainerChest
-            val title = chestContainer.lowerChestInventory.displayName.unformattedText
-            if ("Ender Chest" != title) return
-            enderChest = chestContainer.lowerChestInventory
-        }
-
-        @Subscribe
-        fun onWorldLoad(e: ReceivePacketEvent) {
-            if (e.packet !is
-                        //#if MC>=11202
-                        //$$ net.minecraft.network.play.server.SPacketJoinGame
-                        //#else
-                        net.minecraft.network.play.server.S01PacketJoinGame
-            //#endif
-            ) return
-            enderChest = null
-        }
-
-        override fun getItem(index: Int): ItemStack? = enderChest?.getStackInSlot(index)
-    }
+    override fun update() = false
 }
-
-private const val VANILLA = false
-private val vanillaBackgroundTexture: ResourceLocation = ResourceLocation("textures/gui/container/inventory.png")
-
-*/

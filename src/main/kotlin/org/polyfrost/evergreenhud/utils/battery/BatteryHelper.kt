@@ -1,4 +1,4 @@
-package org.polyfrost.evergreenhud.utils
+package org.polyfrost.evergreenhud.utils.battery
 
 import org.apache.commons.lang3.SystemUtils
 

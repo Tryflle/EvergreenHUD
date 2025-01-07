@@ -1,7 +1,6 @@
 package org.polyfrost.evergreenhud.hud.data
 
 import net.minecraft.item.ItemStack
-import org.polyfrost.evergreenhud.utils.ItemStackUtils.forEachLore
 import org.polyfrost.oneconfig.api.config.v1.annotations.Checkbox
 import org.polyfrost.oneconfig.api.config.v1.annotations.Number
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
@@ -79,5 +78,13 @@ class LoreHud : TextHud("") {
         }
 
         return null
+    }
+
+    @Suppress("UNNECESSARY_SAFE_CALL")
+    private inline fun ItemStack.forEachLore(consumer: (String) -> Unit) {
+        val tags = this.tagCompound?.getCompoundTag("display")?.getTagList("Lore", 8) ?: return
+        for (i in 0..<tags.tagCount()) {
+            consumer(tags.getStringTagAt(i))
+        }
     }
 }

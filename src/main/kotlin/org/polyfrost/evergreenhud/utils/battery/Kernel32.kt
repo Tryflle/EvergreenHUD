@@ -1,4 +1,4 @@
-package org.polyfrost.evergreenhud.utils
+package org.polyfrost.evergreenhud.utils.battery
 
 import com.sun.jna.Native
 import com.sun.jna.Structure

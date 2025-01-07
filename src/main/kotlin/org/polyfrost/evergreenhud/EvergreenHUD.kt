@@ -8,7 +8,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import org.polyfrost.evergreenhud.hud.data.*
 import org.polyfrost.evergreenhud.hud.hypixel.LocationHUD
 import org.polyfrost.evergreenhud.hud.player.*
-import org.polyfrost.evergreenhud.utils.PinkuluAPIManager
+import org.polyfrost.evergreenhud.utils.PinkuluAPIHelper
 import org.polyfrost.oneconfig.api.event.v1.events.Event
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import kotlin.jvm.optionals.getOrNull
@@ -18,13 +18,11 @@ class EvergreenHUD {
 
     @Mod.EventHandler
     fun onFMLInitialization(event: FMLInitializationEvent) {
-        println("<clinit>")
         HudManager.register(
             Biome(), CCounter(), Clock(), Day(), ECounter(), FPS(), InGameTime(), Memory(), Ping(), Playtime(), ResourcePack(), ServerIP(), TPS(), ItemHUD(), LoreHud(),
-            LocationHUD("Map Name") { mapName.getOrNull() }, LocationHUD("Game Type") { gameType.getOrNull()?.name }, LocationHUD("Game Mode") { mode.getOrNull() }, LocationHUD("Build Remaining") { PinkuluAPIManager.getMapHeight(this).let { if (it == -1) "Unknown" else it.toString() } },
-            BlockAbove(), Combo(), Coordinates(), CPS(), Direction(), /* Inventory(), */ PlaceCount(), PlayerPreview(), Reach(), Speed(), Saturation()
+            LocationHUD("Map Name") { mapName.getOrNull() }, LocationHUD("Game Type") { gameType.getOrNull()?.name }, LocationHUD("Game Mode") { mode.getOrNull() }, LocationHUD("Build Remaining") { PinkuluAPIHelper.getMapHeight(this).let { if (it == -1) "Unknown" else it.toString() } },
+            BlockAbove(), Combo(), Coordinates(), CPS(), Direction(), Inventory(), PlaceCount(), PlayerPreview(), Reach(), Speed(), Saturation()
         )
-
     }
 }
 

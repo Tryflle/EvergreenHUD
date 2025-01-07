@@ -7,7 +7,7 @@ import org.polyfrost.oneconfig.utils.v1.Multithreading
 import org.polyfrost.oneconfig.utils.v1.NetworkUtils
 import kotlin.jvm.optionals.getOrNull
 
-object PinkuluAPIManager {
+object PinkuluAPIHelper {
     private var rawJson: List<JsonObject>? = null
     private var prevLoc: Location? = null
     private var prevData: JsonObject? = null
