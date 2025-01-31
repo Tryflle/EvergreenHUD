@@ -14,7 +14,7 @@ object FrameTimeHelper {
         eventHandler { _: RenderEvent.End ->
             frameTimes += System.nanoTime() - lastTime
             lastTime = System.nanoTime()
-        }.register()
+        }
         eventHandler { _: TickEvent.End ->
             val ft = frameTimes
             if (ft.size > 1) {
@@ -27,7 +27,7 @@ object FrameTimeHelper {
                 EventManager.INSTANCE.post(FrameData(consistency, avg, p50, p95, p99))
                 ft.clear()
             }
-        }.register()
+        }
     }
 
     private fun percentile(list: List<Long>, percentile: Double): Double {

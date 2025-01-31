@@ -48,7 +48,7 @@ class Combo : TextHud(prefix = "Combo: ", suffix = " blocks") {
             }
             sentAttack = target.entityId
             sentAttackTime = System.currentTimeMillis()
-        }.register()
+        }
 
         eventHandler { event: ReceivePacketEvent ->
             val mc = Minecraft.getMinecraft()
@@ -73,13 +73,13 @@ class Combo : TextHud(prefix = "Combo: ", suffix = " blocks") {
             } else if (target.entityId == mc.thePlayer.entityId) {
                 currentCombo = 0
             }
-        }.register()
+        }
 
         eventHandler { _: TickEvent.Start ->
             if (System.currentTimeMillis() - lastHitTime >= discardTime * 1000L) {
                 currentCombo = 0
             }
-        }.register()
+        }
 
         if(isReal) {
             // if this hud is 'real', meaning it is not the one in the hud picker screen,

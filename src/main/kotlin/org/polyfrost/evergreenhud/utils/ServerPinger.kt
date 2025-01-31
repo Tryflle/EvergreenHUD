@@ -46,7 +46,7 @@ object ServerPinger {
                         serverGetter()?.let(this::ping)
                     }
                 }
-            }.register()
+            }
         }
 
         private fun ping(server: ServerData) {

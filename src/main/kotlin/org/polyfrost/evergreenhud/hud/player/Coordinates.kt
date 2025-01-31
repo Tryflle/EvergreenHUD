@@ -42,7 +42,7 @@ class Coordinates : GenericHUD1f("Coordinates") {
             this.x = x
             this.y = y
             this.z = z
-        }.register()
+        }
         super.initialize()
         if(isReal) {
             updateWhenChanged("showDirection")

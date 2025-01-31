@@ -20,7 +20,7 @@ class PlaceCount : TextHud("Blocks: ", "/s") {
                 blockCount.add(System.nanoTime())
                 updateAndRecalculate()
             }
-        }.register()
+        }
     }
 
     override fun id() = "placecount.json"

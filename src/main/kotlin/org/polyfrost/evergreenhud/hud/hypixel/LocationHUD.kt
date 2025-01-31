@@ -18,7 +18,7 @@ class LocationHUD(private val title: String, prefix: String = "$title: ", suffix
             this.string = event.location.getter()
             if (shouldHide) hidden = this.string == null
             updateAndRecalculate()
-        }.register()
+        }
         if(isReal) {
             updateWhenChanged("shouldHide")
         }

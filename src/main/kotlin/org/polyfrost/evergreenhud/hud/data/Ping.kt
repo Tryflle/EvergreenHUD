@@ -27,7 +27,7 @@ class Ping : TextHud("Ping: ", "ms") {
         }
         eventHandler { _: WorldLoadEvent ->
             hidden = !showInSinglePlayer && Minecraft.getMinecraft().isSingleplayer
-        }.register()
+        }
         super.initialize()
     }
 

@@ -20,7 +20,7 @@ class ECounter : TextHud("E: ") {
             this.renderedEntities = ev.rendered
             this.totalEntities = ev.total
             updateAndRecalculate()
-        }.register()
+        }
         super.initialize()
     }
 

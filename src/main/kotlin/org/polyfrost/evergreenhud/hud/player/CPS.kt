@@ -22,17 +22,17 @@ class CPS : TextHud("CPS: ", "") {
     private val right = ArrayList<Long>()
 
     override fun initialize() {
-        eventHandler { (btn, state): MouseInputEvent ->
-            if (state == 0) {
-                when (btn) {
-                    0 -> onLeftClick()
-                    1 -> onRightClick()
-                }
-            }
-        }.register()
-        if(isReal) {
+        if (isReal) {
             updateWhenChanged("mode")
             updateWhenChanged("divider")
+            eventHandler { (btn, state): MouseInputEvent ->
+                if (state == 0) {
+                    when (btn) {
+                        0 -> onLeftClick()
+                        1 -> onRightClick()
+                    }
+                }
+            }
         }
         super.initialize()
     }

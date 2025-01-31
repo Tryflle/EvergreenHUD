@@ -22,7 +22,7 @@ class TPS : GenericHUD1f("TPS") {
                 value = (20000f / timeTaken).coerceIn(0f, 20f)
                 updateAndRecalculate()
             }
-        }.register()
+        }
         super.initialize()
     }
 }

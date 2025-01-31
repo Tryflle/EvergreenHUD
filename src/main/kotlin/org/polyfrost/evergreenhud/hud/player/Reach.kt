@@ -29,7 +29,7 @@ class Reach : GenericHUD1f("Reach", " blocks") {
                 lastTime = System.currentTimeMillis()
             }
             return@eventHandler false
-        }.register()
+        }
         if (isReal) {
             updateWhenChanged("noHitMessage")
         }

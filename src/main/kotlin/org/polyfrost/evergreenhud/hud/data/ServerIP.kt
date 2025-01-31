@@ -25,7 +25,7 @@ class ServerIP : TextHud("IP: ") {
             if (!showInSinglePlayer) hidden = Minecraft.getMinecraft().isIntegratedServerRunning
             this.currentIP = ip
             updateAndRecalculate()
-        }.register()
+        }
         super.initialize()
     }
 

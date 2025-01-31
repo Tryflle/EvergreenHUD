@@ -17,7 +17,7 @@ class FPS : GenericHUD1f("FPS") {
         eventHandler { ev: FrameTimeHelper.FrameData ->
             event = ev
             updateAndRecalculate()
-        }.register()
+        }
         if (isReal) updateWhenChanged("formatString")
         super.initialize()
     }
