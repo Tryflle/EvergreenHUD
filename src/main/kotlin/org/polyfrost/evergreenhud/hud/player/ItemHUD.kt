@@ -91,6 +91,8 @@ class ItemHUD : LegacyHud() {
 
     override fun update() = false
 
+    override fun hasBackground() = false
+
     fun getItem(index: Int): ItemStack? {
         if (!isReal) return initial
         val player = Minecraft.getMinecraft().thePlayer ?: return initial

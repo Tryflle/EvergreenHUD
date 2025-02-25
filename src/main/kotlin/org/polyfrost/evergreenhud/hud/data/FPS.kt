@@ -9,8 +9,8 @@ import org.polyfrost.oneconfig.api.event.v1.eventHandler
 class FPS : GenericHUD1f("FPS") {
     private var event: FrameTimeHelper.FrameData? = null
 
-    @Text(title = "Format String", description = "Use #avg for average, #med for median, ")
-    private var formatString = "#avg"
+    @Text(title = "Format String", description = "Use #avg for average, #med for median, #fps for fps, #p95 for 95th percentile, #p99 for 99th percentile, #cst for consistency")
+    private var formatString = "#fps"
 
     override fun initialize() {
         FrameTimeHelper
@@ -24,13 +24,14 @@ class FPS : GenericHUD1f("FPS") {
 
     override fun getText(): String? {
         val (cst, avg, med, p95, p99) = event ?: return "???"
+        val avgS = avg / 1_000.0
         sb.append(formatString)
-            .replace("#avg", df.format(avg / 1_000.0))
+            .replace("#fps", df.format(1.0 / avgS))
+            .replace("#avg", df.format(avgS))
             .replace("#med", df.format(med / 1_000.0))
             .replace("#p95", df.format(p95 / 1_000.0))
             .replace("#p99", df.format(p99 / 1_000.0))
-            .replace("#cst", df.format((1 - cst) * 100.0))
-            .replace("#fps", df.format(1_000_000.0 / avg))
+            .replace("#cst", df.format((1.0 - cst) * 1_000.0))
         return null
     }
 

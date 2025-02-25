@@ -1,6 +1,7 @@
 package org.polyfrost.evergreenhud.hud.player
 
 import net.minecraft.client.Minecraft
+import net.minecraft.entity.Entity
 import net.minecraft.network.play.server.S19PacketEntityStatus
 import org.polyfrost.evergreenhud.ClientDamageEntityEvent
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
@@ -58,7 +59,8 @@ class Combo : TextHud(prefix = "Combo: ", suffix = " blocks") {
 
             if (sentAttack != -1 && target.entityId == sentAttack) {
                 sentAttack = -1
-                if (System.currentTimeMillis() - sentAttackTime > 2000L) {
+                val time = System.currentTimeMillis()
+                if (time - sentAttackTime > 2000L) {
                     sentAttackTime = 0L
                     currentCombo = 0
                     return@eventHandler
@@ -68,17 +70,19 @@ class Combo : TextHud(prefix = "Combo: ", suffix = " blocks") {
                 } else {
                     currentCombo = 1
                 }
-                lastHitTime = System.currentTimeMillis()
+                lastHitTime = time
                 lastAttackId = target.entityId
             } else if (target.entityId == mc.thePlayer.entityId) {
                 currentCombo = 0
             }
+            updateAndRecalculate()
         }
 
         eventHandler { _: TickEvent.Start ->
             if (System.currentTimeMillis() - lastHitTime >= discardTime * 1000L) {
                 currentCombo = 0
             }
+            updateAndRecalculate()
         }
 
         if(isReal) {
@@ -90,6 +94,10 @@ class Combo : TextHud(prefix = "Combo: ", suffix = " blocks") {
 
         // required for setting up callbacks.
         super.initialize()
+    }
+
+    private fun onAttack(target: Entity) {
+
     }
 
     // these are no longer fields and instead these methods as there is no point in saving them in memory

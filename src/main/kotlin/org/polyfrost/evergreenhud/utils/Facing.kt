@@ -50,7 +50,7 @@ enum class Facing(val full: String, val abbreviated: String) {
             }
         }
 
-        fun wrapDegrees(value: Float): Float {
+        private fun wrapDegrees(value: Float): Float {
             var new = value
             new %= 360.0f
             if (new >= 180.0f) {

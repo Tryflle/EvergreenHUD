@@ -1,7 +1,6 @@
 package org.polyfrost.evergreenhud.hud.player
 
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.AbstractClientPlayer
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.RenderHelper
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
@@ -71,9 +70,7 @@ class PlayerPreview : LegacyHud() {
 
     private val playerRenderer = Minecraft.getMinecraft().renderManager.skinMap["default"]!!
 
-    private fun renderLiving(ent: AbstractClientPlayer, stack: UMatrixStack?, x: Float, y: Float, scale: Float, rotation: Float) {
-
-    }
+    override fun hasBackground() = false
 
     override fun title() = "Player Preview"
 

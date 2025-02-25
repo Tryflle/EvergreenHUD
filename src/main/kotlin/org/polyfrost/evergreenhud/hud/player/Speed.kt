@@ -4,8 +4,10 @@ import net.minecraft.client.Minecraft
 import org.polyfrost.evergreenhud.hud.GenericHUD1f
 import org.polyfrost.oneconfig.api.config.v1.annotations.Dropdown
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.polyui.unit.milliseconds
 import kotlin.math.sqrt
 
+// CHECK OK
 class Speed : GenericHUD1f("Speed", "m/s") {
     @Switch(title = "Use X")
     var useX = true
@@ -20,7 +22,7 @@ class Speed : GenericHUD1f("Speed", "m/s") {
         title = "Speed Unit",
         options = ["Meters per tick", "Meters per second", "Kilometers per hour", "Miles per hour"],
     )
-    var speedUnit = 0
+    var speedUnit = 1
 
     override fun initialize() {
         if (isReal) {
@@ -48,6 +50,8 @@ class Speed : GenericHUD1f("Speed", "m/s") {
         else -> speed
     }
 
+    override fun updateFrequency() = 50.milliseconds
+
     override fun getText(): String? {
         val player = Minecraft.getMinecraft().thePlayer
         if (player == null) {
@@ -57,7 +61,6 @@ class Speed : GenericHUD1f("Speed", "m/s") {
             val dy = if (useY) (player.posY - player.prevPosY).toFloat() else 0f
             val dz = if (useZ) (player.posZ - player.prevPosZ).toFloat() else 0f
 
-            // I usually don't leave out whitespaces, but in this case it greatly improved readability
             value = convertSpeed(sqrt(dx * dx + dy * dy + dz * dz))
         }
         return super.getText()

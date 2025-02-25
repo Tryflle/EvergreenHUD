@@ -9,6 +9,7 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Text
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.polyui.unit.seconds
 
+// CHECK OK
 class Reach : GenericHUD1f("Reach", " blocks") {
 
     @Slider(title = "Discard Time", min = 1000F, max = 10000F)
@@ -36,9 +37,10 @@ class Reach : GenericHUD1f("Reach", " blocks") {
     }
 
     override fun getText(): String? {
-        if (value == 0f) sb.append(noHitMessage)
-        else sb.append(value)
-        return null
+        return if (value == 0f) {
+            sb.append(noHitMessage)
+            null
+        } else super.getText()
     }
 
     override fun update(): Boolean {

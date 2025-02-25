@@ -4,6 +4,7 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
 import org.polyfrost.polyui.unit.seconds
 
+// CHECK OK
 class Playtime : TextHud("Time Played: ") {
     @Switch(title = "Show Seconds")
     var seconds = true

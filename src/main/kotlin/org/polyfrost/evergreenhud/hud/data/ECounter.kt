@@ -5,6 +5,7 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
 
+// CHECK OK
 class ECounter : TextHud("E: ") {
     @Switch(title = "Show total entities")
     var showTotal = true

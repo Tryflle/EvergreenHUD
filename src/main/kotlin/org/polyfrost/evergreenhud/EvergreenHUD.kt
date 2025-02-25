@@ -2,6 +2,7 @@ package org.polyfrost.evergreenhud
 
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.item.ItemStack
 import net.minecraft.world.World
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
@@ -19,18 +20,18 @@ class EvergreenHUD {
     @Mod.EventHandler
     fun onFMLInitialization(event: FMLInitializationEvent) {
         HudManager.register(
-            Biome(), CCounter(), Clock(), Day(), ECounter(), FPS(), InGameTime(), Memory(), Ping(), Playtime(), ResourcePack(), ServerIP(), TPS(), ItemHUD(), LoreHud(), KeyHud(),
+            Biome(), Clock(), Day(), ECounter(), FPS(), InGameTime(), Memory(), Ping(), Playtime(), ResourcePack(), ServerIP(), TPS(), ItemHUD(), LoreHud(), KeyHud(),
             LocationHUD("Map Name") { mapName.getOrNull() }, LocationHUD("Game Type") { gameType.getOrNull()?.name }, LocationHUD("Game Mode") { mode.getOrNull() }, LocationHUD("Build Remaining") { PinkuluAPIHelper.getMapHeight(this).let { if (it == -1) "Unknown" else it.toString() } },
-            BlockAbove(), Combo(), Coordinates(), CPS(), Direction(), Inventory(), PlaceCount(), PlayerPreview(), Reach(), Speed(), Saturation()
+            BlockAbove(), Combo(), Position(), CPS(), Inventory(), PlaceCount(), PlayerPreview(), Reach(), Speed(), Saturation()
         )
     }
 }
 
 data class ClientDamageEntityEvent(val attacker: Entity, val target: Entity) : Event
 data class ClientPlaceBlockEvent(val player: EntityPlayer, val world: World) : Event
-data class PlayerPosEvent(val x: Double, val y: Double, val z: Double, val yaw: Float, val pitch: Float) : Event
 data class ServerChangedEvent(val ip: String?, val name: String?, val motd: String?) : Event
 data class SaturationChangedEvent(val saturation: Float) : Event
+data class SelectedItemChangedEvent(val item: ItemStack?) : Event
 class ECounterEvent : Event {
     var total = 0
     var rendered = 0

@@ -5,6 +5,7 @@ import org.polyfrost.evergreenhud.ClientPlaceBlockEvent
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
+import org.polyfrost.polyui.unit.milliseconds
 import org.polyfrost.polyui.utils.fastRemoveIfReversed
 
 class PlaceCount : TextHud("Blocks: ", "/s") {
@@ -30,16 +31,12 @@ class PlaceCount : TextHud("Blocks: ", "/s") {
     override fun category() = Category.COMBAT
 
     override fun getText(): String? {
-        process()
+        val time = System.nanoTime()
+        val max = interval * 1_000_000L
+        blockCount.fastRemoveIfReversed { time - it > max }
         sb.append(blockCount.size)
         return null
     }
 
-    private fun process() {
-        val current = System.nanoTime()
-        blockCount.fastRemoveIfReversed {
-            if (current - it > interval * 1000) true
-            else return
-        }
-    }
+    override fun updateFrequency() = 50.milliseconds
 }

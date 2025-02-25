@@ -1,10 +1,12 @@
 package org.polyfrost.evergreenhud.hud.data
 
 import net.minecraft.item.ItemStack
+import org.polyfrost.evergreenhud.SelectedItemChangedEvent
 import org.polyfrost.oneconfig.api.config.v1.annotations.Checkbox
 import org.polyfrost.oneconfig.api.config.v1.annotations.Number
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
 import org.polyfrost.polyui.animate.Animations
 import org.polyfrost.polyui.operations.Fade
@@ -42,10 +44,12 @@ class LoreHud : TextHud("") {
             updateWhenChanged("showName")
             updateWhenChanged("removeEmptyLines")
             updateWhenChanged("maxLines")
+            eventHandler { (item): SelectedItemChangedEvent ->
+                theItem = item
+            }
         }
     }
 
-    // todo setting
     var theItem: ItemStack? = null
         set(value) {
             @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")

@@ -27,7 +27,7 @@ class InGameTime : TextHud("Ingame Time: ") {
     override fun getText(): String? {
         val world = Minecraft.getMinecraft().theWorld ?: return "06:00 AM"
         // ticks to ticks in day to seconds to millis plus six hours (time 0 = 6am)
-        val date = Date(world.worldTime / 20 * 1000 + 21_600_000) // 6 hours == 21,600,000 milliseconds
+        val date = Date(world.worldTime * 3600L + 21_600_000L) // 6 hours == 21,600,000 milliseconds
         sb.append(sdf.format(date).uppercase())
         return null
     }

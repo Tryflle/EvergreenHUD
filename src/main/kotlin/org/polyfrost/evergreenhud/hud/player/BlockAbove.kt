@@ -6,13 +6,14 @@ import net.minecraft.block.BlockVine
 import net.minecraft.client.Minecraft
 import net.minecraft.init.Blocks
 import net.minecraft.util.BlockPos
-import org.polyfrost.evergreenhud.PlayerPosEvent
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
+import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
 import org.polyfrost.universal.USound
 
+// CHECK OK
 class BlockAbove : TextHud("Block Above: ", " remaining") {
     private var above = 0
     private var notified = false
@@ -31,15 +32,17 @@ class BlockAbove : TextHud("Block Above: ", " remaining") {
     private var ppz = 0
 
     override fun initialize() {
-        eventHandler(this::check)
+        eventHandler { _: TickEvent.End ->
+            val player = Minecraft.getMinecraft().thePlayer ?: return@eventHandler
+            check(player.posX, player.posY, player.posZ)
+        }
         super.initialize()
         if (isReal) {
             updateWhenChanged("checkHeight")
         }
     }
 
-    fun check(event: PlayerPosEvent) {
-        val (x, y, z) = event
+    fun check(x: Double, y: Double, z: Double) {
         if (x.toInt() == ppx && y.toInt() == ppy && z.toInt() == ppz) return
         ppx = x.toInt()
         ppy = y.toInt()
@@ -63,7 +66,7 @@ class BlockAbove : TextHud("Block Above: ", " remaining") {
                 || state.block is BlockBanner
             ) continue
 
-            above = i
+            above = i - 1
 
             if (above <= notifyHeight && notify) {
                 if (!notified) {

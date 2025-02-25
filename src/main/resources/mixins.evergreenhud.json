@@ -8,13 +8,15 @@
   },
   "verbose": true,
   "mixins": [
-    "PositionCallback_C04PacketPlayerPositionMixin",
-    "PositionCallback_C05PacketPlayerLookMixin",
-    "PositionCallback_C06PacketPlayerPosLookMixin",
+    "ClientDamageCallback_EntityPlayerMixin",
+    "ClientPlaceCallback_ForgeHooksMixin",
+    "ItemChangeCallback_InventoryPlayerMixin",
     "SaturationCallback_FoodStatsMixin"
   ],
   "client": [
-    "ServerInfoCallback_MinecraftMixin",
-    "ECounterCallback_RenderGlobalMixin"
+    "ECounterCallback_RenderGlobalMixin",
+    "ItemChangeCallback_MinecraftMixin",
+    "ItemChangeCallback_NetHandlerClientMixin",
+    "ServerInfoCallback_MinecraftMixin"
   ]
 }

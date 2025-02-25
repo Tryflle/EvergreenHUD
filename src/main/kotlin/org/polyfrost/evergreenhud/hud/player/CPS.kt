@@ -8,6 +8,7 @@ import org.polyfrost.oneconfig.api.hud.v1.TextHud
 import org.polyfrost.polyui.unit.milliseconds
 import org.polyfrost.polyui.utils.fastRemoveIfReversed
 
+// CHECK OK
 class CPS : TextHud("CPS: ", "") {
     @Text(title = "CPS Button Divider")
     var divider = " | "
@@ -18,11 +19,13 @@ class CPS : TextHud("CPS: ", "") {
     )
     var mode = 2
 
-    private val left = ArrayList<Long>(20)
-    private val right = ArrayList<Long>()
+    private var left: ArrayList<Long>? = null
+    private var right: ArrayList<Long>? = null
 
     override fun initialize() {
         if (isReal) {
+            left = ArrayList(20)
+            right = ArrayList(10)
             updateWhenChanged("mode")
             updateWhenChanged("divider")
             eventHandler { (btn, state): MouseInputEvent ->
@@ -39,35 +42,30 @@ class CPS : TextHud("CPS: ", "") {
 
     private fun onLeftClick() {
         if (mode != 1) {
-            left.add(System.nanoTime())
+            left?.add(System.nanoTime())
             updateAndRecalculate()
         }
     }
 
     private fun onRightClick() {
         if (mode > 0) {
-            right.add(System.nanoTime())
+            right?.add(System.nanoTime())
             updateAndRecalculate()
         }
     }
 
     override fun getText(): String? {
-        val cur = System.nanoTime()
-        process(left, cur)
-        process(right, cur)
+        val time = System.nanoTime()
+        left?.fastRemoveIfReversed { time - it > 1_000_000_000 }
+        right?.fastRemoveIfReversed { time - it > 1_000_000_000 }
+        val nleft = left?.size ?: 0
+        val nright = right?.size ?: 0
         when (mode) {
-            0 -> sb.append(left.size)
-            1 -> sb.append(right.size)
-            2 -> sb.append(left.size).append(divider).append(right.size)
+            0 -> sb.append(nleft)
+            1 -> sb.append(nright)
+            2 -> sb.append(nleft).append(divider).append(nright)
         }
         return null
-    }
-
-    private fun process(list: ArrayList<Long>, time: Long) {
-        list.fastRemoveIfReversed {
-            if (time - it > 1_000_000_000) true
-            else return
-        }
     }
 
     override fun updateFrequency() = 100.milliseconds

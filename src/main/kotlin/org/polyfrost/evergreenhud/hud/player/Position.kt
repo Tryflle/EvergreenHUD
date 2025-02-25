@@ -1,16 +1,17 @@
 package org.polyfrost.evergreenhud.hud.player
 
-import org.polyfrost.evergreenhud.PlayerPosEvent
+import net.minecraft.client.Minecraft
 import org.polyfrost.evergreenhud.hud.GenericHUD1f
 import org.polyfrost.evergreenhud.utils.Facing
 import org.polyfrost.oneconfig.api.config.v1.annotations.Checkbox
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
+import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 
 // TODO implement the facing stuff and pitch/yaw
 
-class Coordinates : GenericHUD1f("Coordinates") {
+class Position : GenericHUD1f("Position") {
     @RadioButton(
         title = "Mode",
         options = ["Vertical", "Horizontal"]
@@ -33,18 +34,20 @@ class Coordinates : GenericHUD1f("Coordinates") {
     var showZ = true
 
     private val facing get() = Facing.parseExact(value)
-    private var x: Double = 0.0
-    private var y: Double = 0.0
-    private var z: Double = 0.0
+    private var x = 0.0
+    private var y = 0.0
+    private var z = 0.0
 
     override fun initialize() {
-        eventHandler { (x, y, z): PlayerPosEvent ->
-            this.x = x
-            this.y = y
-            this.z = z
+        eventHandler { _: TickEvent.End ->
+            val player = Minecraft.getMinecraft().thePlayer ?: return@eventHandler
+            this.x = player.posX
+            this.y = player.posY
+            this.z = player.posZ
+            updateAndRecalculate()
         }
         super.initialize()
-        if(isReal) {
+        if (isReal) {
             updateWhenChanged("showDirection")
             updateWhenChanged("showX")
             updateWhenChanged("showY")

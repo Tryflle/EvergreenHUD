@@ -8,6 +8,7 @@ import org.polyfrost.oneconfig.api.hud.v1.TextHud
 import org.polyfrost.polyui.unit.seconds
 import java.text.DecimalFormat
 
+// CHECK OK
 class Memory : TextHud("Memory: ", " GB") {
     @RadioButton(
         title = "Display Type",

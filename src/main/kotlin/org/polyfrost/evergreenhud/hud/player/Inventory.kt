@@ -9,6 +9,7 @@ import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.universal.UMatrixStack
 import net.minecraft.client.renderer.GlStateManager as GL
 
+// CHECK OK
 class Inventory : LegacyHud() {
     override var width: Float
         get() = 176f

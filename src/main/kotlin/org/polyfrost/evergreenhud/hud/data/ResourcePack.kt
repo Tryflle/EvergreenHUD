@@ -35,13 +35,13 @@ class ResourcePack : Hud<Group>() {
         updatePack()
     }
 
-//    private fun pack2poly(pack: ResourcePackRepository.Entry): PolyImage = object : PolyImage("evergreen_pack_placeholder.png", type = Type.Raster) {
-//        override fun bytes(): ByteArray {
-//            val out = ByteArrayOutputStream(512)
-//            ImageIO.write(pack.resourcePack.packImage, "png", out)
-//            return out.toByteArray()
-//        }
-//    }
+    private fun pack2poly(pack: ResourcePackRepository.Entry): PolyImage = object : PolyImage("evergreen_pack_placeholder.png", type = Type.Raster) {
+        override fun bytes(): ByteArray {
+            val out = ByteArrayOutputStream(1024)
+            ImageIO.write(pack.resourcePack.packImage, "png", out)
+            return out.toByteArray()
+        }
+    }
 
 
     override fun create() = Group(
@@ -49,6 +49,7 @@ class ResourcePack : Hud<Group>() {
         Group(
             Text("Default", fontSize = 18f).setFont { medium },
             Text("The classic Minecraft experience."),
+            alignment = Align(maxRowSize = 1)
         ),
         alignment = Align(pad = Vec2.ZERO)
     )
@@ -58,11 +59,11 @@ class ResourcePack : Hud<Group>() {
         val pack = if (ignoreOverlay) entries.firstOrNull() else entries.lastOrNull()
         val it = get()
         if (pack == null) {
-//            it[0] = Image(default, size = Vec2(64f, 64f))
+            it[0] = Image(default, size = Vec2(64f, 64f))
             (it[1][0] as Text).text = "Default"
             (it[1][1] as Text).text = "The classic Minecraft experience."
         } else {
-//            it[0] = Image(pack2poly(pack), size = Vec2(64f, 64f))
+            it[0] = Image(pack2poly(pack), size = Vec2(64f, 64f))
             (it[1][0] as Text).text = pack.resourcePackName
             (it[1][1] as Text).text = pack.texturePackDescription
         }

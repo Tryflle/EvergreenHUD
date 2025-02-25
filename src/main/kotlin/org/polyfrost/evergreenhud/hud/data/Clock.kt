@@ -9,6 +9,7 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
+// check OK
 class Clock : Hud<Drawable>() {
     override fun category() = Category.INFO
     override fun title() = "Clock"
