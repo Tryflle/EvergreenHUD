@@ -8,18 +8,22 @@ import org.polyfrost.oneconfig.api.hud.v1.TextHud
 import org.polyfrost.polyui.unit.milliseconds
 import org.polyfrost.polyui.utils.fastRemoveIfReversed
 
+// CHECK OK
 class PlaceCount : TextHud("Blocks: ", "/s") {
     @Slider(title = "Interval (ms)", min = 500F, max = 3000F)
     var interval = 1000
 
-    private val blockCount = ArrayList<Long>()
+    private var blockCount: ArrayList<Long>? = null
 
     override fun initialize() {
         super.initialize()
-        eventHandler { event: ClientPlaceBlockEvent ->
-            if (event.player == Minecraft.getMinecraft().thePlayer) {
-                blockCount.add(System.nanoTime())
-                updateAndRecalculate()
+        if (isReal) {
+            blockCount = ArrayList()
+            eventHandler { event: ClientPlaceBlockEvent ->
+                if (event.player == Minecraft.getMinecraft().thePlayer) {
+                    blockCount?.add(System.nanoTime())
+                    updateAndRecalculate()
+                }
             }
         }
     }
@@ -33,8 +37,8 @@ class PlaceCount : TextHud("Blocks: ", "/s") {
     override fun getText(): String? {
         val time = System.nanoTime()
         val max = interval * 1_000_000L
-        blockCount.fastRemoveIfReversed { time - it > max }
-        sb.append(blockCount.size)
+        blockCount?.fastRemoveIfReversed { time - it > max }
+        sb.append(blockCount?.size ?: 0L)
         return null
     }
 

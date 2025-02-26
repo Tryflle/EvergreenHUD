@@ -2,13 +2,14 @@ package org.polyfrost.evergreenhud.hud.data
 
 import org.polyfrost.evergreenhud.hud.GenericHUD1f
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
-import org.polyfrost.oneconfig.api.event.v1.events.ReceivePacketEvent
+import org.polyfrost.oneconfig.api.event.v1.events.PacketEvent
 
+// CHECK OK
 class TPS : GenericHUD1f("TPS") {
     private var lastUpdated = 0L
 
     override fun initialize() {
-        eventHandler { event: ReceivePacketEvent ->
+        eventHandler { event: PacketEvent.Receive ->
             if (event.getPacket<Any>() is
                     //#if MC>=11202
                     //$$ net.minecraft.network.play.server.SPacketTimeUpdate

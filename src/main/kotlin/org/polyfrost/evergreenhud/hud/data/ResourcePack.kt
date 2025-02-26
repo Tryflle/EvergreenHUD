@@ -17,6 +17,7 @@ import org.polyfrost.polyui.unit.Vec2
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 
+// CHECK OK
 class ResourcePack : Hud<Group>() {
 
     @Switch(title = "Ignore Overlay")

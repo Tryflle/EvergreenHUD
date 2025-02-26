@@ -1,22 +1,21 @@
 package org.polyfrost.evergreenhud.hud.player
 
 import net.minecraft.client.Minecraft
-import net.minecraft.entity.Entity
 import net.minecraft.network.play.server.S19PacketEntityStatus
 import org.polyfrost.evergreenhud.ClientDamageEntityEvent
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Text
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
-import org.polyfrost.oneconfig.api.event.v1.events.ReceivePacketEvent
-import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
+import org.polyfrost.oneconfig.api.event.v1.events.PacketEvent
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
+import org.polyfrost.polyui.unit.seconds
 
-
-class Combo : TextHud(prefix = "Combo: ", suffix = " blocks") {
+// CHECK OK
+class Combo : TextHud(prefix = "Combo: ", suffix = " hits") {
     // you can include config options here like normal, just as if it was a config. all the methods like addDependency, loadFrom
     // etc all work here as HUD extends from Config.
-    @Slider(title = "Discard Time", min = 0F, max = 10F)
-    var discardTime = 3
+    @Slider(title = "Discard Time", min = 1F, max = 10F)
+    var discardTime = 2
 
     @Text(title = "No Hit Message")
     var noHitMessage = "0"
@@ -51,16 +50,17 @@ class Combo : TextHud(prefix = "Combo: ", suffix = " blocks") {
             sentAttackTime = System.currentTimeMillis()
         }
 
-        eventHandler { event: ReceivePacketEvent ->
-            val mc = Minecraft.getMinecraft()
-            val packet = event.getPacket() as? S19PacketEntityStatus ?: return@eventHandler
+        eventHandler { (packet): PacketEvent.Receive ->
+            if (packet !is S19PacketEntityStatus) return@eventHandler
             if (packet.opCode.toInt() != 2) return@eventHandler
+
+            val mc = Minecraft.getMinecraft()
             val target = packet.getEntity(mc.theWorld) ?: return@eventHandler
 
             if (sentAttack != -1 && target.entityId == sentAttack) {
                 sentAttack = -1
                 val time = System.currentTimeMillis()
-                if (time - sentAttackTime > 2000L) {
+                if (time - sentAttackTime > discardTime * 1000L) {
                     sentAttackTime = 0L
                     currentCombo = 0
                     return@eventHandler
@@ -78,14 +78,7 @@ class Combo : TextHud(prefix = "Combo: ", suffix = " blocks") {
             updateAndRecalculate()
         }
 
-        eventHandler { _: TickEvent.Start ->
-            if (System.currentTimeMillis() - lastHitTime >= discardTime * 1000L) {
-                currentCombo = 0
-            }
-            updateAndRecalculate()
-        }
-
-        if(isReal) {
+        if (isReal) {
             // if this hud is 'real', meaning it is not the one in the hud picker screen,
             // we add a simple callback to update the HUD text when the noHitMessage option
             // is modified by the user.
@@ -96,16 +89,20 @@ class Combo : TextHud(prefix = "Combo: ", suffix = " blocks") {
         super.initialize()
     }
 
-    private fun onAttack(target: Entity) {
-
-    }
+    override fun updateFrequency() = 1.seconds
 
     // these are no longer fields and instead these methods as there is no point in saving them in memory
     // they are just used for the HUD manager.
     override fun category() = Category.COMBAT
 
     // this method is called WHENEVER update() is called. it is what supplies the text to the HUD.
-    override fun getText() = if (currentCombo == 0) noHitMessage else currentCombo.toString()
+    override fun getText(): String? {
+        if (System.currentTimeMillis() - lastHitTime >= discardTime * 1000L) {
+            currentCombo = 0
+        }
+        if (currentCombo == 0) sb.append(noHitMessage) else sb.append(currentCombo)
+        return null
+    }
 
     // this is the tree ID of the HUD, which is the same as the ID you supply as if it were a config.
     override fun id() = "combo.json"

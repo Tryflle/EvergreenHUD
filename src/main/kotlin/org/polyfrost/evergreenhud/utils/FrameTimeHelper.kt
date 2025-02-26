@@ -8,25 +8,30 @@ import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 
 object FrameTimeHelper {
     private var lastTime = System.nanoTime()
-    private val frameTimes = ArrayList<Long>(40)
+    private val frameTimes = ArrayList<Long>(60)
+    private var nticks = 0
 
     init {
-        eventHandler { _: RenderEvent.End ->
+        eventHandler { _: RenderEvent.Post ->
             frameTimes += System.nanoTime() - lastTime
             lastTime = System.nanoTime()
         }
         eventHandler { _: TickEvent.End ->
-            val ft = frameTimes
-            if (ft.size > 1) {
-                ft.sort()
-                val sum = ft.sum()
-                val consistency = (ft.last() - ft.first()).toDouble() / ft.size / sum
-                val avg = (sum.toDouble() / ft.size).run { if (isFinite()) this else 1.0 }
-                val p50 = percentile(ft, 0.50)
-                val p95 = percentile(ft, 0.95)
-                val p99 = percentile(ft, 0.99)
-                EventManager.INSTANCE.post(FrameData(consistency, avg, p50, p95, p99, ft.size))
-                ft.clear()
+            nticks++
+            if (nticks > 10) {
+                nticks = 0
+                val ft = frameTimes
+                if (ft.size > 1) {
+                    ft.sort()
+                    val sum = ft.sum()
+                    val consistency = (ft.last() - ft.first()).toDouble() / ft.size / sum
+                    val avg = (sum.toDouble() / ft.size).run { if (isFinite()) this else 1.0 }
+                    val p50 = percentile(ft, 0.50)
+                    val p95 = percentile(ft, 0.95)
+                    val p99 = percentile(ft, 0.99)
+                    EventManager.INSTANCE.post(FrameData(consistency, avg, p50, p95, p99, ft.size))
+                    ft.clear()
+                }
             }
         }
     }
