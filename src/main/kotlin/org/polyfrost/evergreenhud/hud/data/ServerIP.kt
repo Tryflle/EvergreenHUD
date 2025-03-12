@@ -14,8 +14,6 @@ class ServerIP : TextHud("IP: ") {
     @Text(title = "No Server Text")
     var noServerText = "127.0.0.1"
 
-    private var currentIP: String? = null
-
     override fun initialize() {
         if (isReal) {
             updateWhenChanged("showInSinglePlayer")
@@ -23,16 +21,13 @@ class ServerIP : TextHud("IP: ") {
         }
         eventHandler { (ip, name, motd): ServerChangedEvent ->
             if (!showInSinglePlayer) hidden = Minecraft.getMinecraft().isIntegratedServerRunning
-            this.currentIP = ip
+            sb.append(ip ?: noServerText)
             updateAndRecalculate()
         }
         super.initialize()
     }
 
-    override fun getText(): String? {
-        sb.append(currentIP ?: noServerText)
-        return null
-    }
+    override fun getText() = null
 
     override fun title() = "Server IP"
 

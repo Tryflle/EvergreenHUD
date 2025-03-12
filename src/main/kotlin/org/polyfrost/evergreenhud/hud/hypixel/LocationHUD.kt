@@ -1,22 +1,31 @@
 package org.polyfrost.evergreenhud.hud.hypixel
 
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.config.v1.annotations.Text
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.HypixelLocationEvent
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
 import org.polyfrost.oneconfig.api.hypixel.v1.HypixelUtils.Location
 
 class LocationHUD(private val title: String, prefix: String = "$title: ", suffix: String = "", private val getter: Location.() -> String?) : TextHud(prefix, suffix) {
-    private var string: String? = null
 
     @Switch(title = "Hide If Not In-Game or Supported")
     var shouldHide = true
 
+    @Text(title = "No Location Text")
+    var noLocationText = "Unknown"
+
     override fun initialize() {
         super.initialize()
         eventHandler { event: HypixelLocationEvent ->
-            this.string = event.location.getter()
-            if (shouldHide) hidden = this.string == null
+            val string = event.location.getter()
+            if (string != null) {
+                sb.append(string)
+                hidden = false
+            } else {
+                sb.append(noLocationText)
+                hidden = shouldHide
+            }
             updateAndRecalculate()
         }
         if(isReal) {
@@ -30,9 +39,5 @@ class LocationHUD(private val title: String, prefix: String = "$title: ", suffix
 
     override fun category() = Category.INFO
 
-    override fun getText(): String? {
-        if (string == null) sb.append("Unknown")
-        else sb.append(string)
-        return null
-    }
+    override fun getText() = null
 }

@@ -1,5 +1,6 @@
 package org.polyfrost.evergreenhud.hud.player
 
+import dev.deftu.omnicore.client.render.OmniMatrixStack
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.renderer.RenderHelper
@@ -10,7 +11,6 @@ import net.minecraft.item.ItemStack
 import org.polyfrost.oneconfig.api.config.v1.annotations.*
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.polyui.color.rgba
-import org.polyfrost.universal.UMatrixStack
 import kotlin.math.roundToInt
 import net.minecraft.client.renderer.GlStateManager as GL
 
@@ -75,7 +75,7 @@ class ItemHUD : LegacyHud() {
     override fun category() = Category.INFO
 
 
-    override fun render(stack: UMatrixStack, x: Float, y: Float, scaleX: Float, scaleY: Float) {
+    override fun render(stack: OmniMatrixStack, x: Float, y: Float, scaleX: Float, scaleY: Float) {
         val item = getItem(option) ?: return
         val mc = Minecraft.getMinecraft()
         RenderHelper.enableGUIStandardItemLighting()

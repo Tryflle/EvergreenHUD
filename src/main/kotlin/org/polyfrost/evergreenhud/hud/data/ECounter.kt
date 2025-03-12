@@ -10,26 +10,19 @@ class ECounter : TextHud("E: ") {
     @Switch(title = "Show total entities")
     var showTotal = true
 
-    private var renderedEntities: Int = 0
-    private var totalEntities: Int = 0
-
     override fun initialize() {
         if (isReal) {
             updateWhenChanged("showTotal")
         }
         eventHandler { ev: ECounterEvent ->
-            this.renderedEntities = ev.rendered
-            this.totalEntities = ev.total
+            sb.append(ev.rendered)
+            if (showTotal) sb.append('/').append(ev.total)
             updateAndRecalculate()
         }
         super.initialize()
     }
 
-    override fun getText(): String? {
-        sb.append(renderedEntities)
-        if (showTotal) sb.append('/').append(totalEntities)
-        return null
-    }
+    override fun getText() = null
 
     override fun title() = "E Counter"
 

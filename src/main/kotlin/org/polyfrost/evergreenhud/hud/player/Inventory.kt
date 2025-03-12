@@ -1,12 +1,12 @@
 package org.polyfrost.evergreenhud.hud.player
 
+import dev.deftu.omnicore.client.render.OmniMatrixStack
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.RenderHelper
 import net.minecraft.inventory.IInventory
 import net.minecraft.util.ResourceLocation
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
-import org.polyfrost.universal.UMatrixStack
 import net.minecraft.client.renderer.GlStateManager as GL
 
 // CHECK OK
@@ -30,7 +30,7 @@ class Inventory : LegacyHud() {
 
 
     @Suppress("SENSELESS_COMPARISON", "NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-    override fun render(stack: UMatrixStack, x: Float, y: Float, scaleX: Float, scaleY: Float) {
+    override fun render(stack: OmniMatrixStack, x: Float, y: Float, scaleX: Float, scaleY: Float) {
         val inv = inventory ?: return
         val mc = Minecraft.getMinecraft()
         val fr = mc.fontRendererObj

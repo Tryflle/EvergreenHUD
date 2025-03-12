@@ -1,25 +1,28 @@
 package org.polyfrost.evergreenhud.hud.player
 
+import dev.deftu.omnicore.common.OmniSound
 import net.minecraft.block.BlockBanner
 import net.minecraft.block.BlockSign
 import net.minecraft.block.BlockVine
 import net.minecraft.client.Minecraft
 import net.minecraft.init.Blocks
 import net.minecraft.util.BlockPos
+import net.minecraft.util.ResourceLocation
+import org.polyfrost.evergreenhud.BlockPositionChangedEvent
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
-import org.polyfrost.universal.USound
 
 // CHECK OK
 class BlockAbove : TextHud("Block Above: ", " remaining") {
-    private var above = 0
     private var notified = false
 
     @Switch(title = "Notify With Sound")
     var notify = false
+
+    val EXP_SOUND = OmniSound(ResourceLocation("random.orb"))
 
     @Slider(title = "Notify Height", min = 1F, max = 10F, step = 1F)
     var notifyHeight = 3
@@ -27,14 +30,10 @@ class BlockAbove : TextHud("Block Above: ", " remaining") {
     @Slider(title = "Check Height", min = 1F, max = 30F, step = 1F)
     var checkHeight = 10
 
-    private var ppx = 0
-    private var ppy = 0
-    private var ppz = 0
 
     override fun initialize() {
-        eventHandler { _: TickEvent.End ->
-            val player = Minecraft.getMinecraft().thePlayer ?: return@eventHandler
-            check(player.posX, player.posY, player.posZ)
+        eventHandler { (x, y, z): BlockPositionChangedEvent ->
+            check(x, y, z)
         }
         super.initialize()
         if (isReal) {
@@ -42,20 +41,12 @@ class BlockAbove : TextHud("Block Above: ", " remaining") {
         }
     }
 
-    fun check(x: Double, y: Double, z: Double) {
-        if (x.toInt() == ppx && y.toInt() == ppy && z.toInt() == ppz) return
-        ppx = x.toInt()
-        ppy = y.toInt()
-        ppz = z.toInt()
-        val world = Minecraft.getMinecraft().theWorld
-        if (world == null) {
-            above = 0
-            return
-        }
+    fun check(x: Int, y: Int, z: Int) {
+        val world = Minecraft.getMinecraft().theWorld ?: return
 
         var above = 0
         for (i in 1..checkHeight) {
-            val pos = BlockPos(x, y + 1.0 + i, z)
+            val pos = BlockPos(x, y + 1 + i, z)
             if (pos.y > world.height) break
 
             val state = world.getBlockState(pos) ?: continue
@@ -70,7 +61,7 @@ class BlockAbove : TextHud("Block Above: ", " remaining") {
 
             if (above <= notifyHeight && notify) {
                 if (!notified) {
-                    USound.playExpSound()
+                    EXP_SOUND.playForClient(0.25f, 1f)
                     notified = true
                 }
             } else {
@@ -80,14 +71,11 @@ class BlockAbove : TextHud("Block Above: ", " remaining") {
             break
         }
 
-        this.above = above
+        sb.append(above)
         updateAndRecalculate()
     }
 
-    override fun getText(): String? {
-        sb.append(above)
-        return null
-    }
+    override fun getText() = null
 
     override fun id() = "blockabove.json"
 

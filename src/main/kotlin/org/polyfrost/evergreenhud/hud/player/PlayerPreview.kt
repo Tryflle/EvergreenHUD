@@ -1,12 +1,12 @@
 package org.polyfrost.evergreenhud.hud.player
 
+import dev.deftu.omnicore.client.render.OmniMatrixStack
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.RenderHelper
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
-import org.polyfrost.universal.UMatrixStack
 import net.minecraft.client.renderer.GlStateManager as GL
 
 class PlayerPreview : LegacyHud() {
@@ -26,7 +26,7 @@ class PlayerPreview : LegacyHud() {
         set(_) {}
 
 
-    override fun render(stack: UMatrixStack, x: Float, y: Float, scaleX: Float, scaleY: Float) {
+    override fun render(stack: OmniMatrixStack, x: Float, y: Float, scaleX: Float, scaleY: Float) {
         // modified version of GuiInventory#drawEntityOnScreen
         // added scaling and removed mouse-based rotation, replaced with static rotation; added nametag rendering
         val ent = Minecraft.getMinecraft().thePlayer ?: return
