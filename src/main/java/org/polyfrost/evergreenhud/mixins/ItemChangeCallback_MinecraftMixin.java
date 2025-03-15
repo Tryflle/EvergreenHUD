@@ -15,8 +15,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class ItemChangeCallback_MinecraftMixin {
     @Shadow public EntityPlayerSP thePlayer;
 
-    @Inject(method = "runTick", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/InventoryPlayer;currentItem:I", shift = At.Shift.AFTER, opcode = Opcodes.PUTFIELD))
+    @Inject(method =
+            //#if MC > 1.8.9
+            //$$ "processKeyBinds"
+            //#else
+            "runTick"
+            //#endif
+            , at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/InventoryPlayer;currentItem:I", shift = At.Shift.AFTER, opcode = Opcodes.PUTFIELD))
     private void selectedItemChangeCallback(CallbackInfo ci) {
-        EventManager.INSTANCE.post(new SelectedItemChangedEvent(thePlayer.getHeldItem()));
+        EventManager.INSTANCE.post(new SelectedItemChangedEvent(this.thePlayer.getHeldItem(
+                //#if MC > 1.8.9
+                //$$ net.minecraft.util.EnumHand.MAIN_HAND
+                //#endif
+        )));
     }
 }

@@ -7,7 +7,6 @@ import net.minecraft.network.EnumConnectionState
 import net.minecraft.network.NetworkManager
 import net.minecraft.network.handshake.client.C00Handshake
 import net.minecraft.network.status.INetHandlerStatusClient
-import net.minecraft.network.status.client.C00PacketServerQuery
 import net.minecraft.network.status.client.C01PacketPing
 import net.minecraft.network.status.server.S00PacketServerInfo
 import net.minecraft.network.status.server.S01PacketPong
@@ -92,7 +91,13 @@ object ServerPinger {
                     EnumConnectionState.STATUS
                 )
             )
-            networkmanager.sendPacket(C00PacketServerQuery())
+            networkmanager.sendPacket(net.minecraft.network.status.client.
+            //#if MC > 1.8.9
+            //$$ CPacketServerQuery() // TODO WHY WONT THIS CLASS SPECIFICALLY REMAP????
+            //#else
+            C00PacketServerQuery()
+            //#endif
+            )
         }
     }
 }

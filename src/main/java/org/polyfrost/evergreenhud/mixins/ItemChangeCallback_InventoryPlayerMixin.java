@@ -15,7 +15,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class ItemChangeCallback_InventoryPlayerMixin {
     @Shadow public abstract ItemStack getCurrentItem();
 
-    @Inject(method = {"setCurrentItem", "changeCurrentItem", "copyInventory"}, at = @At(value = "FIELD", opcode = Opcodes.PUTFIELD, target = "Lnet/minecraft/entity/player/InventoryPlayer;currentItem:I", shift = At.Shift.AFTER))
+    @Inject(method = {
+            //#if MC > 1.8.9
+            //$$ "setPickedItemStack", "pickItem",
+            //#else
+            "setCurrentItem",
+            //#endif
+            "changeCurrentItem", "copyInventory"}, at = @At(value = "FIELD", opcode = Opcodes.PUTFIELD, target = "Lnet/minecraft/entity/player/InventoryPlayer;currentItem:I", shift = At.Shift.AFTER))
     private void selectedItemChangeCallback(CallbackInfo ci) {
         EventManager.INSTANCE.post(new SelectedItemChangedEvent(getCurrentItem()));
     }

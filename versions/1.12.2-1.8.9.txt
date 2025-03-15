@@ -1,11 +1,7 @@
 net.minecraft.util.math.BlockPos net.minecraft.util.BlockPos
-net.minecraft.world.World getBiomeProvider() getWorldChunkManager()
-net.minecraft.world.World getBiome() getBiomeGenForCoords()
+net.minecraft.world.World getBiomeProvider() getWorldChunkManager()Lnet/minecraft/world/biome/WorldChunkManager;
+net.minecraft.world.World getBiome() getBiomeGenForCoords()Lnet/minecraft/world/biome/BiomeGenBase;
 net.minecraft.network.play.server.SPacketEntityStatus net.minecraft.network.play.server.S19PacketEntityStatus
-net.minecraft.util.Vec3 x xCoord
-net.minecraft.util.Vec3 y yCoord
-net.minecraft.util.Vec3 z zCoord
-net.minecraft.util.Vec3 add() addVector()
 net.minecraft.network.status.server.SPacketServerInfo net.minecraft.network.status.server.S00PacketServerInfo
 net.minecraft.util.text.TextComponentString net.minecraft.util.ChatComponentText
 net.minecraft.network.status.client.CPacketPing net.minecraft.network.status.client.C01PacketPing
@@ -13,4 +9,3 @@ net.minecraft.network.status.server.SPacketPong net.minecraft.network.status.ser
 net.minecraft.network.status.client.CPacketServerQuery net.minecraft.network.status.client.C00PacketServerQuery
 net.minecraft.util.text.ITextComponent net.minecraft.util.IChatComponent
 net.minecraft.client.renderer.entity.RenderLiving net.minecraft.client.renderer.entity.RendererLivingEntity
-net.minecraft.client.renderer.entity.RenderManager renderEntity() doRenderEntity()

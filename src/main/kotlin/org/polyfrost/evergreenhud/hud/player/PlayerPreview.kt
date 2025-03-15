@@ -4,6 +4,8 @@ import dev.deftu.omnicore.client.render.OmniMatrixStack
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.RenderHelper
+import net.minecraft.client.renderer.entity.RenderManager
+import net.minecraft.entity.Entity
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
@@ -52,7 +54,7 @@ class PlayerPreview : LegacyHud() {
         rm.playerViewX = 0f
         rm.setPlayerViewY(180.0f)
         rm.isRenderShadow = false
-        rm.doRenderEntity(ent, 0.0, 0.0, 0.0, 0.0f, 1.0f, false)
+        rm.renderEntity(ent, 0.0, 0.0, 0.0, 0.0f, 1.0f, false)
         if (showNametag) playerRenderer.renderName(ent, 0.0, 0.0, 0.0)
         rm.isRenderShadow = true
         ent.renderYawOffset = prevYawOffset
@@ -67,6 +69,13 @@ class PlayerPreview : LegacyHud() {
         GL.disableTexture2D()
         GL.setActiveTexture(OpenGlHelper.defaultTexUnit)
     }
+
+    //#if MC < 1.12
+    // I hate you Kotlin
+    private fun RenderManager.renderEntity(entity: Entity, x: Double, y: Double, z: Double, yaw: Float, partialTicks: Float, p_188391_10_: Boolean) {
+        this.doRenderEntity(entity, x, y, z, yaw, partialTicks, p_188391_10_)
+    }
+    //#endif
 
     private val playerRenderer = Minecraft.getMinecraft().renderManager.skinMap["default"]!!
 

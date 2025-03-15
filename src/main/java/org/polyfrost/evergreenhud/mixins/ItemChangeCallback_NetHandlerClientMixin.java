@@ -16,6 +16,10 @@ public class ItemChangeCallback_NetHandlerClientMixin {
 
     @Inject(method = "handleHeldItemChange", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/InventoryPlayer;currentItem:I", shift = At.Shift.AFTER))
     private void selectedItemChangeCallback(CallbackInfo ci) {
-        EventManager.INSTANCE.post(new SelectedItemChangedEvent(gameController.thePlayer.getHeldItem()));
+        EventManager.INSTANCE.post(new SelectedItemChangedEvent(this.gameController.thePlayer.getHeldItem(
+                //#if MC > 1.8.9
+                //$$ net.minecraft.util.EnumHand.MAIN_HAND
+                //#endif
+        )));
     }
 }

@@ -122,7 +122,7 @@ class ItemHUD : LegacyHud() {
         //#if MC>=11202
         //$$ it.getCount()
         //#else
-            it.stackSize
+        it.stackSize
         //#endif
     } ?: 0
 
@@ -151,7 +151,12 @@ class ItemHUD : LegacyHud() {
             2 -> duraColor() + "${((1f - itemDamage.toFloat() / maxDamage) * 100f).roundToInt()}%"
             else -> null
         } else {
-            val stackSize = if (isStackable) this.item.countTotal() else this.stackSize
+            val stackSize = if (isStackable) this.item.countTotal() else
+                //#if MC>=11202
+                //$$ this.getCount()
+                //#else
+                this.stackSize
+                //#endif
             if (!showStackSize || stackSize == 1) null else {
                 if (stackSize < 1) "§c$stackSize" else "$stackSize"
             }
@@ -194,7 +199,13 @@ class ItemHUD : LegacyHud() {
         val emerald = ItemStack(Items.emerald)
 
         init {
-            initial.addEnchantment(Enchantment.sharpness, 69)
+            initial.addEnchantment(
+                //#if MC > 1.8.9
+                //$$ Enchantment.getEnchantmentByLocation("minecraft:sharpness")
+                //#else
+                Enchantment.sharpness
+                //#endif
+                , 69)
         }
     }
 }
