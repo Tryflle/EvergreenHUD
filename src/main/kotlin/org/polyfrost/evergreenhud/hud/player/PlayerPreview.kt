@@ -10,7 +10,7 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import net.minecraft.client.renderer.GlStateManager as GL
-
+//todo preview doesnt work
 class PlayerPreview : LegacyHud() {
 
     @Switch(title = "Show Nametag")

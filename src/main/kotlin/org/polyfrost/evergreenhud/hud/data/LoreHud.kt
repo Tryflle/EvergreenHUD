@@ -66,7 +66,7 @@ class LoreHud : TextHud("") {
         }
 
     override fun getText(): String? {
-        val item = theItem ?: return null
+        val item = theItem ?: return if (isReal) "Item Lore HUD" else null
 
         if (showName && item.hasDisplayName()) {
             val name = item.displayName

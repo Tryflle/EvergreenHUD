@@ -13,6 +13,7 @@ import org.polyfrost.polyui.input.KeyBinder
 import org.polyfrost.polyui.operations.Recolor
 import org.polyfrost.polyui.unit.milliseconds
 
+//todo uh
 class KeyHud : Hud<Text>() {
     @TextOption(title = "Key Text")
     var keyText = "W"
