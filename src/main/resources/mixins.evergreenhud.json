@@ -8,15 +8,15 @@
   },
   "verbose": true,
   "mixins": [
-    "ClientDamageCallback_EntityPlayerMixin",
-    "ClientPlaceCallback_ForgeHooksMixin",
-    "ItemChangeCallback_InventoryPlayerMixin",
-    "SaturationCallback_FoodStatsMixin"
+      "Mixin_EntityPlayer_ClientDamageEntityEvent",
+    "Mixin_ForgeHooks_ClientPlaceBlockEvent",
+    "Mixin_InventoryPlayer_SelectedItemChangedEvent",
+    "Mixin_FoodStats_SaturationChangedEvent"
   ],
   "client": [
-    "ECounterCallback_RenderGlobalMixin",
-    "ItemChangeCallback_MinecraftMixin",
-    "ItemChangeCallback_NetHandlerClientMixin",
-    "ServerInfoCallback_MinecraftMixin"
+      "Mixin_RenderGlobal_EntityCounterEvent",
+    "Mixin_Minecraft_SelectedItemChangedEvent",
+    "Mixin_NetHandlerPlayClient_SelectedItemChangedEvent",
+    "Mixin_Minecraft_ServerChangedEvent"
   ]
 }

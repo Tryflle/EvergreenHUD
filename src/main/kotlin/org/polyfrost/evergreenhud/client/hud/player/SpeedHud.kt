@@ -1,0 +1,82 @@
+package org.polyfrost.evergreenhud.client.hud.player
+
+import dev.deftu.omnicore.client.OmniClientPlayer
+import net.minecraft.client.Minecraft
+import org.polyfrost.evergreenhud.client.hud.GenericHud1f
+import org.polyfrost.oneconfig.api.config.v1.annotations.Dropdown
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.polyui.unit.milliseconds
+import kotlin.math.sqrt
+
+// CHECK OK
+class SpeedHud : GenericHud1f(
+    title = "Speed",
+    category = Category.INFO,
+    suffix = "m/s"
+) {
+
+    @Switch(title = "Use X")
+    var useX = true
+
+    @Switch(title = "Use Y")
+    var useY = true
+
+    @Switch(title = "Use Z")
+    var useZ = true
+
+    @Dropdown(
+        title = "Speed Unit",
+        options = ["Meters per tick", "Meters per second", "Kilometers per hour", "Miles per hour"],
+    )
+    var speedUnit = 1
+
+    override fun setup() {
+        super.setup()
+
+        if (isReal) {
+            addCallback("speedUnit") { value: Int ->
+                suffix = when (value) {
+                    1 -> "m/s"
+                    2 -> "kph"
+                    3 -> "mph"
+                    else -> "m/t"
+                }
+
+                updateAndRecalculate()
+                false
+            }
+
+            updateWhenChanged("useX")
+            updateWhenChanged("useY")
+            updateWhenChanged("useZ")
+        }
+    }
+
+    override fun getText(): String? {
+        if (!OmniClientPlayer.hasPlayer) {
+            value = 0f
+            return null
+        }
+
+        val dx = if (useX) (OmniClientPlayer.posX - OmniClientPlayer.prevPosX).toFloat() else 0f
+        val dy = if (useY) (OmniClientPlayer.posY - OmniClientPlayer.prevPosY).toFloat() else 0f
+        val dz = if (useZ) (OmniClientPlayer.posZ - OmniClientPlayer.prevPosZ).toFloat() else 0f
+        value = convertSpeed(sqrt(dx * dx + dy * dy + dz * dz))
+
+        return super.getText()
+    }
+
+    override fun updateFrequency(): Long {
+        return 50.milliseconds
+    }
+
+    private fun convertSpeed(speed: Float): Float {
+        return when (speedUnit) {
+            1 -> speed * 20f
+            2 -> speed * 3.6f * 20f
+            3 -> speed * 2.237f * 20f
+            else -> speed
+        }
+    }
+
+}
