@@ -13,11 +13,12 @@ class DayHud : TextHud(
 ) {
 
     override fun getText(): String? {
-        return OmniClient.currentWorld?.worldTime?.div(24000L)?.toString() ?: "0"
+        sb.append(OmniClient.currentWorld?.worldTime?.div(24000L)?.toString() ?: "0")
+        return null
     }
 
     override fun updateFrequency(): Long {
-        return 5.seconds
+        return 1.seconds
     }
 
 }
