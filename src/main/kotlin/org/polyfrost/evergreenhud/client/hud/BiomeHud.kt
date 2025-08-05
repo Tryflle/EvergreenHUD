@@ -10,8 +10,7 @@ class BiomeHud : TextHud(
     id = "biome.json",
     title = "Biome",
     category = Category.INFO,
-    prefix = "",
-    suffix = "Biome: "
+    prefix = "Biome: ",
 ) {
 
     override fun setup() {
