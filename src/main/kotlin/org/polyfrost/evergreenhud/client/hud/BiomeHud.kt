@@ -22,7 +22,8 @@ class BiomeHud : TextHud(
                 return@eventHandler
             }
 
-            sb.append(world.getChunkAt(pos)?.getBiomeAt(pos)?.translatedName)
+            sb.append(world.getBiomeAt(pos)?.translatedName ?: "Unknown")
+            updateAndRecalculate()
         }
     }
 
