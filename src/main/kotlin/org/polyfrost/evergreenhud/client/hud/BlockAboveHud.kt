@@ -52,7 +52,35 @@ class BlockAboveHud : TextHud(
     override fun setup() {
         super.setup()
         eventHandler { (x, y, z): BlockPositionChangedEvent ->
-            check(x, y, z)
+            val world = OmniClient.currentWorld ?: return@eventHandler
+
+            var above = 0
+            for (i in 1..checkHeight) {
+                val pos = OmniBlockPos.from(x, y + 1 + i, z)
+                if (pos.y > world.height) {
+                    break
+                }
+
+                val block = world.getBlockTypeAt(pos) ?: continue
+                if (block.isIgnored) {
+                    continue
+                }
+
+                above = i - 1
+                if (above <= notifyHeight && notify) {
+                    if (!notified) {
+                        OmniSounds.EXPERIENCE_ORB_PICKUP.playForClient(0.25f, 1f)
+                        notified = true
+                    }
+                } else {
+                    notified = false
+                }
+
+                break
+            }
+
+            sb.append(above)
+            updateAndRecalculate()
         }
 
         if (isReal) {
@@ -60,38 +88,8 @@ class BlockAboveHud : TextHud(
         }
     }
 
-    fun check(x: Int, y: Int, z: Int) {
-        val world = OmniClient.currentWorld ?: return
-
-        var above = 0
-        for (i in 1..checkHeight) {
-            val pos = OmniBlockPos.from(x, y + 1 + i, z)
-            if (pos.y > world.height) {
-                break
-            }
-
-            val block = world.getBlockTypeAt(pos) ?: continue
-            if (block.isIgnored) {
-                continue
-            }
-
-            above = i - 1
-            if (above <= notifyHeight && notify) {
-                if (!notified) {
-                    OmniSounds.EXPERIENCE_ORB_PICKUP.playForClient(0.25f, 1f)
-                    notified = true
-                }
-            } else {
-                notified = false
-            }
-
-            break
-        }
-
-        sb.append(above)
-        updateAndRecalculate()
+    override fun getText(): String? {
+        return null
     }
-
-    override fun getText() = null
 
 }
