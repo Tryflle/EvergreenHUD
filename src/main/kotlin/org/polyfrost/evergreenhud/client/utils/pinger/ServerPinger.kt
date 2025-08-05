@@ -42,7 +42,10 @@ class ServerPinger(
 
     private fun submitTask() {
         Multithreading.submit {
-            serverSupplier()?.let(::ping)
+            val server = serverSupplier() ?: return@submit
+            if (!server.isLocal) {
+                ping(server)
+            }
         }
     }
 

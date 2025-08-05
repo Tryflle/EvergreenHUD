@@ -1,6 +1,6 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.client.OmniClient
+import dev.deftu.omnicore.client.OmniClientMultiplayer
 import org.polyfrost.evergreenhud.client.ServerChangedEvent
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.config.v1.annotations.Text
@@ -24,7 +24,7 @@ class ServerAddressHud : TextHud(
         super.setup()
         eventHandler { (ip, _, _): ServerChangedEvent ->
             if (!showInSinglePlayer) {
-                hidden = OmniClient.getInstance().isIntegratedServerRunning
+                hidden = OmniClientMultiplayer.isIntegratedServerRunning
             }
 
             sb.append(ip ?: noServerText)
