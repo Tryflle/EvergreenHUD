@@ -41,9 +41,12 @@ class PlaceCountHud : TextHud(
         val max = interval * 1_000_000L
         blockCount?.fastRemoveIfReversed { time - it > max }
         sb.append(blockCount?.size ?: 0L)
+
         return null
     }
 
-    override fun updateFrequency() = 50.milliseconds
+    override fun updateFrequency(): Long {
+        return 50.milliseconds
+    }
 
 }
