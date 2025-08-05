@@ -36,7 +36,7 @@ class PositionHud : GenericNumberHud(
     @Checkbox(title = "Show Z")
     var showZ = true
 
-    private val facing get() = OmniPlanarDirection.from(value, isExact = true)
+    private val facing get() = OmniPlanarDirection.from(OmniClientPlayer.yaw, isExact = true)
     private var x = 0.0
     private var y = 0.0
     private var z = 0.0
@@ -74,7 +74,6 @@ class PositionHud : GenericNumberHud(
         }
 
         sb.append(df.format(value))
-
         if (showDirection && sign != '\u0000') {
             sb.append('(').append(sign).append(')')
         }
@@ -82,9 +81,18 @@ class PositionHud : GenericNumberHud(
 
     override fun getText(): String? {
         val facing = this.facing
-        if (showX) createString('X', x, if (facing.isEast) '+' else if (facing.isWest) '-' else ' ')
-        if (showY) createString('Y', y, '\u0000')
-        if (showZ) createString('Z', z, if (facing.isSouth) '+' else if (facing.isNorth) '-' else ' ')
+        if (showX) {
+            createString('X', x, if (facing.isEast) '+' else if (facing.isWest) '-' else ' ')
+        }
+
+        if (showY) {
+            createString('Y', y, '\u0000')
+        }
+
+        if (showZ) {
+            createString('Z', z, if (facing.isSouth) '+' else if (facing.isNorth) '-' else ' ')
+        }
+
         return null
     }
 

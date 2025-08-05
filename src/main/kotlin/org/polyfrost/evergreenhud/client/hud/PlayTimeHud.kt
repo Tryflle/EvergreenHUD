@@ -39,7 +39,6 @@ class PlayTimeHud : TextHud(
         }
 
         sb.append(mins)
-
         if (seconds) {
             sb.append(':')
             val secs = time % 60L
