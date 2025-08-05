@@ -25,7 +25,7 @@ object WindowsBattery {
     }
 
     @Suppress("unused")
-    private class SYSTEM_POWER_STATUS : Battery, Structure() {
+    class SYSTEM_POWER_STATUS : Battery, Structure() {
         @JvmField var ACLineStatus: Byte = 0
         @JvmField var BatteryLifePercent: Byte = 0
         @JvmField var SystemStatusFlag: Byte = 0

@@ -1,9 +1,10 @@
 package org.polyfrost.evergreenhud.client
 
 import dev.deftu.omnicore.client.OmniClientPlayer
-import org.polyfrost.evergreenhud.client.hud.data.*
+import org.polyfrost.evergreenhud.client.hud.*
+import org.polyfrost.evergreenhud.client.hud.battery.BatteryHud
+import org.polyfrost.evergreenhud.client.hud.clock.ClockHud
 import org.polyfrost.evergreenhud.client.hud.hypixel.*
-import org.polyfrost.evergreenhud.client.hud.player.*
 import org.polyfrost.evergreenhud.client.utils.FrameTimeHelper
 import org.polyfrost.evergreenhud.client.utils.PinkuluMapCache
 import org.polyfrost.oneconfig.api.event.v1.EventManager
@@ -19,24 +20,21 @@ object EvergreenHudClient {
         PinkuluMapCache.initialize()
 
         HudManager.register(
-            // Info HUDs
-            BiomeHud(), ClockHud(), DayHud(),
-            EntityCounterHud(), FpsHud(), InGameTimeHud(),
+            BatteryHud(), BiomeHud(), BlockAboveHud(),
+            ClockHud(), /*ComboHud(),*/ CpsHud(),
+            DayHud(), EntityCounterHud(), FpsHud(),
+            InGameTimeHud(), /*InventoryHud(),*/ /*ItemHud(),*/
             KeyHud(), LoreHud(), MemoryHud(),
-            PingHud(), PlayTimeHud(), ResourcePackHud(),
-            ServerAddressHud(), TpsHud(),
+            PingHud(), PlaceCountHud(), /*PlayerPreviewHud(),*/
+            PlayTimeHud(), PositionHud(), ReachHud(),
+            /*ResourcePackHud(),*/ SaturationHud(), ServerAddressHud(),
+            SpeedHud(), TpsHud(),
 
             // Hypixel HUDs
             HypixelLocationHud("Map Name") { mapName.getOrNull() },
             HypixelLocationHud("Game Type") { gameType.getOrNull()?.name },
             HypixelLocationHud("Game Mode") { mode.getOrNull() },
             HypixelLocationHud("Build Remaining") { PinkuluMapCache.getMapHeight(this).let { if (it == -1) "Unknown" else it.toString() } },
-
-            // Player HUDs
-            BlockAboveHud(), ComboHud(), CpsHud(),
-            /*InventoryHud(),*/ ItemHud(), PlaceCountHud(),
-            PlayerPreviewHud(), PositionHud(), ReachHud(),
-            SaturationHud(), SpeedHud()
         )
 
         var lastPosX = 0.0

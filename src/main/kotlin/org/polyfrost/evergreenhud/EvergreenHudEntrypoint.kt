@@ -28,7 +28,7 @@ import org.polyfrost.evergreenhud.client.EvergreenHudClient
 @Mod(modid = EvergreenHudConstants.ID, version = EvergreenHudConstants.VERSION)
 //#endif
 //#endif
-class ExampleEntrypoint
+class EvergreenHudEntrypoint
 //#if FABRIC
 //$$     : ClientModInitializer
 //#endif

@@ -33,7 +33,7 @@ public abstract class Mixin_InventoryPlayer_SelectedItemChangedEvent {
             )
     )
     private void selectedItemChangeCallback(CallbackInfo ci) {
-        EventManager.INSTANCE.post(new SelectedItemChangedEvent(getCurrentItem()));
+        EventManager.INSTANCE.post(new SelectedItemChangedEvent(this.getCurrentItem()));
     }
 
 }

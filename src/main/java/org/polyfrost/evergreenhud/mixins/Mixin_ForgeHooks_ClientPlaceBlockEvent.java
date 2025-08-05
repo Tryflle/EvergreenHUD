@@ -1,10 +1,6 @@
 package org.polyfrost.evergreenhud.mixins;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.world.World;
+//#if FORGE
 import net.minecraftforge.common.ForgeHooks;
 import org.polyfrost.evergreenhud.client.ClientPlaceBlockEvent;
 import org.polyfrost.oneconfig.api.event.v1.EventManager;
@@ -12,6 +8,17 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+//#if MC >= 1.16.5
+//$$ import net.minecraft.world.InteractionResult;
+//$$ import net.minecraft.world.item.context.UseOnContext;
+//#else
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.world.World;
+//#endif
 
 @Mixin(value = ForgeHooks.class, remap = false)
 public class Mixin_ForgeHooks_ClientPlaceBlockEvent {
@@ -30,6 +37,10 @@ public class Mixin_ForgeHooks_ClientPlaceBlockEvent {
             )
     )
     private static void onPlaceBlock(
+            //#if MC >= 1.16.5
+            //$$ UseOnContext ctx,
+            //$$ CallbackInfoReturnable<InteractionResult> cir
+            //#else
             ItemStack itemstack,
             EntityPlayer player,
             World world,
@@ -42,8 +53,10 @@ public class Mixin_ForgeHooks_ClientPlaceBlockEvent {
             //$$ net.minecraft.util.EnumHand hand,
             //#endif
             CallbackInfoReturnable<Boolean> cir
+            //#endif
     ) {
         EventManager.INSTANCE.post(new ClientPlaceBlockEvent(player, world));
     }
 
 }
+//#endif

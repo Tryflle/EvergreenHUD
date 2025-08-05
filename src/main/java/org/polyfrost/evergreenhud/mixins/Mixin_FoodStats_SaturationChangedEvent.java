@@ -16,22 +16,22 @@ public class Mixin_FoodStats_SaturationChangedEvent {
 
     @Inject(method = "addStats(IF)V", at = @At("RETURN"))
     private void onAddStats(CallbackInfo ci) {
-        EventManager.INSTANCE.post(new SaturationChangedEvent(foodSaturationLevel));
+        EventManager.INSTANCE.post(new SaturationChangedEvent(this.foodSaturationLevel));
     }
 
     @Inject(method = "onUpdate", at = @At("RETURN"))
     private void onUpdate(CallbackInfo ci) {
-        EventManager.INSTANCE.post(new SaturationChangedEvent(foodSaturationLevel));
+        EventManager.INSTANCE.post(new SaturationChangedEvent(this.foodSaturationLevel));
     }
 
     @Inject(method = "readNBT", at = @At("RETURN"))
     private void onReadNBT(CallbackInfo ci) {
-        EventManager.INSTANCE.post(new SaturationChangedEvent(foodSaturationLevel));
+        EventManager.INSTANCE.post(new SaturationChangedEvent(this.foodSaturationLevel));
     }
 
     @Inject(method = "setFoodSaturationLevel", at = @At("RETURN"))
     private void onSet(CallbackInfo ci) {
-        EventManager.INSTANCE.post(new SaturationChangedEvent(foodSaturationLevel));
+        EventManager.INSTANCE.post(new SaturationChangedEvent(this.foodSaturationLevel));
     }
 
 }

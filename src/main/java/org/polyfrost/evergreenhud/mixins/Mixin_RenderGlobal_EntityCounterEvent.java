@@ -18,8 +18,8 @@ public abstract class Mixin_RenderGlobal_EntityCounterEvent {
 
     @Inject(method = "renderEntities", at = @At("TAIL"))
     private void evergreen$readEntityRenderCount(CallbackInfo ci) {
-        EntityCounterEvent.setRendered(countEntitiesRendered);
-        EntityCounterEvent.setTotal(countEntitiesTotal);
+        EntityCounterEvent.setRendered(this.countEntitiesRendered);
+        EntityCounterEvent.setTotal(this.countEntitiesTotal);
         EventManager.INSTANCE.post(EntityCounterEvent.INSTANCE);
     }
 

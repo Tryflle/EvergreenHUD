@@ -23,6 +23,13 @@ sealed interface Battery {
         override val isBatterySaverEnabled: Boolean = false
     }
 
+    data class ManualBattery(
+        override val percentage: Int,
+        override val isCharging: Boolean,
+        override val lifetimeRemaining: Int,
+        override val isBatterySaverEnabled: Boolean
+    ) : Battery
+
     val percentage: Int
     val isCharging: Boolean
     val lifetimeRemaining: Int
