@@ -30,7 +30,10 @@ class InGameTimeHud : TextHud(
         val hours = (seconds / 3600L) % 24L
         val realHours = if (twelveHour) {
             if (hours % 12L == 0L) 12L else hours % 12L
-        } else hours
+        } else {
+            hours
+        }
+
         if (realHours < 10L) {
             sb.append('0')
         }
@@ -41,12 +44,15 @@ class InGameTimeHud : TextHud(
         }
 
         sb.append(minutes)
-        if (twelveHour) sb.append(if (realHours < 12L) " AM" else " PM")
+        if (twelveHour) {
+            sb.append(if (realHours < 12L) " AM" else " PM")
+        }
+
         return null
     }
 
     override fun updateFrequency(): Long {
-        return 400.milliseconds
+        return 500.milliseconds
     }
 
 }
