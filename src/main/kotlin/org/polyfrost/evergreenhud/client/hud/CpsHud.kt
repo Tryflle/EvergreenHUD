@@ -43,6 +43,8 @@ class CpsHud : TextHud(
                         0 -> onLeftClick()
                         1 -> onRightClick()
                     }
+
+                    updateAndRecalculate()
                 }
             }
         }
@@ -51,14 +53,12 @@ class CpsHud : TextHud(
     private fun onLeftClick() {
         if (mode != 1) {
             left?.add(System.nanoTime())
-            updateAndRecalculate()
         }
     }
 
     private fun onRightClick() {
         if (mode > 0) {
             right?.add(System.nanoTime())
-            updateAndRecalculate()
         }
     }
 
