@@ -2,6 +2,7 @@ package org.polyfrost.evergreenhud.client.hud
 
 import dev.deftu.omnicore.client.OmniClientMultiplayer
 import net.minecraft.client.Minecraft
+import org.polyfrost.evergreenhud.client.utils.pinger.ServerPinger
 import org.polyfrost.evergreenhud.client.utils.pinger.ServerPingerPool
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
@@ -24,12 +25,7 @@ class PingHud : TextHud(
     @Switch(title = "Show in Single Player")
     var showInSinglePlayer = true
 
-    private val pinger by lazy {
-        ServerPingerPool.createPinger(
-            intervalSupplier = { interval },
-            serverSupplier = { OmniClientMultiplayer.currentServer }
-        )
-    }
+    private lateinit var pinger: ServerPinger
 
     override fun setup() {
         super.setup()
@@ -39,6 +35,10 @@ class PingHud : TextHud(
 
         if (isReal) {
             updateWhenChanged("showInSinglePlayer")
+            pinger = ServerPingerPool.createPinger(
+                intervalSupplier = { interval },
+                serverSupplier = { OmniClientMultiplayer.currentServer }
+            )
         }
     }
 
@@ -47,7 +47,12 @@ class PingHud : TextHud(
     }
 
     override fun getText(): String? {
-        sb.append(pinger.ping ?: 0)
+        if (isReal) {
+            sb.append(pinger.ping ?: 0)
+        } else {
+            sb.append(0)
+        }
+
         return null
     }
 
