@@ -11,11 +11,16 @@ import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 import org.polyfrost.oneconfig.utils.v1.Multithreading
 
 //#if MC >= 1.20.6
-//$$ import net.minecraft.network.NetworkSide
+//$$ import net.minecraft.util.profiler.MultiValueDebugSampleLogImpl
+//#endif
+
+//#if MC == 1.20.4
+//$$ import net.minecraft.util.SampleLogger
 //#endif
 
 //#if MC >= 1.17.1
-//$$ import java.net.InetSocketAddress
+//$$ import net.minecraft.client.network.Address
+//$$ import net.minecraft.client.network.AllowedAddressResolver
 //#else
 import java.net.InetAddress
 //#endif
@@ -33,7 +38,7 @@ class ServerPinger(
     init {
         submitTask() // Populate initial ping
 
-        eventHandler { _: TickEvent.Start ->
+        eventHandler<TickEvent.Start> {
             if (ticks++ % intervalSupplier() == 0) {
                 submitTask()
             }
@@ -43,31 +48,26 @@ class ServerPinger(
     private fun submitTask() {
         Multithreading.submit {
             val server = serverSupplier() ?: return@submit
-            if (!server.isLocal) {
-                ping(server)
-            }
+            ping(server)
         }
     }
 
     private fun ping(server: OmniClientServerEntry) {
+        println("Pinging server: ${server.address}")
+
         val address = ServerAddress.fromString(server.address)
-        //#if MC >= 1.20.6
-        //$$ val connection = ClientConnection(NetworkSide.CLIENTBOUND)
-        //$$ ClientConnection.connect(
-        //#else
         val connection = NetworkManager.createNetworkManagerAndConnect(
-        //#endif
             //#if MC >= 1.17.1
-            //$$ InetSocketAddress.createUnresolved(address.address, address.port),
+            //$$ AllowedAddressResolver.DEFAULT.resolve(address).map { it.inetSocketAddress }.orElseThrow(),
             //#else
             InetAddress.getByName(address.ip),
             address.port,
             //#endif
             false,
             //#if MC >= 1.20.6
-            //$$ connection,
+            //$$ null as MultiValueDebugSampleLogImpl?,
             //#elseif MC >= 1.20.4
-            //$$ null,
+            //$$ null as SampleLogger?,
             //#endif
         )
 

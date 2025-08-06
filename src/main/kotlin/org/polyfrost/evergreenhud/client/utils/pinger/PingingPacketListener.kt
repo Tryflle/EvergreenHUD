@@ -17,6 +17,10 @@ import net.minecraft.network.status.server.S01PacketPong
 import net.minecraft.util.IChatComponent
 //#endif
 
+//#if MC >= 1.16.5
+//$$ import net.minecraft.Util
+//#endif
+
 class PingingPacketListener(
     private val server: OmniClientServerEntry,
     private val networkManager: NetworkManager,
@@ -25,6 +29,15 @@ class PingingPacketListener(
 
     private var started = false
     private var startTime = -1L
+
+    private val currentTime: Long
+        get() {
+            //#if MC >= 1.16.5
+            //$$ return Util.getMillis()
+            //#else
+            return OmniClient.getTimeSinceStart()
+            //#endif
+        }
 
     override fun onDisconnect(
         //#if MC >= 1.21.1
@@ -36,6 +49,7 @@ class PingingPacketListener(
         //#if MC >= 1.21.1
         //$$ val reason = details.reason
         //#endif
+        println("Disconnected from server ${server.address} (${server.name}) with reason: ${MCTextHolder.convertFromVanilla(reason).asUnformattedString()}")
         if (!started) {
             throw IllegalStateException("Could not query server ${server.address} (${server.name}) for ping status. Reason: ${MCTextHolder.convertFromVanilla(reason).asUnformattedString()}")
         }
@@ -52,13 +66,15 @@ class PingingPacketListener(
             return
         }
 
+        println("Received server info packet from ${server.address} (${server.name})")
         started = true
-        startTime = System.currentTimeMillis()
+        startTime = currentTime
         networkManager.sendPacket(C01PacketPing(startTime))
     }
 
     override fun handlePong(packetIn: S01PacketPong) {
-        callback((OmniClient.getTimeSinceStart() - startTime).toInt())
+        println("Received pong packet from ${server.address} (${server.name})")
+        callback((currentTime - startTime).toInt())
     }
 
     //#if MC >= 1.19.4

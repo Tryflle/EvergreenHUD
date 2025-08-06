@@ -47,10 +47,10 @@ class PingHud : TextHud(
     }
 
     override fun getText(): String? {
-        if (isReal) {
-            sb.append(pinger.ping ?: 0)
+        if (isReal && ::pinger.isInitialized) {
+            sb.append(pinger.ping ?: "-1 (unknown)")
         } else {
-            sb.append(0)
+            sb.append("-1")
         }
 
         return null
