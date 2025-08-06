@@ -17,6 +17,15 @@ private const val MAX_REACH_DISTANCE = 6.0f
 private val Entity.accurateCollisionBox: AxisAlignedBB
     get() = entityBoundingBox.expand(collisionBorderSize.toDouble(), collisionBorderSize.toDouble(), collisionBorderSize.toDouble())
 
+val Entity.uniqueEntityId: Int
+    get() {
+        //#if MC >= 1.17.1
+        //$$ return id
+        //#else
+        return entityId
+        //#endif
+    }
+
 fun StringBuilder.replace(string: String, value: String): StringBuilder {
     val index = indexOf(string)
     if (index != -1) {

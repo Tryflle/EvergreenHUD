@@ -11,6 +11,11 @@ data class ClientDamageEntityEvent(
     val target: Entity
 ) : Event
 
+data class ServerDamageEntityEvent(
+    val attacker: Entity,
+    val target: Entity
+) : Event
+
 data class ClientPlaceBlockEvent(
     val player: EntityPlayer,
     val world: World
