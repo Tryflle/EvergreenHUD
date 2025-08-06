@@ -26,7 +26,7 @@ object EvergreenHudClient {
 
         HudManager.register(
             BatteryHud(), BiomeHud(), BlockAboveHud(),
-            ClockHud(), /*ComboHud(),*/ CpsHud(),
+            ClockHud(), ComboHud(), CpsHud(),
             DayHud(), EntityCounterHud(), FpsHud(),
             InGameTimeHud(), /*InventoryHud(),*/ /*ItemHud(),*/
             KeyHud(), LoreHud(), MemoryHud(),
