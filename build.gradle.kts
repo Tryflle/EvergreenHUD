@@ -16,7 +16,7 @@ plugins {
 
 toolkitLoomHelper {
     useOneConfig {
-        version = "1.0.0-alpha.121"
+        version = "1.0.0-alpha.123"
         loaderVersion = "1.1.0-alpha.48"
 
         usePolyMixin = true
@@ -31,6 +31,8 @@ toolkitLoomHelper {
 
     // Turns off the server-side run configs, as we're building a client-sided mod.
     disableRunConfigs(GameSide.SERVER)
+
+    useDevAuth("+")
 
     // Defines the name of the Mixin refmap, which is used to map the Mixin classes to the obfuscated Minecraft classes.
     if (!mcData.isNeoForge) {

@@ -28,7 +28,7 @@ object EvergreenHudClient {
             BatteryHud(), BiomeHud(), BlockAboveHud(),
             ClockHud(), ComboHud(), CpsHud(),
             DayHud(), EntityCounterHud(), FpsHud(),
-            InGameTimeHud(), /*InventoryHud(),*/ /*ItemHud(),*/
+            InGameTimeHud(), InventoryHud(), /*ItemHud(),*/
             KeyHud(), LoreHud(), MemoryHud(),
             PingHud(), PlaceCountHud(), /*PlayerPreviewHud(),*/
             PlayTimeHud(), PositionHud(), ReachHud(),

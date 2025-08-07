@@ -35,7 +35,7 @@ preprocess {
                                                                                             "1.18.2-forge"(1_18_02, "srg") {
                                                                                                 "1.17.1-forge"(1_17_01, "srg") {
                                                                                                     "1.17.1-fabric"(1_17_01, "yarn") {
-                                                                                                        "1.16.5-fabric"(1_16_05, "yarn") {
+                                                                                                        "1.16.5-fabric"(1_16_05, "yarn", file("versions/mappings/1.17.1-fabric+1.16.5-fabric.txt")) {
                                                                                                             "1.16.5-forge"(1_16_05, "srg") {
                                                                                                                 "1.12.2-forge"(1_12_02, "srg", file("versions/mappings/1.16.5-forge+1.12.2-forge.txt")) {
                                                                                                                     "1.12.2-fabric"(1_12_02, "yarn") {
