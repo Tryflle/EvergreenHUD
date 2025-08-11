@@ -1,4 +1,4 @@
-package org.polyfrost.evergreenhud.mixins;
+package org.polyfrost.evergreenhud.mixins.client;
 
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;

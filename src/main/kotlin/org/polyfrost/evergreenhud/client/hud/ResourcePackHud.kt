@@ -2,10 +2,9 @@
 //
 //import dev.deftu.omnicore.client.OmniClient
 //import net.minecraft.client.resources.ResourcePackRepository
-//import net.minecraftforge.client.event.TextureStitchEvent
-//import net.minecraftforge.common.MinecraftForge
-//import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+//import org.polyfrost.evergreenhud.client.ResourceReloadEvent
 //import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+//import org.polyfrost.oneconfig.api.event.v1.eventHandler
 //import org.polyfrost.oneconfig.api.hud.v1.Hud
 //import org.polyfrost.polyui.component.extensions.setFont
 //import org.polyfrost.polyui.component.impl.Group
@@ -23,25 +22,20 @@
 //    title = "Resource Pack",
 //    category = Category.INFO,
 //) {
-//
 //    private companion object {
-//
 //        private val default by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
 //            PolyImage("pack.png")
 //        }
-//
 //    }
 //
 //    @Switch(title = "Ignore Overlay")
 //    var ignoreOverlay = true
 //
-//    init {
-//        MinecraftForge.EVENT_BUS.register(this)
-//    }
-//
-//    @SubscribeEvent
-//    fun onPackChange(e: TextureStitchEvent.Post) {
-//        updatePack()
+//    override fun setup() {
+//        super.setup()
+//        eventHandler<ResourceReloadEvent> {
+//            updatePack()
+//        }
 //    }
 //
 //    fun updatePack() {
@@ -80,5 +74,4 @@
 //            return out.toByteArray()
 //        }
 //    }
-//
 //}

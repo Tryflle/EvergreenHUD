@@ -1,6 +1,8 @@
-package org.polyfrost.evergreenhud.mixins;
+package org.polyfrost.evergreenhud.mixins.client;
 
 //#if FORGE
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
 import org.polyfrost.evergreenhud.client.ClientPlaceBlockEvent;
 import org.polyfrost.oneconfig.api.event.v1.EventManager;
@@ -13,11 +15,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 //$$ import net.minecraft.world.InteractionResult;
 //$$ import net.minecraft.world.item.context.UseOnContext;
 //#else
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
+//#if MC >= 1.12.2
+//$$ import net.minecraft.util.math.BlockPos;
+//#else
 import net.minecraft.util.BlockPos;
+//#endif
+
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.world.World;
 //#endif
 
 @Mixin(value = ForgeHooks.class, remap = false)
@@ -55,6 +60,14 @@ public class Mixin_ForgeHooks_ClientPlaceBlockEvent {
             CallbackInfoReturnable<Boolean> cir
             //#endif
     ) {
+        //#if MC >= 1.16.5
+        //$$ Player player = ctx.getPlayer();
+        //$$ if (player == null) {
+        //$$     return;
+        //$$ }
+        //$$
+        //$$ Level world = ctx.getLevel();
+        //#endif
         EventManager.INSTANCE.post(new ClientPlaceBlockEvent(player, world));
     }
 

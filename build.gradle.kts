@@ -1,6 +1,7 @@
 @file:Suppress("UnstableApiUsage", "PropertyName")
 
 import dev.deftu.gradle.utils.GameSide
+import dev.deftu.gradle.utils.version.MinecraftVersions
 
 plugins {
     java
@@ -14,9 +15,13 @@ plugins {
     id("dev.deftu.gradle.tools.minecraft.releases") // Applies the Minecraft auto-releasing plugin, which allows you to automatically release your mod to CurseForge and Modrinth.
 }
 
+toolkitMultiversion {
+    moveBuildsToRootProject.set(true)
+}
+
 toolkitLoomHelper {
     useOneConfig {
-        version = "1.0.0-alpha.123"
+        version = "1.0.0-alpha.128"
         loaderVersion = "1.1.0-alpha.48"
 
         usePolyMixin = true
@@ -42,5 +47,25 @@ toolkitLoomHelper {
     if (mcData.isForge) {
         // Configures the Mixin tweaker if we are building for Forge.
         useForgeMixin(modData.id)
+    }
+}
+
+repositories {
+    exclusiveContent {
+        forRepository {
+            maven {
+                setUrl("https://cursemaven.com")
+            }
+        }
+
+        filter {
+            includeGroup("curse.maven")
+        }
+    }
+}
+
+dependencies {
+    if (mcData.version == MinecraftVersions.VERSION_1_21_5 && mcData.isFabric) {
+        modCompileOnly("curse.maven:inventory-hud-forge-357540:6355978")
     }
 }

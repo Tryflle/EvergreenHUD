@@ -1,4 +1,4 @@
-package org.polyfrost.evergreenhud.mixins;
+package org.polyfrost.evergreenhud.mixins.client;
 
 import dev.deftu.omnicore.client.OmniClientPlayer;
 import dev.deftu.omnicore.common.OmniEquipment;

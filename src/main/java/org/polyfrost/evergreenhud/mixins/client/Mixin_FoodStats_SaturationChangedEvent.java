@@ -1,4 +1,4 @@
-package org.polyfrost.evergreenhud.mixins;
+package org.polyfrost.evergreenhud.mixins.client;
 
 import net.minecraft.util.FoodStats;
 import org.polyfrost.evergreenhud.client.SaturationChangedEvent;

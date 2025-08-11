@@ -1,22 +1,21 @@
 {
-  "compatibilityLevel": "JAVA_8",
-  "minVersion": "0.7",
-  "package": "org.polyfrost.evergreenhud.mixins",
-  "refmap": "mixins.evergreenhud.refmap.json",
-  "injectors": {
-    "maxShiftBy": 5
-  },
-  "verbose": true,
-  "mixins": [
-      "Mixin_EntityPlayer_ClientDamageEntityEvent",
-    "Mixin_ForgeHooks_ClientPlaceBlockEvent",
-    "Mixin_InventoryPlayer_SelectedItemChangedEvent",
-    "Mixin_FoodStats_SaturationChangedEvent"
-  ],
-  "client": [
-      "Mixin_RenderGlobal_EntityCounterEvent",
-    "Mixin_Minecraft_SelectedItemChangedEvent",
-    "Mixin_NetHandlerPlayClient_SelectedItemChangedEvent",
-    "Mixin_Minecraft_ServerChangedEvent"
-  ]
+    "compatibilityLevel": "JAVA_8",
+    "minVersion": "0.7",
+    "package": "org.polyfrost.evergreenhud.mixins",
+    "refmap": "mixins.evergreenhud.refmap.json",
+    "plugin": "org.polyfrost.evergreenhud.mixins.EvergreenHudMixinPlugin",
+    "injectors": {
+        "maxShiftBy": 5
+    },
+    "verbose": true,
+    "client": [
+        "client.Mixin_EntityPlayer_ClientDamageEntityEvent",
+        "client.Mixin_FoodStats_SaturationChangedEvent",
+        "client.Mixin_ForgeHooks_ClientPlaceBlockEvent",
+        "client.Mixin_InventoryPlayer_SelectedItemChangedEvent",
+        "client.Mixin_Minecraft_SelectedItemChangedEvent",
+        "client.Mixin_Minecraft_ServerChangedEvent",
+        "client.Mixin_NetHandlerPlayClient_SelectedItemChangedEvent",
+        "client.Mixin_RenderGlobal_EntityCounterEvent"
+    ]
 }

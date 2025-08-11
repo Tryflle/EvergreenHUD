@@ -1,4 +1,4 @@
-package org.polyfrost.evergreenhud.mixins;
+package org.polyfrost.evergreenhud.mixins.client;
 
 import net.minecraft.client.renderer.RenderGlobal;
 import org.polyfrost.evergreenhud.client.EntityCounterEvent;

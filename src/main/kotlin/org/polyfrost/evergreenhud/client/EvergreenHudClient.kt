@@ -23,12 +23,13 @@ object EvergreenHudClient {
     fun initialize() {
         FrameTimeHelper.initialize()
         PinkuluMapCache.initialize()
+//        OmniClient.registerReloadListener(ResourceReloadEventReloadListener)
 
         HudManager.register(
             BatteryHud(), BiomeHud(), BlockAboveHud(),
             ClockHud(), ComboHud(), CpsHud(),
             DayHud(), EntityCounterHud(), FpsHud(),
-            InGameTimeHud(), InventoryHud(), /*ItemHud(),*/
+            InGameTimeHud(), /*InventoryHud(),*/ /*ItemHud(),*/
             KeyHud(), LoreHud(), MemoryHud(),
             PingHud(), PlaceCountHud(), /*PlayerPreviewHud(),*/
             PlayTimeHud(), PositionHud(), ReachHud(),

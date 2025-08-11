@@ -93,11 +93,11 @@ class ServerPinger(
         //$$     }
         //$$ )
         //#elseif MC >= 1.12.2
-        //$$ sendPacket(C00Handshake(
-        //$$     address.ip,
+        //$$ send(HandshakeC2SPacket(
+        //$$     address.address,
         //$$     address.port,
-        //$$     EnumConnectionState.STATUS,
-        //#if MC == 1.12.2
+        //$$     NetworkState.STATUS,
+        //#if MC == 1.12.2 && FORGE
         //$$     false,
         //#endif
         //$$ ))

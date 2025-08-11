@@ -4,6 +4,12 @@
 //import dev.deftu.omnicore.client.OmniClientPlayer
 //import dev.deftu.omnicore.client.render.OmniGameRendering
 //import dev.deftu.omnicore.client.render.OmniMatrixStack
+//import dev.deftu.omnicore.client.render.framebuffer.Framebuffer
+//import dev.deftu.omnicore.client.render.pipeline.DrawModes
+//import dev.deftu.omnicore.client.render.pipeline.VertexFormats
+//import dev.deftu.omnicore.client.render.state.OmniManagedAlphaState
+//import dev.deftu.omnicore.client.render.state.OmniManagedBlendState
+//import dev.deftu.omnicore.client.render.vertex.OmniBufferBuilder
 //import dev.deftu.omnicore.common.OmniEquipment
 //import dev.deftu.omnicore.common.isActuallyEmpty
 //import dev.deftu.omnicore.common.stackAmount
@@ -102,9 +108,7 @@
 //
 //    override var width = 15f
 //
-//    override var height: Float
-//        get() = width
-//        set(_) {}
+//    override var height = 15f
 //
 //    private val ItemStack.orNull: ItemStack?
 //        get() = if (this.isActuallyEmpty) null else this
@@ -145,16 +149,25 @@
 //        example: Boolean
 //    ) {
 //        val item = getItem(option) ?: return
+////        renderRectangle(stack, x, y)
+////        println("Rendering item: $item at ($x, $y)")
 //        RenderHelper.enableGUIStandardItemLighting()
-//        OmniClient.getInstance().renderItem.zLevel += 200f
 //        OmniClient.getInstance().renderItem.renderItemIntoGUI(item, x.toInt(), y.toInt())
 //        if (showDurability && durabilityDisplay == 0) {
-//            item.renderDurabilityBar(x, y)
+////            item.renderDurabilityBar(x, y)
 //        }
 //
 //        RenderHelper.disableStandardItemLighting()
-//        OmniClient.getInstance().renderItem.zLevel -= 200f
-//        item.renderOverlayText(stack, x, y)
+////        item.renderOverlayText(stack, x, y)
+//    }
+//
+//    private fun renderRectangle(stack: OmniMatrixStack, x: Float, y: Float) {
+//        val buffer = OmniBufferBuilder.create(DrawModes.QUADS, VertexFormats.POSITION_COLOR)
+//        buffer.vertex(stack, x.toDouble(), (y + height).toDouble(), 0.0).color(textColor.rgba).next()
+//        buffer.vertex(stack, (x + width).toDouble(), (y + height).toDouble(), 0.0).color(textColor.rgba).next()
+//        buffer.vertex(stack, (x + width).toDouble(), y.toDouble(), 0.0).color(textColor.rgba).next()
+//        buffer.vertex(stack, x.toDouble(), y.toDouble(), 0.0).color(textColor.rgba).next()
+//        buffer.build()?.drawWithCleanup(Framebuffer.pipeline)
 //    }
 //
 //    override fun update(): Boolean {

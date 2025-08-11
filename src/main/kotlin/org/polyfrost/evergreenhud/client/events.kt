@@ -41,6 +41,8 @@ data class BlockPositionChangedEvent(
     val z: Int
 ) : Event
 
+data object ResourceReloadEvent : Event
+
 /** This is an object so that we don't need to create a new one every frame. Slight optimization. */
 data object EntityCounterEvent : Event {
 

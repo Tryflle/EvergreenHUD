@@ -10,19 +10,12 @@ class TpsHud : GenericNumberHud(
     title = "TPS",
     category = Category.INFO,
 ) {
-
     private var lastUpdated = 0L
 
     override fun setup() {
         super.setup()
         eventHandler { event: PacketEvent.Receive ->
-            if (event.getPacket<Any>() is
-                    //#if MC>=11202
-                    //$$ net.minecraft.network.play.server.SPacketTimeUpdate
-                    //#else
-                    S03PacketTimeUpdate
-                    //#endif
-            ) {
+            if (event.getPacket<Any>() is S03PacketTimeUpdate) {
                 val now = System.currentTimeMillis()
                 val timeTaken = now - lastUpdated
                 lastUpdated = now
@@ -31,5 +24,4 @@ class TpsHud : GenericNumberHud(
             }
         }
     }
-
 }
