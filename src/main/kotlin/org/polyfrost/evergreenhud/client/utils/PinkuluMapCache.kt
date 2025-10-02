@@ -8,7 +8,6 @@ import org.polyfrost.oneconfig.utils.v1.NetworkUtils
 import kotlin.jvm.optionals.getOrNull
 
 object PinkuluMapCache {
-
     private lateinit var cachedJson: List<JsonObject>
     private var previousLocation: HypixelUtils.Location? = null
     private var previousData: JsonObject? = null
@@ -52,7 +51,7 @@ object PinkuluMapCache {
         val gameType = location.gameType.getOrNull()?.databaseName?.uppercase() ?: return null
         val data = cachedJson.firstOrNull {
             it.has("mapName") && it.get("mapName").asString == mapName &&
-            it.has("gameType") && it.get("gameType").asString == gameType
+                    it.has("gameType") && it.get("gameType").asString == gameType
         } ?: return null
 
         previousLocation = location
@@ -76,5 +75,4 @@ object PinkuluMapCache {
     fun getMapHeight(location: HypixelUtils.Location): Int {
         return getFor(location)?.get("maxBuild")?.asInt ?: -1
     }
-
 }

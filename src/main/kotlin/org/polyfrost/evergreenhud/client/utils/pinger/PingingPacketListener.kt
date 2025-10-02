@@ -1,7 +1,6 @@
 package org.polyfrost.evergreenhud.client.utils.pinger
 
-import dev.deftu.omnicore.client.OmniClient
-import dev.deftu.omnicore.client.OmniClientServerEntry
+import dev.deftu.omnicore.api.client.network.OmniServerInfo
 import dev.deftu.textile.minecraft.MCSimpleTextHolder
 import dev.deftu.textile.minecraft.MCTextFormat
 import dev.deftu.textile.minecraft.MCTextHolder
@@ -12,21 +11,22 @@ import net.minecraft.network.status.server.S00PacketServerInfo
 import net.minecraft.network.status.server.S01PacketPong
 
 //#if MC >= 1.21.1
-//$$ import net.minecraft.network.DisconnectionDetails
+//$$ import net.minecraft.network.DisconnectionInfo
 //#else
 import net.minecraft.util.IChatComponent
 //#endif
 
 //#if MC >= 1.16.5
 //$$ import net.minecraft.Util
+//#else
+import dev.deftu.omnicore.api.client.OmniClientRuntime
 //#endif
 
 class PingingPacketListener(
-    private val server: OmniClientServerEntry,
+    private val server: OmniServerInfo,
     private val networkManager: NetworkManager,
     private val callback: (Int) -> Unit
 ) : INetHandlerStatusClient {
-
     private var started = false
     private var startTime = -1L
 
@@ -35,19 +35,19 @@ class PingingPacketListener(
             //#if MC >= 1.16.5
             //$$ return Util.getMillis()
             //#else
-            return OmniClient.getTimeSinceStart()
+            return OmniClientRuntime.nowMillis
             //#endif
         }
 
     override fun onDisconnect(
         //#if MC >= 1.21.1
-        //$$ details: DisconnectionDetails,
+        //$$ details: DisconnectionInfo,
         //#else
         reason: IChatComponent
         //#endif
     ) {
         //#if MC >= 1.21.1
-        //$$ val reason = details.reason
+        //$$ val reason = details.comp_2853
         //#endif
         println("Disconnected from server ${server.address} (${server.name}) with reason: ${MCTextHolder.convertFromVanilla(reason).asUnformattedString()}")
         if (!started) {
@@ -86,5 +86,4 @@ class PingingPacketListener(
     //$$     return networkManager
     //$$ }
     //#endif
-
 }

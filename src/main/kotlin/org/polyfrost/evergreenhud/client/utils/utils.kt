@@ -1,7 +1,8 @@
 package org.polyfrost.evergreenhud.client.utils
 
-import dev.deftu.omnicore.client.OmniClientPlayer
-import dev.deftu.omnicore.common.profile
+import dev.deftu.omnicore.api.client.client
+import dev.deftu.omnicore.api.client.player
+import dev.deftu.omnicore.api.client.profiled
 import net.minecraft.entity.Entity
 import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.MovingObjectPosition
@@ -36,17 +37,17 @@ fun StringBuilder.replace(string: String, value: String): StringBuilder {
 }
 
 fun calculateReachDistanceToEntity(entity: Entity): Float {
-    return profile<Float>("evergreenhud_reach_distance_calculation") {
-        val player = OmniClientPlayer.getInstance()
-        if (player == null || !player.isEntityAlive) {
-            return@profile 0f
+    return client.profiled<Float>("evergreenhud_reach_distance_calculation") {
+        val player = player ?: return@profiled 0f
+        if (!player.isEntityAlive) {
+            return@profiled 0f
         }
 
         val collisionBox = entity.accurateCollisionBox
         val eyePos = player.getPositionEyes(1.0f)
         val lookPos = player.getLook(1.0f)
         val adjustedPos = eyePos.addVector(lookPos.xCoord * MAX_REACH_DISTANCE, lookPos.yCoord * MAX_REACH_DISTANCE, lookPos.zCoord * MAX_REACH_DISTANCE)
-        val movingObjectPosition = collisionBox.castTo(entity, eyePos, adjustedPos) ?: return@profile 0f
+        val movingObjectPosition = collisionBox.castTo(entity, eyePos, adjustedPos) ?: return@profiled 0f
         val otherEntityVec = movingObjectPosition.hitVec
         eyePos.distanceTo(otherEntityVec).toFloat()
     }

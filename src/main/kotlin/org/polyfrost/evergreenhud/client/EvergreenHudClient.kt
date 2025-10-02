@@ -1,7 +1,10 @@
 package org.polyfrost.evergreenhud.client
 
-import dev.deftu.omnicore.client.OmniClient
-import dev.deftu.omnicore.client.OmniClientPlayer
+import dev.deftu.omnicore.api.client.player
+import dev.deftu.omnicore.api.client.resources.OmniClientResources
+import dev.deftu.omnicore.api.client.world
+import dev.deftu.omnicore.api.data.vec.OmniVec3d
+import dev.deftu.omnicore.api.entity.currentPos
 import net.minecraft.entity.Entity
 import net.minecraft.network.play.server.S19PacketEntityStatus
 import org.polyfrost.evergreenhud.client.hud.*
@@ -10,6 +13,7 @@ import org.polyfrost.evergreenhud.client.hud.clock.ClockHud
 import org.polyfrost.evergreenhud.client.hud.hypixel.*
 import org.polyfrost.evergreenhud.client.utils.FrameTimeHelper
 import org.polyfrost.evergreenhud.client.utils.PinkuluMapCache
+import org.polyfrost.evergreenhud.client.utils.ResourceReloadEventReloadListener
 import org.polyfrost.evergreenhud.client.utils.uniqueEntityId
 import org.polyfrost.oneconfig.api.event.v1.EventManager
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
@@ -19,14 +23,13 @@ import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import kotlin.jvm.optionals.getOrNull
 
 object EvergreenHudClient {
-
     fun initialize() {
         FrameTimeHelper.initialize()
         PinkuluMapCache.initialize()
-//        OmniClient.registerReloadListener(ResourceReloadEventReloadListener)
+        OmniClientResources.registerReloadListener(ResourceReloadEventReloadListener)
 
         HudManager.register(
-            BatteryHud(), BiomeHud(), BlockAboveHud(),
+            BatteryHud(), /*BiomeHud(),*/ BlockAboveHud(),
             ClockHud(), ComboHud(), CpsHud(),
             DayHud(), EntityCounterHud(), FpsHud(),
             InGameTimeHud(), /*InventoryHud(),*/ /*ItemHud(),*/
@@ -49,18 +52,13 @@ object EvergreenHudClient {
 
     @Suppress("FunctionName", "AssignedValueIsNeverRead")
     private fun BlockPositionChangedEvent() {
-        var lastPosX = 0.0
-        var lastPosY = 0.0
-        var lastPosZ = 0.0
+        var lastPos = OmniVec3d.ZERO
         eventHandler { _: TickEvent.End ->
-            val posX = OmniClientPlayer.posX
-            val posY = OmniClientPlayer.posY
-            val posZ = OmniClientPlayer.posZ
-            if (posX != lastPosX || posY != lastPosY || posZ != lastPosZ) {
-                lastPosX = posX
-                lastPosY = posY
-                lastPosZ = posZ
-                EventManager.INSTANCE.post(BlockPositionChangedEvent(posX.toInt(), posY.toInt(), posZ.toInt()))
+            val player = player ?: return@eventHandler
+            val pos = player.currentPos
+            if (pos != lastPos) {
+                lastPos = pos
+                EventManager.INSTANCE.post(BlockPositionChangedEvent(pos.x.toInt(), pos.y.toInt(), pos.z.toInt()))
             }
         }
     }
@@ -80,8 +78,8 @@ object EvergreenHudClient {
                 return@eventHandler
             }
 
-            val world = OmniClient.currentWorld ?: return@eventHandler
-            val target = packet.getEntity(world.vanilla) ?: return@eventHandler
+            val world = world ?: return@eventHandler
+            val target = packet.getEntity(world) ?: return@eventHandler
             if (lastAttacker == null || lastTargetId != target.uniqueEntityId) {
                 return@eventHandler
             }
@@ -91,5 +89,4 @@ object EvergreenHudClient {
             lastTargetId = -1
         }
     }
-
 }

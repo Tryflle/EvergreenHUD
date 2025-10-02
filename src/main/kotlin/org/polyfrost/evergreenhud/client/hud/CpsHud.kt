@@ -16,7 +16,6 @@ class CpsHud : TextHud(
     prefix = "CPS: ",
     suffix = ""
 ) {
-
     @Text(title = "CPS Button Divider")
     var divider = " | "
 
@@ -78,5 +77,4 @@ class CpsHud : TextHud(
     }
 
     override fun updateFrequency() = 100.milliseconds
-
 }

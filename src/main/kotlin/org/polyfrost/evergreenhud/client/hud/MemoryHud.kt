@@ -16,7 +16,6 @@ class MemoryHud : TextHud(
     prefix = "Memory: ",
     suffix = " GB"
 ) {
-
     @RadioButton(
         title = "Display Type",
         options = ["Absolute", "Percentage"]
@@ -71,5 +70,4 @@ class MemoryHud : TextHud(
     private fun bytesToMb(bytes: Long): Long {
         return bytes / 1024L / 1024L
     }
-
 }

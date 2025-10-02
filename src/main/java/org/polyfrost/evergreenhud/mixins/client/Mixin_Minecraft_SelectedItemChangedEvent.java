@@ -1,7 +1,8 @@
 package org.polyfrost.evergreenhud.mixins.client;
 
-import dev.deftu.omnicore.client.OmniClientPlayer;
-import dev.deftu.omnicore.common.OmniEquipment;
+import dev.deftu.omnicore.api.client.OmniClient;
+import dev.deftu.omnicore.api.equipment.EquipmentType;
+import dev.deftu.omnicore.api.equipment.OmniEquipment;
 import net.minecraft.client.Minecraft;
 import org.objectweb.asm.Opcodes;
 import org.polyfrost.evergreenhud.client.SelectedItemChangedEvent;
@@ -13,7 +14,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Minecraft.class)
 public abstract class Mixin_Minecraft_SelectedItemChangedEvent {
-
     @Inject(
             //#if MC >= 1.12.2
             //$$ method = "processKeyBinds",
@@ -28,7 +28,6 @@ public abstract class Mixin_Minecraft_SelectedItemChangedEvent {
             )
     )
     private void selectedItemChangeCallback(CallbackInfo ci) {
-        EventManager.INSTANCE.post(new SelectedItemChangedEvent(OmniClientPlayer.getEquipment(OmniEquipment.EquipmentType.MAIN_HAND)));
+        EventManager.INSTANCE.post(new SelectedItemChangedEvent(OmniEquipment.get(OmniClient.getPlayer(), EquipmentType.MainHand.INSTANCE)));
     }
-
 }

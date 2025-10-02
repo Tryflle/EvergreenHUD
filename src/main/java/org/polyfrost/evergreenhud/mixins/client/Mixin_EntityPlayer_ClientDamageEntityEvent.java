@@ -11,10 +11,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(EntityPlayer.class)
 public abstract class Mixin_EntityPlayer_ClientDamageEntityEvent {
-
     @Inject(method = "attackTargetEntityWithCurrentItem", at = @At("HEAD"))
     private void onAttackTargetEntityWithCurrentItem(Entity target, CallbackInfo ci) {
         EventManager.INSTANCE.post(new ClientDamageEntityEvent((EntityPlayer) (Object) this, target));
     }
-
 }

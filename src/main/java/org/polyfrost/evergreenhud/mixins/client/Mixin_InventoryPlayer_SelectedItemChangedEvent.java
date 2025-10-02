@@ -13,7 +13,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(InventoryPlayer.class)
 public abstract class Mixin_InventoryPlayer_SelectedItemChangedEvent {
-
     @Shadow public abstract ItemStack getCurrentItem();
 
     @Inject(
@@ -35,5 +34,4 @@ public abstract class Mixin_InventoryPlayer_SelectedItemChangedEvent {
     private void selectedItemChangeCallback(CallbackInfo ci) {
         EventManager.INSTANCE.post(new SelectedItemChangedEvent(this.getCurrentItem()));
     }
-
 }

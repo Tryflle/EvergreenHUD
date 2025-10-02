@@ -1,5 +1,6 @@
 package org.polyfrost.evergreenhud.client.hud
 
+import dev.deftu.omnicore.api.client.input.OmniKeys
 import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.Keybind
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
@@ -10,6 +11,8 @@ import org.polyfrost.polyui.color.rgba
 import org.polyfrost.polyui.component.impl.Block
 import org.polyfrost.polyui.component.impl.Text
 import org.polyfrost.polyui.input.KeyBinder
+import org.polyfrost.polyui.input.Keys
+import org.polyfrost.polyui.input.PolyBind
 import org.polyfrost.polyui.operations.Recolor
 import org.polyfrost.polyui.unit.milliseconds
 
@@ -19,12 +22,11 @@ class KeyHud : Hud<Text>(
     title = "Key HUD",
     category = Category.INFO,
 ) {
-
     @TextOption(title = "Key Text")
     var keyText = "W"
 
     @Keybind(title = "Key")
-    var key = KeyBinder.Bind('W') { s -> state = s; false }
+    var key = PolyBind { s -> state = s; false }
 
     @Color(title = "Normal Text Color")
     var normalText = rgba(255, 255, 255, 1f)
@@ -72,5 +74,4 @@ class KeyHud : Hud<Text>(
         Recolor(getBackground() as Block, if (state) pressedBackground else normalBackground, animation).add()
         return false
     }
-
 }

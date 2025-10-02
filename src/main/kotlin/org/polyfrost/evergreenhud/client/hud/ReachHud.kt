@@ -1,6 +1,6 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.client.OmniClientPlayer
+import dev.deftu.omnicore.api.client.player
 import org.polyfrost.evergreenhud.client.ClientDamageEntityEvent
 import org.polyfrost.evergreenhud.client.utils.GenericNumberHud
 import org.polyfrost.evergreenhud.client.utils.calculateReachDistanceToEntity
@@ -15,7 +15,6 @@ class ReachHud : GenericNumberHud(
     category = Category.COMBAT,
     suffix = " blocks"
 ) {
-
     @Slider(title = "Discard Time", min = 1000F, max = 10000F)
     var discardTime = 3000
 
@@ -27,7 +26,7 @@ class ReachHud : GenericNumberHud(
     override fun setup() {
         super.setup()
         eventHandler { event: ClientDamageEntityEvent ->
-            if (event.attacker == OmniClientPlayer.getInstance()) {
+            if (event.attacker == player) {
                 val reach = calculateReachDistanceToEntity(event.target)
                 if (reach == 0f) {
                     return@eventHandler false
@@ -62,5 +61,4 @@ class ReachHud : GenericNumberHud(
     }
 
     override fun updateFrequency() = 1.seconds
-
 }

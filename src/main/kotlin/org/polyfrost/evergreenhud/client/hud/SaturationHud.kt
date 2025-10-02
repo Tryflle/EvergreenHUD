@@ -9,7 +9,6 @@ class SaturationHud : GenericNumberHud(
     title ="Saturation",
     category = Category.INFO
 ) {
-
     override fun setup() {
         super.setup()
         eventHandler { (saturation): SaturationChangedEvent ->
@@ -17,5 +16,4 @@ class SaturationHud : GenericNumberHud(
             updateAndRecalculate()
         }
     }
-
 }

@@ -1,6 +1,6 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.common.OmniNbt
+import dev.deftu.omnicore.api.nbt.length
 import net.minecraft.item.ItemStack
 import org.polyfrost.evergreenhud.client.SelectedItemChangedEvent
 import org.polyfrost.oneconfig.api.config.v1.annotations.Checkbox
@@ -28,7 +28,6 @@ class LoreHud : TextHud(
     category = Category.INFO,
     prefix = "",
 ) {
-
     @Switch(title = "Show Item Name")
     var showName = true
 
@@ -123,7 +122,7 @@ class LoreHud : TextHud(
         //$$ }
         //#else
         val tags = this.tagCompound?.getCompoundTag("display")?.getTagList("Lore", 8) ?: return
-        for (i in 0..<OmniNbt.List.size(tags)) {
+        for (i in 0..<tags.length) {
             consumer(tags.getStringTagAt(i))
         }
         //#endif

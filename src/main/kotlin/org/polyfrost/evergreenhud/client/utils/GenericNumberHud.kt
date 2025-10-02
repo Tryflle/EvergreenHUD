@@ -17,7 +17,6 @@ open class GenericNumberHud(
     prefix = prefix,
     suffix = suffix
 ) {
-
     @Slider(title = "Accuracy", min = 0F, max = 8F)
     var accuracy = 2
 
@@ -48,5 +47,4 @@ open class GenericNumberHud(
         sb.append(df.format(value))
         return null // Not needed. We use `sb` for better performance
     }
-
 }

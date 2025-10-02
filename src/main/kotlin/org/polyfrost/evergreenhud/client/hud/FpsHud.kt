@@ -11,7 +11,6 @@ class FpsHud : GenericNumberHud(
     title = "FPS",
     category = Category.INFO,
 ) {
-
     @Text(title = "Format String", description = "Use #avg for average, #med for median, #fps for fps, #p95 for 95th percentile, #p99 for 99th percentile, #cst for consistency")
     private var formatString = "#fps"
 
@@ -37,5 +36,4 @@ class FpsHud : GenericNumberHud(
     override fun getText(): String? {
         return null
     }
-
 }

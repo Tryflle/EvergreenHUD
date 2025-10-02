@@ -11,7 +11,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(FoodStats.class)
 public class Mixin_FoodStats_SaturationChangedEvent {
-
     @Shadow private float foodSaturationLevel;
 
     @Inject(method = "addStats(IF)V", at = @At("RETURN"))
@@ -33,5 +32,4 @@ public class Mixin_FoodStats_SaturationChangedEvent {
     private void onSet(CallbackInfo ci) {
         EventManager.INSTANCE.post(new SaturationChangedEvent(this.foodSaturationLevel));
     }
-
 }

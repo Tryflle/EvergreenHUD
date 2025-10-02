@@ -1,8 +1,11 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.client.OmniClient
-import dev.deftu.omnicore.common.OmniBlockPos
-import dev.deftu.omnicore.common.OmniSounds
+import dev.deftu.omnicore.api.client.sound.OmniClientSound
+import dev.deftu.omnicore.api.client.world
+import dev.deftu.omnicore.api.data.pos.OmniBlockPos
+import dev.deftu.omnicore.api.sound.OmniSounds
+import dev.deftu.omnicore.api.world.getBlockTypeAt
+import dev.deftu.omnicore.api.world.maxWorldHeight
 import net.minecraft.block.Block
 import net.minecraft.block.BlockBanner
 import net.minecraft.block.BlockSign
@@ -22,9 +25,7 @@ class BlockAboveHud : TextHud(
     prefix = "Block Above: ",
     suffix = " remaining"
 ) {
-
     private companion object {
-
         private val ignoredBlocks = setOf(
             Blocks.air,
             Blocks.water,
@@ -34,7 +35,6 @@ class BlockAboveHud : TextHud(
             get() {
                 return ignoredBlocks.contains(this) || this is BlockSign || this is BlockVine || this is BlockBanner
             }
-
     }
 
     private var notified = false
@@ -52,16 +52,16 @@ class BlockAboveHud : TextHud(
     override fun setup() {
         super.setup()
         eventHandler { (x, y, z): BlockPositionChangedEvent ->
-            val world = OmniClient.currentWorld ?: return@eventHandler
+            val world = world ?: return@eventHandler
 
             var above = 0
             for (i in 1..checkHeight) {
-                val pos = OmniBlockPos.from(x, y + 1 + i, z)
-                if (pos.y > world.height) {
+                val pos = OmniBlockPos(x, y + 1 + i, z)
+                if (pos.y > world.maxWorldHeight) {
                     break
                 }
 
-                val block = world.getBlockTypeAt(pos) ?: continue
+                val block = world.getBlockTypeAt(pos.vanilla) ?: continue
                 if (block.isIgnored) {
                     continue
                 }
@@ -69,7 +69,7 @@ class BlockAboveHud : TextHud(
                 above = i - 1
                 if (above <= notifyHeight && notify) {
                     if (!notified) {
-                        OmniSounds.EXPERIENCE_ORB_PICKUP.playForClient(0.25f, 1f)
+                        OmniClientSound.play(OmniSounds.EXPERIENCE_ORB_PICKUP, 0.25f, 1f)
                         notified = true
                     }
                 } else {
@@ -91,5 +91,4 @@ class BlockAboveHud : TextHud(
     override fun getText(): String? {
         return null
     }
-
 }

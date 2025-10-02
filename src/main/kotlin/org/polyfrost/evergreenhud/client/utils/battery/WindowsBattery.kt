@@ -6,7 +6,6 @@ import com.sun.jna.Structure
 
 @Suppress("ClassName", "FunctionName", "PropertyName")
 object WindowsBattery {
-
     fun obtain(): Battery {
         val status = SYSTEM_POWER_STATUS()
         if (!Kernel32.INSTANCE.GetSystemPowerStatus(status)) {
@@ -47,5 +46,4 @@ object WindowsBattery {
             )
         }
     }
-
 }

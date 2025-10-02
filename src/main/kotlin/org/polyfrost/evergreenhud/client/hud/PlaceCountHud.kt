@@ -1,6 +1,6 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.client.OmniClientPlayer
+import dev.deftu.omnicore.api.client.player
 import org.polyfrost.evergreenhud.client.ClientPlaceBlockEvent
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
@@ -28,7 +28,7 @@ class PlaceCountHud : TextHud(
         if (isReal) {
             blockCount = ArrayList()
             eventHandler { event: ClientPlaceBlockEvent ->
-                if (event.player == OmniClientPlayer.getInstance()) {
+                if (event.player == player) {
                     blockCount?.add(System.nanoTime())
                     updateAndRecalculate()
                 }

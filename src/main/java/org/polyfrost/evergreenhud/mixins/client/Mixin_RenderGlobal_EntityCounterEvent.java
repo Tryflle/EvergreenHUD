@@ -11,9 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(RenderGlobal.class)
 public abstract class Mixin_RenderGlobal_EntityCounterEvent {
-
     @Shadow private int countEntitiesRendered;
-
     @Shadow private int countEntitiesTotal;
 
     @Inject(method = "renderEntities", at = @At("TAIL"))
@@ -22,5 +20,4 @@ public abstract class Mixin_RenderGlobal_EntityCounterEvent {
         EntityCounterEvent.setTotal(this.countEntitiesTotal);
         EventManager.INSTANCE.post(EntityCounterEvent.INSTANCE);
     }
-
 }

@@ -1,7 +1,11 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.client.OmniClientPlayer
-import dev.deftu.omnicore.common.OmniPlanarDirection
+import dev.deftu.omnicore.api.client.player
+import dev.deftu.omnicore.api.direction.OmniPlanarDirection
+import dev.deftu.omnicore.api.entity.currentX
+import dev.deftu.omnicore.api.entity.currentY
+import dev.deftu.omnicore.api.entity.currentYaw
+import dev.deftu.omnicore.api.entity.currentZ
 import org.polyfrost.evergreenhud.client.utils.GenericNumberHud
 import org.polyfrost.oneconfig.api.config.v1.annotations.Checkbox
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
@@ -14,7 +18,6 @@ class PositionHud : GenericNumberHud(
     title = "Position",
     category = Category.INFO
 ) {
-
     @RadioButton(
         title = "Mode",
         options = ["Vertical", "Horizontal"]
@@ -36,7 +39,7 @@ class PositionHud : GenericNumberHud(
     @Checkbox(title = "Show Z")
     var showZ = true
 
-    private val facing get() = OmniPlanarDirection.from(OmniClientPlayer.yaw, isExact = true)
+    private val facing get() = OmniPlanarDirection.from(player?.currentYaw ?: error("uh oh"), isExact = true)
     private var x = 0.0
     private var y = 0.0
     private var z = 0.0
@@ -44,9 +47,10 @@ class PositionHud : GenericNumberHud(
     override fun setup() {
         super.setup()
         eventHandler { _: TickEvent.End ->
-            this.x = OmniClientPlayer.posX
-            this.y = OmniClientPlayer.posY
-            this.z = OmniClientPlayer.posZ
+            val player = player ?: return@eventHandler
+            this.x = player.currentX
+            this.y = player.currentY
+            this.z = player.currentZ
             updateAndRecalculate()
         }
 
@@ -95,5 +99,4 @@ class PositionHud : GenericNumberHud(
 
         return null
     }
-
 }

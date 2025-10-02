@@ -1,6 +1,6 @@
 package org.polyfrost.evergreenhud.client.utils.pinger
 
-import dev.deftu.omnicore.client.OmniClientServerEntry
+import dev.deftu.omnicore.api.client.network.OmniServerInfo
 import net.minecraft.client.multiplayer.ServerAddress
 import net.minecraft.network.EnumConnectionState
 import net.minecraft.network.NetworkManager
@@ -27,7 +27,7 @@ import java.net.InetAddress
 
 class ServerPinger(
     private val intervalSupplier: () -> Int,
-    private val serverSupplier: () -> OmniClientServerEntry?
+    private val serverSupplier: () -> OmniServerInfo?
 ) {
 
     private var ticks = 0
@@ -52,7 +52,7 @@ class ServerPinger(
         }
     }
 
-    private fun ping(server: OmniClientServerEntry) {
+    private fun ping(server: OmniServerInfo) {
         println("Pinging server: ${server.address}")
 
         val address = ServerAddress.fromString(server.address)
@@ -83,7 +83,7 @@ class ServerPinger(
         }
     }
 
-    private fun NetworkManager.sendHandshake(server: OmniClientServerEntry, address: ServerAddress) {
+    private fun NetworkManager.sendHandshake(server: OmniServerInfo, address: ServerAddress) {
         //#if MC >= 1.20.4
         //$$ initiateServerboundStatusConnection(
         //$$     address.host,

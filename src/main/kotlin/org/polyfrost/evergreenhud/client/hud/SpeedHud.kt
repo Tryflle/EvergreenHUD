@@ -1,6 +1,12 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.client.OmniClientPlayer
+import dev.deftu.omnicore.api.client.player
+import dev.deftu.omnicore.api.entity.currentX
+import dev.deftu.omnicore.api.entity.currentY
+import dev.deftu.omnicore.api.entity.currentZ
+import dev.deftu.omnicore.api.entity.prevX
+import dev.deftu.omnicore.api.entity.prevY
+import dev.deftu.omnicore.api.entity.prevZ
 import org.polyfrost.evergreenhud.client.utils.GenericNumberHud
 import org.polyfrost.oneconfig.api.config.v1.annotations.Dropdown
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
@@ -13,7 +19,6 @@ class SpeedHud : GenericNumberHud(
     category = Category.INFO,
     suffix = "m/s"
 ) {
-
     @Switch(title = "Use X")
     var useX = true
 
@@ -52,14 +57,15 @@ class SpeedHud : GenericNumberHud(
     }
 
     override fun getText(): String? {
-        if (!OmniClientPlayer.hasPlayer) {
+        val player = player
+        if (player == null) {
             value = 0f
             return null
         }
 
-        val dx = if (useX) (OmniClientPlayer.posX - OmniClientPlayer.prevPosX).toFloat() else 0f
-        val dy = if (useY) (OmniClientPlayer.posY - OmniClientPlayer.prevPosY).toFloat() else 0f
-        val dz = if (useZ) (OmniClientPlayer.posZ - OmniClientPlayer.prevPosZ).toFloat() else 0f
+        val dx = if (useX) (player.currentX - player.prevX).toFloat() else 0f
+        val dy = if (useY) (player.currentY - player.prevY).toFloat() else 0f
+        val dz = if (useZ) (player.currentZ - player.prevZ).toFloat() else 0f
         value = convertSpeed(sqrt(dx * dx + dy * dy + dz * dz))
 
         return super.getText()
@@ -77,5 +83,4 @@ class SpeedHud : GenericNumberHud(
             else -> speed
         }
     }
-
 }

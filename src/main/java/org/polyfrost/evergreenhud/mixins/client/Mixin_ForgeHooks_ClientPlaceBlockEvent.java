@@ -27,7 +27,6 @@ import net.minecraft.util.EnumFacing;
 
 @Mixin(value = ForgeHooks.class, remap = false)
 public class Mixin_ForgeHooks_ClientPlaceBlockEvent {
-
     @Inject(
             method = "onPlaceItemIntoWorld",
             at = @At(
@@ -70,6 +69,5 @@ public class Mixin_ForgeHooks_ClientPlaceBlockEvent {
         //#endif
         EventManager.INSTANCE.post(new ClientPlaceBlockEvent(player, world));
     }
-
 }
 //#endif

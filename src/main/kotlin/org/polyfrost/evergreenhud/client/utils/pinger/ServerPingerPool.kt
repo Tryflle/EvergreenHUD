@@ -1,6 +1,6 @@
 package org.polyfrost.evergreenhud.client.utils.pinger
 
-import dev.deftu.omnicore.client.OmniClientServerEntry
+import dev.deftu.omnicore.api.client.network.OmniServerInfo
 import java.util.Collections
 
 object ServerPingerPool {
@@ -8,7 +8,7 @@ object ServerPingerPool {
 
     fun createPinger(
         intervalSupplier: () -> Int,
-        serverSupplier: () -> OmniClientServerEntry?,
+        serverSupplier: () -> OmniServerInfo?,
     ): ServerPinger {
         val pinger = ServerPinger(intervalSupplier, serverSupplier)
         pool.add(pinger)

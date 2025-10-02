@@ -11,7 +11,6 @@ class PlayTimeHud : TextHud(
     category = Category.INFO,
     prefix = "Time Played: ",
 ) {
-
     private var time: Long = 0L
 
     @Switch(title = "Show Seconds")
@@ -52,5 +51,4 @@ class PlayTimeHud : TextHud(
     override fun updateFrequency(): Long {
         return 1.seconds
     }
-
 }

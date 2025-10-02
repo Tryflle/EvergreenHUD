@@ -1,5 +1,7 @@
 net.minecraft.network.protocol.status.ServerboundStatusRequestPacket net.minecraft.network.status.client.CPacketServerQuery
 
+net.minecraft.server.packs.resources.ResourceManager net.minecraft.client.resources.IResourceManager
+
 com.mojang.blaze3d.platform.Lighting net.minecraft.client.renderer.RenderHelper
 com.mojang.blaze3d.platform.Lighting setupFor3DItems() enableGUIStandardItemLighting()
 

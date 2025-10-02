@@ -21,11 +21,11 @@ toolkitMultiversion {
 
 toolkitLoomHelper {
     useOneConfig {
-        version = "1.0.0-alpha.128"
-        loaderVersion = "1.1.0-alpha.48"
+        version = "1.0.0-alpha.162"
+        loaderVersion = "1.1.0-alpha.49"
 
         usePolyMixin = true
-        polyMixinVersion = "0.8.4+build.2"
+        polyMixinVersion = "0.8.4+build.7"
 
         applyLoaderTweaker = true
 
@@ -67,5 +67,16 @@ repositories {
 dependencies {
     if (mcData.version == MinecraftVersions.VERSION_1_21_5 && mcData.isFabric) {
         modCompileOnly("curse.maven:inventory-hud-forge-357540:6355978")
+    }
+
+    // Add (Legacy) Fabric API as dependencies (these are both optional but are particularly useful).
+    if (mcData.isFabric) {
+        if (mcData.isLegacyFabric) {
+            // 1.8.9 - 1.13
+            modImplementation("net.legacyfabric.legacy-fabric-api:legacy-fabric-api:${mcData.dependencies.legacyFabric.legacyFabricApiVersion}")
+        } else {
+            // 1.16.5+
+            modImplementation("net.fabricmc.fabric-api:fabric-api:${mcData.dependencies.fabric.fabricApiVersion}")
+        }
     }
 }

@@ -3,9 +3,7 @@ package org.polyfrost.evergreenhud.client.utils.battery
 import org.apache.commons.lang3.SystemUtils
 
 sealed interface Battery {
-
     companion object {
-
         @JvmStatic
         fun get(): Battery {
             return when {
@@ -13,7 +11,6 @@ sealed interface Battery {
                 else -> UnknownBattery
             }
         }
-
     }
 
     data object UnknownBattery : Battery {
@@ -34,5 +31,4 @@ sealed interface Battery {
     val isCharging: Boolean
     val lifetimeRemaining: Int
     val isBatterySaverEnabled: Boolean
-
 }

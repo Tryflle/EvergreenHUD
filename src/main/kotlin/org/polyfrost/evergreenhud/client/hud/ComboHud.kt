@@ -1,6 +1,6 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.client.OmniClientPlayer
+import dev.deftu.omnicore.api.client.player
 import org.polyfrost.evergreenhud.client.ServerDamageEntityEvent
 import org.polyfrost.evergreenhud.client.utils.uniqueEntityId
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
@@ -17,7 +17,6 @@ class ComboHud : TextHud(
     prefix = "Combo: ",
     suffix = " hits"
 ) {
-
     @Slider(title = "Discard Time", min = 1f, max = 10f)
     var discardTime = 2f
 
@@ -44,12 +43,12 @@ class ComboHud : TextHud(
         }
 
         eventHandler { (attacker, target): ServerDamageEntityEvent ->
-            if (target == OmniClientPlayer.getInstance()) {
+            if (target == player) {
                 currentCombo = 0
                 return@eventHandler
             }
 
-            if (attacker != OmniClientPlayer.getInstance()) {
+            if (attacker != player) {
                 return@eventHandler
             }
 
@@ -78,5 +77,4 @@ class ComboHud : TextHud(
 
         return null
     }
-
 }

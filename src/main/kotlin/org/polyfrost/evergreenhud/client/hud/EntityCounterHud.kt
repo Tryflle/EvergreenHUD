@@ -12,7 +12,6 @@ class EntityCounterHud : TextHud(
     category = Category.INFO,
     prefix = "E: ",
 ) {
-
     @Switch(title = "Show total entities")
     var showTotal = true
 
@@ -35,5 +34,4 @@ class EntityCounterHud : TextHud(
     override fun getText(): String? {
         return null
     }
-
 }

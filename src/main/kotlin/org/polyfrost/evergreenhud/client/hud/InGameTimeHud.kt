@@ -1,6 +1,7 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.client.OmniClient
+import dev.deftu.omnicore.api.client.world
+import dev.deftu.omnicore.api.world.currentTime
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
 import org.polyfrost.polyui.unit.milliseconds
@@ -12,7 +13,6 @@ class InGameTimeHud : TextHud(
     category = Category.INFO,
     prefix = "In Game Time: ",
 ) {
-
     @Switch(title = "Twelve Hour Time")
     var twelveHour = false
 
@@ -24,7 +24,7 @@ class InGameTimeHud : TextHud(
     }
 
     override fun getText(): String? {
-        val time = ((OmniClient.currentWorld?.worldTime ?: 0L) + 6000L) % 24000L
+        val time = ((world?.currentTime ?: 0L) + 6000L) % 24000L
         val seconds = (time * 3.6).toLong()
         val minutes = (seconds % 3600L) / 60L
         val hours = (seconds / 3600L) % 24L
@@ -54,5 +54,4 @@ class InGameTimeHud : TextHud(
     override fun updateFrequency(): Long {
         return 500.milliseconds
     }
-
 }

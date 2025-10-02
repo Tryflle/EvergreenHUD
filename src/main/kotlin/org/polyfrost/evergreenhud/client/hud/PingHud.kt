@@ -1,6 +1,6 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.client.OmniClientMultiplayer
+import dev.deftu.omnicore.api.client.network.currentServer
 import net.minecraft.client.Minecraft
 import org.polyfrost.evergreenhud.client.utils.pinger.ServerPinger
 import org.polyfrost.evergreenhud.client.utils.pinger.ServerPingerPool
@@ -18,7 +18,6 @@ class PingHud : TextHud(
     prefix = "Ping: ",
     suffix = "ms"
 ) {
-
     @Slider(title = "Ping Period", min = 20F, max = 120F)
     var interval = 20
 
@@ -37,7 +36,7 @@ class PingHud : TextHud(
             updateWhenChanged("showInSinglePlayer")
             pinger = ServerPingerPool.createPinger(
                 intervalSupplier = { interval },
-                serverSupplier = { OmniClientMultiplayer.currentServer }
+                serverSupplier = { currentServer }
             )
         }
     }
@@ -55,5 +54,4 @@ class PingHud : TextHud(
 
         return null
     }
-
 }
