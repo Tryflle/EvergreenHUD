@@ -11,11 +11,11 @@
     "client": [
         "client.Mixin_EntityPlayer_ClientDamageEntityEvent",
         "client.Mixin_FoodStats_SaturationChangedEvent",
-        "client.Mixin_ForgeHooks_ClientPlaceBlockEvent",
         "client.Mixin_InventoryPlayer_SelectedItemChangedEvent",
         "client.Mixin_Minecraft_SelectedItemChangedEvent",
-        "client.Mixin_Minecraft_ServerChangedEvent",
+        "client.Mixin_ClientCommonPacketListenerImpl_ServerChangedEvent",
         "client.Mixin_NetHandlerPlayClient_SelectedItemChangedEvent",
-        "client.Mixin_RenderGlobal_EntityCounterEvent"
+        "client.Mixin_RenderGlobal_EntityCounterEvent",
+        "client.Mixin_InGameHud_SmuggleDrawContext"
     ]
 }

@@ -1,82 +1,123 @@
-@file:Suppress("UnstableApiUsage", "PropertyName")
-
-import dev.deftu.gradle.utils.GameSide
-import dev.deftu.gradle.utils.version.MinecraftVersions
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    java
-    kotlin("jvm")
-    id("dev.deftu.gradle.multiversion") // Applies preprocessing for multiple versions of Minecraft and/or multiple mod loaders.
-    id("dev.deftu.gradle.tools") // Applies several configurations to things such as the Java version, project name/version, etc.
-    id("dev.deftu.gradle.tools.resources") // Applies resource processing so that we can replace tokens, such as our mod name/version, in our resources.
-    id("dev.deftu.gradle.tools.bloom") // Applies the Bloom plugin, which allows us to replace tokens in our source files, such as being able to use `@MOD_VERSION` in our source files.
-    id("dev.deftu.gradle.tools.shadow") // Applies the Shadow plugin, which allows us to shade our dependencies into our mod JAR. This is NOT recommended for Fabric mods, but we have an *additional* configuration for those!
-    id("dev.deftu.gradle.tools.minecraft.loom") // Applies the Loom plugin, which automagically configures Essential's Architectury Loom plugin for you.
-    id("dev.deftu.gradle.tools.minecraft.releases") // Applies the Minecraft auto-releasing plugin, which allows you to automatically release your mod to CurseForge and Modrinth.
+    kotlin("jvm") version "2.3.0"
+    id("net.fabricmc.fabric-loom-remap") version "1.14-SNAPSHOT"
+    id("dev.deftu.gradle.bloom") version "0.2.0"
 }
 
-toolkitMultiversion {
-    moveBuildsToRootProject.set(true)
-}
+val modid = property("mod.id") as String
+val modname = property("mod.name") as String
+val modversion = property("mod.version") as String
+val mcversion = stonecutter.current.version
 
-toolkitLoomHelper {
-    useOneConfig {
-        version = "1.0.0-alpha.162"
-        loaderVersion = "1.1.0-alpha.49"
-
-        usePolyMixin = true
-        polyMixinVersion = "0.8.4+build.7"
-
-        applyLoaderTweaker = true
-
-        for (module in arrayOf("commands", "config", "config-impl", "events", "internal", "ui", "utils")) {
-            +module
-        }
-    }
-
-    // Turns off the server-side run configs, as we're building a client-sided mod.
-    disableRunConfigs(GameSide.SERVER)
-
-    useDevAuth("+")
-
-    // Defines the name of the Mixin refmap, which is used to map the Mixin classes to the obfuscated Minecraft classes.
-    if (!mcData.isNeoForge) {
-        useMixinRefMap(modData.id)
-    }
-
-    if (mcData.isForge) {
-        // Configures the Mixin tweaker if we are building for Forge.
-        useForgeMixin(modData.id)
-    }
+base {
+    archivesName.set(modname)
 }
 
 repositories {
-    exclusiveContent {
-        forRepository {
-            maven {
-                setUrl("https://cursemaven.com")
-            }
-        }
-
-        filter {
-            includeGroup("curse.maven")
-        }
+    maven("https://maven.parchmentmc.org")
+    maven("https://repo.polyfrost.org/releases")
+    maven("https://repo.polyfrost.org/snapshots")
+    maven("https://api.modrinth.com/maven") {
+        content { includeGroup("maven.modrinth") }
     }
+    maven("https://maven.bawnorton.com/releases") {
+        content { includeGroup("com.github.bawnorton.mixinsquared") }
+    }
+}
+
+loom {
+    runConfigs.all {
+        ideConfigGenerated(stonecutter.current.isActive)
+        runDir = "../../run"
+    }
+
+    runConfigs.remove(runConfigs["server"])
+}
+
+stonecutter {
+    val ignored = listOf(
+        "org.polyfrost.evergreenhud.client.hud.InventoryHud.kt",
+        "org.polyfrost.evergreenhud.client.hud.ItemHud.kt",
+        "org.polyfrost.evergreenhud.client.hud.PlayerPreviewHud.kt",
+    )
+    filters.exclude(*ignored.toTypedArray())
 }
 
 dependencies {
-    if (mcData.version == MinecraftVersions.VERSION_1_21_5 && mcData.isFabric) {
-        modCompileOnly("curse.maven:inventory-hud-forge-357540:6355978")
-    }
+    minecraft("com.mojang:minecraft:$mcversion")
+    compileOnly("com.mojang:datafixerupper:4.0.26")
+    mappings(loom.officialMojangMappings())
 
-    // Add (Legacy) Fabric API as dependencies (these are both optional but are particularly useful).
-    if (mcData.isFabric) {
-        if (mcData.isLegacyFabric) {
-            // 1.8.9 - 1.13
-            modImplementation("net.legacyfabric.legacy-fabric-api:legacy-fabric-api:${mcData.dependencies.legacyFabric.legacyFabricApiVersion}")
-        } else {
-            // 1.16.5+
-            modImplementation("net.fabricmc.fabric-api:fabric-api:${mcData.dependencies.fabric.fabricApiVersion}")
-        }
+    modImplementation("net.fabricmc:fabric-loader:${property("loader_version")}")
+    implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-common:0.3.3")!!)
+
+    modImplementation("org.polyfrost.oneconfig:$mcversion-fabric:1.0.0-alpha.181")
+    modImplementation("org.polyfrost.oneconfig:commands:1.0.0-alpha.181")
+    modImplementation("org.polyfrost.oneconfig:config:1.0.0-alpha.181")
+    modImplementation("org.polyfrost.oneconfig:config-impl:1.0.0-alpha.181")
+    modImplementation("org.polyfrost.oneconfig:events:1.0.0-alpha.181")
+    modImplementation("org.polyfrost.oneconfig:internal:1.0.0-alpha.181")
+    modImplementation("org.polyfrost.oneconfig:ui:1.0.0-alpha.181")
+    modImplementation("org.polyfrost.oneconfig:utils:1.0.0-alpha.181")
+    modImplementation("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}+$mcversion")
+}
+
+bloom {
+    replacement("@MOD_ID@", modid)
+    replacement("@MOD_NAME@", modname)
+    replacement("@MOD_VERSION@", modversion)
+}
+
+tasks.processResources {
+    val props = mapOf(
+        "mod_id" to modid,
+        "mod_name" to modname,
+        "mod_version" to modversion,
+        "mod_description" to "",
+        "mc_version" to mcversion,
+        "loader_version" to providers.gradleProperty("loader_version").get()
+    )
+
+    inputs.properties(props)
+
+    filesMatching("fabric.mod.json") {
+        expand(props)
     }
 }
+
+tasks.build {
+    doLast {
+        val sourceFile = rootProject.projectDir.resolve("versions/${project.name}/build/libs/$modname.jar")
+        val targetFile = rootProject.projectDir.resolve("build/libs/$modname-$modversion-${stonecutter.current.version}.jar")
+        targetFile.parentFile.mkdirs()
+        targetFile.writeBytes(sourceFile.readBytes())
+    }
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.release.set(21)
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+    compilerOptions.jvmTarget.set(JvmTarget.JVM_21)
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+tasks.jar {
+    inputs.property("archivesName", base.archivesName)
+
+    from("LICENSE") {
+        rename { "${it}_${inputs.properties["archivesName"]}" }
+    }
+}
+
+fun <T> optionalProp(property: String, block: (String) -> T?): T? =
+    findProperty(property)?.toString()?.takeUnless { it.isBlank() }?.let(block)

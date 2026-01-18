@@ -1,9 +1,9 @@
 package org.polyfrost.evergreenhud.client
 
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.world.World
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.Level
 import org.polyfrost.oneconfig.api.event.v1.events.Event
 
 data class ClientDamageEntityEvent(
@@ -17,8 +17,8 @@ data class ServerDamageEntityEvent(
 ) : Event
 
 data class ClientPlaceBlockEvent(
-    val player: EntityPlayer,
-    val world: World
+    val player: Player,
+    val world: Level
 ) : Event
 
 data class ServerChangedEvent(

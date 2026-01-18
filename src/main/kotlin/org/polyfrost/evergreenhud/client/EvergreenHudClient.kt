@@ -5,8 +5,9 @@ import dev.deftu.omnicore.api.client.resources.OmniClientResources
 import dev.deftu.omnicore.api.client.world
 import dev.deftu.omnicore.api.data.vec.OmniVec3d
 import dev.deftu.omnicore.api.entity.currentPos
-import net.minecraft.entity.Entity
-import net.minecraft.network.play.server.S19PacketEntityStatus
+import net.fabricmc.api.ClientModInitializer
+import net.minecraft.network.protocol.game.ClientboundEntityEventPacket
+import net.minecraft.world.entity.Entity
 import org.polyfrost.evergreenhud.client.hud.*
 import org.polyfrost.evergreenhud.client.hud.battery.BatteryHud
 import org.polyfrost.evergreenhud.client.hud.clock.ClockHud
@@ -22,8 +23,8 @@ import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import kotlin.jvm.optionals.getOrNull
 
-object EvergreenHudClient {
-    fun initialize() {
+object EvergreenHudClient : ClientModInitializer {
+    override fun onInitializeClient() {
         FrameTimeHelper.initialize()
         PinkuluMapCache.initialize()
         OmniClientResources.registerReloadListener(ResourceReloadEventReloadListener)
@@ -74,7 +75,7 @@ object EvergreenHudClient {
         }
 
         eventHandler { (packet): PacketEvent.Receive ->
-            if (packet !is S19PacketEntityStatus || packet.opCode.toInt() != 2) {
+            if (packet !is ClientboundEntityEventPacket || packet.eventId.toInt() != 2) {
                 return@eventHandler
             }
 

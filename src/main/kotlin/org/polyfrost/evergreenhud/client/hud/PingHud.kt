@@ -29,7 +29,7 @@ class PingHud : TextHud(
     override fun setup() {
         super.setup()
         eventHandler { _: WorldEvent.Load ->
-            hidden = !showInSinglePlayer && Minecraft.getMinecraft().isSingleplayer
+            hidden = !showInSinglePlayer && Minecraft.getInstance().hasSingleplayerServer()
         }
 
         if (isReal) {

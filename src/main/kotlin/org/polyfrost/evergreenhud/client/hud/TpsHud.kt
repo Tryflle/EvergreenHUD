@@ -1,6 +1,7 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import net.minecraft.network.play.server.S03PacketTimeUpdate
+
+import net.minecraft.network.protocol.game.ClientboundSetTimePacket
 import org.polyfrost.evergreenhud.client.utils.GenericNumberHud
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.PacketEvent
@@ -15,7 +16,7 @@ class TpsHud : GenericNumberHud(
     override fun setup() {
         super.setup()
         eventHandler { event: PacketEvent.Receive ->
-            if (event.getPacket<Any>() is S03PacketTimeUpdate) {
+            if (event.getPacket<Any>() is ClientboundSetTimePacket) {
                 val now = System.currentTimeMillis()
                 val timeTaken = now - lastUpdated
                 lastUpdated = now

@@ -6,11 +6,11 @@ import dev.deftu.omnicore.api.data.pos.OmniBlockPos
 import dev.deftu.omnicore.api.sound.OmniSounds
 import dev.deftu.omnicore.api.world.getBlockTypeAt
 import dev.deftu.omnicore.api.world.maxWorldHeight
-import net.minecraft.block.Block
-import net.minecraft.block.BlockBanner
-import net.minecraft.block.BlockSign
-import net.minecraft.block.BlockVine
-import net.minecraft.init.Blocks
+import net.minecraft.world.level.block.BannerBlock
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.SignBlock
+import net.minecraft.world.level.block.VineBlock
 import org.polyfrost.evergreenhud.client.BlockPositionChangedEvent
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
@@ -27,13 +27,13 @@ class BlockAboveHud : TextHud(
 ) {
     private companion object {
         private val ignoredBlocks = setOf(
-            Blocks.air,
-            Blocks.water,
+            Blocks.AIR,
+            Blocks.WATER,
         )
 
         private val Block.isIgnored: Boolean
             get() {
-                return ignoredBlocks.contains(this) || this is BlockSign || this is BlockVine || this is BlockBanner
+                return ignoredBlocks.contains(this) || this is SignBlock || this is VineBlock || this is BannerBlock
             }
     }
 
@@ -69,7 +69,7 @@ class BlockAboveHud : TextHud(
                 above = i - 1
                 if (above <= notifyHeight && notify) {
                     if (!notified) {
-                        OmniClientSound.play(OmniSounds.EXPERIENCE_ORB_PICKUP, 0.25f, 1f)
+                        OmniClientSound.play(OmniSounds.ENTITY.experienceOrb, 0.25f, 1f)
                         notified = true
                     }
                 } else {

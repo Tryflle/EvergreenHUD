@@ -1,7 +1,9 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.api.nbt.length
-import net.minecraft.item.ItemStack
+import dev.deftu.textile.CollapseMode
+import dev.deftu.textile.minecraft.MCText
+import net.minecraft.core.component.DataComponents
+import net.minecraft.world.item.ItemStack
 import org.polyfrost.evergreenhud.client.SelectedItemChangedEvent
 import org.polyfrost.oneconfig.api.config.v1.annotations.Checkbox
 import org.polyfrost.oneconfig.api.config.v1.annotations.Number
@@ -13,14 +15,6 @@ import org.polyfrost.polyui.animate.Animations
 import org.polyfrost.polyui.operations.Fade
 import org.polyfrost.polyui.unit.milliseconds
 import org.polyfrost.polyui.utils.Clock
-
-//#if MC >= 1.20.6
-//$$ import net.minecraft.component.DataComponentTypes
-//#endif
-
-//#if MC >= 1.16.5
-//$$ import dev.deftu.textile.minecraft.MCTextHolder
-//#endif
 
 class LoreHud : TextHud(
     id = "lore.json",
@@ -47,16 +41,7 @@ class LoreHud : TextHud(
     var maxLines = 0
 
     private val ItemStack.isNameShown: Boolean
-        get() {
-            //#if FABRIC && MC >= 1.21.5
-            //$$ // Preprocessor/Remap being stubborn for no goddamn reason
-            //$$ return contains(DataComponentTypes.CUSTOM_NAME)
-            //#elseif MC >= 1.20.6
-            //$$ return contains(DataComponentTypes.CUSTOM_NAME)
-            //#else
-            return hasDisplayName()
-            //#endif
-        }
+        get() = has(DataComponents.CUSTOM_NAME)
 
     override fun setup() {
         super.setup()
@@ -73,7 +58,7 @@ class LoreHud : TextHud(
     var theItem: ItemStack? = null
         set(value) {
             @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-            if (ItemStack.areItemStacksEqual(field, value)) return
+            if (ItemStack.matches(field, value)) return
             field = value
             val it = get()
             it.alpha = 1f
@@ -89,17 +74,10 @@ class LoreHud : TextHud(
         val item = theItem ?: return if (isReal) "Item Lore HUD" else null
 
         if (showName && item.isNameShown) {
-            //#if MC >= 1.16.5
-            //$$ val name = MCTextHolder.convertFromVanilla(item.displayName).asString()
-            //$$ if (name.isNotEmpty()) {
-            //$$      sb.append(name).append('\n')
-            //$$ }
-            //#else
-            val name = item.displayName
-            if (!name.isNullOrEmpty()) {
-                sb.append(item.displayName).append('\n')
+            val name = MCText.wrap(item.hoverName).collapseToString(CollapseMode.SCOPED)
+            if (name.isNotEmpty()) {
+                 sb.append(name).append('\n')
             }
-            //#endif
         }
 
         var i = 0
@@ -115,16 +93,9 @@ class LoreHud : TextHud(
 
     @Suppress("UNNECESSARY_SAFE_CALL")
     private inline fun ItemStack.forEachLore(consumer: (String) -> Unit) {
-        //#if MC >= 1.20.6
-        //$$ val lore = this.get(DataComponentTypes.LORE) ?: return
-        //$$ for (line in lore.comp_2401) {
-        //$$     consumer(MCTextHolder.convertFromVanilla(line).asString())
-        //$$ }
-        //#else
-        val tags = this.tagCompound?.getCompoundTag("display")?.getTagList("Lore", 8) ?: return
-        for (i in 0..<tags.length) {
-            consumer(tags.getStringTagAt(i))
+        val lore = this.get(DataComponents.LORE) ?: return
+        for (line in lore.lines) {
+            consumer(MCText.wrap(line).collapseToString(CollapseMode.SCOPED))
         }
-        //#endif
     }
 }

@@ -63,9 +63,9 @@ class SpeedHud : GenericNumberHud(
             return null
         }
 
-        val dx = if (useX) (player.currentX - player.prevX).toFloat() else 0f
-        val dy = if (useY) (player.currentY - player.prevY).toFloat() else 0f
-        val dz = if (useZ) (player.currentZ - player.prevZ).toFloat() else 0f
+        val dx = if (useX) (player.currentX - player.x).toFloat() else 0f
+        val dy = if (useY) (player.currentY - player.y).toFloat() else 0f
+        val dz = if (useZ) (player.currentZ - player.z).toFloat() else 0f
         value = convertSpeed(sqrt(dx * dx + dy * dy + dz * dz))
 
         return super.getText()
