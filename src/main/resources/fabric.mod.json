@@ -11,7 +11,8 @@
     "entrypoints": {
         "client": [
             {
-                "value": "org.polyfrost.evergreenhud.client.EvergreenHudClient"
+                "value": "org.polyfrost.evergreenhud.client.EvergreenHudClient",
+                "adapter": "kotlin"
             }
         ]
     },
