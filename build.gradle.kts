@@ -11,6 +11,7 @@ val modid = property("mod.id") as String
 val modname = property("mod.name") as String
 val modversion = property("mod.version") as String
 val mcversion = stonecutter.current.version
+val oneconfigversion = property("oneconfig_version") as String
 
 base {
     archivesName.set(modname)
@@ -54,14 +55,14 @@ dependencies {
     modImplementation("net.fabricmc:fabric-loader:${property("loader_version")}")
     implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-common:0.3.3")!!)
 
-    modImplementation("org.polyfrost.oneconfig:$mcversion-fabric:1.0.0-alpha.181")
-    modImplementation("org.polyfrost.oneconfig:commands:1.0.0-alpha.181")
-    modImplementation("org.polyfrost.oneconfig:config:1.0.0-alpha.181")
-    modImplementation("org.polyfrost.oneconfig:config-impl:1.0.0-alpha.181")
-    modImplementation("org.polyfrost.oneconfig:events:1.0.0-alpha.181")
-    modImplementation("org.polyfrost.oneconfig:internal:1.0.0-alpha.181")
-    modImplementation("org.polyfrost.oneconfig:ui:1.0.0-alpha.181")
-    modImplementation("org.polyfrost.oneconfig:utils:1.0.0-alpha.181")
+    modImplementation("org.polyfrost.oneconfig:$mcversion-fabric:$oneconfigversion")
+    modImplementation("org.polyfrost.oneconfig:commands:$oneconfigversion")
+    modImplementation("org.polyfrost.oneconfig:config:$oneconfigversion")
+    modImplementation("org.polyfrost.oneconfig:config-impl:$oneconfigversion")
+    modImplementation("org.polyfrost.oneconfig:events:$oneconfigversion")
+    modImplementation("org.polyfrost.oneconfig:internal:$oneconfigversion")
+    modImplementation("org.polyfrost.oneconfig:ui:$oneconfigversion")
+    modImplementation("org.polyfrost.oneconfig:utils:$oneconfigversion")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}+$mcversion")
 }
 
@@ -103,6 +104,7 @@ tasks.withType<JavaCompile>().configureEach {
 
 tasks.withType<KotlinCompile>().configureEach {
     compilerOptions.jvmTarget.set(JvmTarget.JVM_21)
+    compilerOptions.freeCompilerArgs.add("-Xnullability-annotations=@org.jspecify.annotations:warn")
 }
 
 java {

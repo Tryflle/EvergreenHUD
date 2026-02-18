@@ -57,7 +57,6 @@ class LoreHud : TextHud(
 
     var theItem: ItemStack? = null
         set(value) {
-            @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
             if (ItemStack.matches(field, value)) return
             field = value
             val it = get()

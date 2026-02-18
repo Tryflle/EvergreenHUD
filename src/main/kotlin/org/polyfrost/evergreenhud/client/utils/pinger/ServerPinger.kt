@@ -9,6 +9,10 @@ import org.polyfrost.oneconfig.utils.v1.Multithreading
 import net.minecraft.network.Connection
 import net.minecraft.network.protocol.status.ServerboundStatusRequestPacket
 import net.minecraft.util.debugchart.LocalSampleLogger
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
+
+//? if >= 1.21.11
+import net.minecraft.server.network.EventLoopGroupHolder
 
 class ServerPinger(
     private val intervalSupplier: () -> Int,
@@ -43,7 +47,10 @@ class ServerPinger(
         val address = ServerAddress.parseString(server.address)
         val connection = Connection.connectToServer(
             ServerNameResolver.DEFAULT.resolveAddress(address).map { it.asInetSocketAddress()  }.orElseThrow(),
-            false,
+            //? if >= 1.21.11 {
+            EventLoopGroupHolder.remote(mc.options.useNativeTransport()),
+            //?} else
+            /* false, */
             null as LocalSampleLogger?,
         )
 

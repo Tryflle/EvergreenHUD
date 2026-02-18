@@ -28,8 +28,15 @@ class BiomeHud : TextHud(
 
             val id = world.getBiome(pos.vanilla)
                 .unwrapKey()
-                .getOrNull()
-                ?.location()
+                // currently cant use '?.' as the first characters in stonecutter commented code
+                // so this is a workaround. once stonecutter 0.9 releases, this can be replaced
+                // with a local swap/replacement
+                .map {
+                    //? >= 1.21.11 {
+                    it.identifier()
+                    //? } else
+                    /* it.location() */
+                }.getOrNull()
 
             val translationKey = id?.toLanguageKey("biome")
 

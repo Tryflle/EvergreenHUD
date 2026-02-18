@@ -6,13 +6,13 @@ import dev.deftu.textile.minecraft.MCText
 import dev.deftu.textile.minecraft.MCTextStyle
 import dev.deftu.textile.minecraft.TextColors
 import dev.deftu.textile.minecraft.asVanilla
-import net.minecraft.Util
 import net.minecraft.network.Connection
 import net.minecraft.network.DisconnectionDetails
 import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket
 import net.minecraft.network.protocol.ping.ServerboundPingRequestPacket
 import net.minecraft.network.protocol.status.ClientStatusPacketListener
 import net.minecraft.network.protocol.status.ClientboundStatusResponsePacket
+import net.minecraft.util.Util
 
 class PingingPacketListener(
     private val server: OmniServerInfo,
