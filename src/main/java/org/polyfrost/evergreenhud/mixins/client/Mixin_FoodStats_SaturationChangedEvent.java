@@ -18,11 +18,6 @@ public class Mixin_FoodStats_SaturationChangedEvent {
         EventManager.INSTANCE.post(new SaturationChangedEvent(this.saturationLevel));
     }
 
-    @Inject(method = "tick", at = @At("RETURN"))
-    private void onUpdate(CallbackInfo ci) {
-        EventManager.INSTANCE.post(new SaturationChangedEvent(this.saturationLevel));
-    }
-
     @Inject(method = "readAdditionalSaveData", at = @At("RETURN"))
     private void onReadNBT(CallbackInfo ci) {
         EventManager.INSTANCE.post(new SaturationChangedEvent(this.saturationLevel));
