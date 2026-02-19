@@ -22,9 +22,4 @@ public class Mixin_FoodStats_SaturationChangedEvent {
     private void onReadNBT(CallbackInfo ci) {
         EventManager.INSTANCE.post(new SaturationChangedEvent(this.saturationLevel));
     }
-
-    @Inject(method = "setSaturation", at = @At("RETURN"))
-    private void onSet(CallbackInfo ci) {
-        EventManager.INSTANCE.post(new SaturationChangedEvent(this.saturationLevel));
-    }
 }
