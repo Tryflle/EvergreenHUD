@@ -1,6 +1,5 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.api.client.network.currentServer
 import net.minecraft.client.Minecraft
 import org.polyfrost.evergreenhud.client.utils.pinger.ServerPinger
 import org.polyfrost.evergreenhud.client.utils.pinger.ServerPingerPool
@@ -9,7 +8,8 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.WorldEvent
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
-import org.polyfrost.polyui.unit.seconds
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import kotlin.time.Duration.Companion.seconds
 
 class PingHud : TextHud(
     id = "ping.json",
@@ -36,13 +36,13 @@ class PingHud : TextHud(
             updateWhenChanged("showInSinglePlayer")
             pinger = ServerPingerPool.createPinger(
                 intervalSupplier = { interval },
-                serverSupplier = { currentServer }
+                serverSupplier = { mc.currentServer }
             )
         }
     }
 
     override fun updateFrequency(): Long {
-        return 0.5.seconds
+        return 0.5.seconds.inWholeNanoseconds
     }
 
     override fun getText(): String? {

@@ -1,81 +1,49 @@
 package org.polyfrost.evergreenhud.client.hud.battery
 
+import androidx.compose.runtime.Composable
+import org.polyfrost.compose.composables.*
+import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.evergreenhud.client.utils.battery.Battery
-import org.polyfrost.polyui.color.Colors
-import org.polyfrost.polyui.color.PolyColor
-import org.polyfrost.polyui.color.rgba
-import org.polyfrost.polyui.component.Drawable
-import org.polyfrost.polyui.unit.Vec2
+import org.polyfrost.oneconfig.internal.ui.themes.LocalTheme
 
-class BatteryDrawable(
-    var battery: Battery = Battery.get(),
-    at: Vec2 = Vec2.Constants.ZERO,
-    visibleSize: Vec2 = Vec2.Constants.ZERO,
-    palette: Colors.Palette? = null
-) : Drawable(
-    at = at,
-    size = Vec2(60f, 25f), // Default size, can be adjusted
-    visibleSize = visibleSize,
-    palette = palette
+const val BORDER = 2f
+const val RADIUS_OUTER = 5f
+const val RADIUS_INNER = 3f
+const val FONT_SIZE = 16f
+
+val successColor = PolyColor.rgb(35, 154, 96) to PolyColor.rgb(26, 139, 82)
+val warningColor = PolyColor.rgb(255, 171, 29) to PolyColor.rgb(233, 156, 27)
+
+@Composable
+fun BatteryDrawable(
+    battery: Battery = Battery.get(),
 ) {
-
-    private companion object {
-        const val BORDER = 2f
-        const val RADIUS_OUTER = 5f
-        const val RADIUS_INNER = 3f
-        const val FONT_SIZE = 16f
+    val theme = LocalTheme.current
+    val (backgroundColor, innerColor) = when {
+        battery.isCharging -> successColor
+        battery.isBatterySaverEnabled -> warningColor
+        else -> PolyColor.hex(theme.textColor.value.toInt()) to PolyColor.hex(theme.accentTextColor.value.toInt())
     }
+    val percent = battery.percentage.coerceIn(0, 100)
 
-    override fun render() {
-        val clampedPercentage = battery.percentage.coerceIn(0, 100)
-        val font = polyUI.fonts.bold
-        val text = "$clampedPercentage%"
-
-        val (backgroundColor, innerColor) = when {
-            battery.isCharging -> polyUI.colors.state.success.run { normal to hovered }
-            battery.isBatterySaverEnabled -> polyUI.colors.state.warning.run { normal to hovered }
-            else -> polyUI.colors.text.primary.run { normal to hovered }
-        }
-
-        renderer.hollowRect(
-            x, y, width, height,
-            backgroundColor,
-            lineWidth = BORDER,
-            radius = RADIUS_OUTER
+    PolyBox(
+        PolyModifier.width(60f)
+            .height(25f)
+            .border(backgroundColor, BORDER, RADIUS_OUTER)
+            .radius(RADIUS_OUTER)
+            .padding(BORDER)
+    ) {
+        PolyBox(
+            PolyModifier.fillHeight()
+                .width((60f - BORDER + 2f) * (percent / 100f))
+                .background(innerColor, RADIUS_INNER)
+                .radius(RADIUS_INNER)
         )
 
-        val fillWidth = (width - 2 * BORDER) * (clampedPercentage / 100f)
-        renderer.rect(
-            x + BORDER, y + BORDER,
-            fillWidth,
-            height - 2 * BORDER,
-            innerColor,
-            radius = RADIUS_INNER
-        )
-
-        val (textWidth, textHeight) = renderer.textBounds(
-            font = font,
-            text = text,
-            fontSize = FONT_SIZE
-        )
-
-        renderer.text(
-            font = font,
-            x = x + (width - textWidth) / 2f,
-            y = y + (height - textHeight) / 2f,
-            text = text,
-            color = invert(polyUI.colors.text.primary.normal),
+        PolyText(
+            text = "$percent%",
             fontSize = FONT_SIZE,
+            color = backgroundColor.invert()
         )
     }
-
-    private fun invert(color: PolyColor): PolyColor {
-        return rgba(
-            255 - color.r,
-            255 - color.g,
-            255 - color.b,
-            color.alpha
-        )
-    }
-
 }

@@ -1,11 +1,11 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.api.client.isIntegratedServerRunning
 import org.polyfrost.evergreenhud.client.ServerChangedEvent
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.config.v1.annotations.Text
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
 
 class ServerAddressHud : TextHud(
     id = "server_ip.json",
@@ -23,7 +23,7 @@ class ServerAddressHud : TextHud(
         super.setup()
         eventHandler { (ip, _, _): ServerChangedEvent ->
             if (!showInSinglePlayer) {
-                hidden = isIntegratedServerRunning
+                hidden = mc.hasSingleplayerServer()
             }
 
             sb.append(ip ?: noServerText)

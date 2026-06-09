@@ -1,13 +1,13 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.api.client.player
 import org.polyfrost.evergreenhud.client.ClientDamageEntityEvent
 import org.polyfrost.evergreenhud.client.utils.GenericNumberHud
 import org.polyfrost.evergreenhud.client.utils.calculateReachDistanceToEntity
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Text
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
-import org.polyfrost.polyui.unit.seconds
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import kotlin.time.Duration.Companion.seconds
 
 // CHECK OK
 class ReachHud : GenericNumberHud(
@@ -26,7 +26,7 @@ class ReachHud : GenericNumberHud(
     override fun setup() {
         super.setup()
         eventHandler { event: ClientDamageEntityEvent ->
-            if (event.attacker == player) {
+            if (event.attacker == mc.player) {
                 val reach = calculateReachDistanceToEntity(event.target)
                 if (reach == 0f) {
                     return@eventHandler false
@@ -60,5 +60,5 @@ class ReachHud : GenericNumberHud(
         return super.update()
     }
 
-    override fun updateFrequency() = 1.seconds
+    override fun updateFrequency() = 1.seconds.inWholeNanoseconds
 }

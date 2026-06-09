@@ -5,8 +5,8 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Number
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
-import org.polyfrost.polyui.unit.seconds
 import java.text.DecimalFormat
+import kotlin.time.Duration.Companion.seconds
 
 // CHECK OK
 class MemoryHud : TextHud(
@@ -53,7 +53,7 @@ class MemoryHud : TextHud(
     }
 
     override fun updateFrequency(): Long {
-        return updateFrequency.seconds
+        return updateFrequency.toDouble().seconds.inWholeNanoseconds
     }
 
     override fun getText(): String? {

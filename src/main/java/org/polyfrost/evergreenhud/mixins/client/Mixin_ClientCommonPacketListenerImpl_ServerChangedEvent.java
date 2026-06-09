@@ -1,7 +1,5 @@
 package org.polyfrost.evergreenhud.mixins.client;
 
-import dev.deftu.textile.CollapseMode;
-import dev.deftu.textile.minecraft.MCText;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl;
 import net.minecraft.client.multiplayer.CommonListenerCookie;
@@ -27,7 +25,7 @@ public class Mixin_ClientCommonPacketListenerImpl_ServerChangedEvent {
             EventManager.INSTANCE.post(new ServerChangedEvent(
                     data.ip,
                     data.name,
-                    MCText.wrap(data.motd).collapseToString(CollapseMode.SCOPED)
+                    data.motd
             ));
         }
     }

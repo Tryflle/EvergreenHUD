@@ -1,13 +1,12 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.api.client.world
-import dev.deftu.omnicore.api.data.pos.OmniBlockPos
-import dev.deftu.omnicore.api.world.isBlockLoadedAt
+import net.minecraft.core.BlockPos
 import net.minecraft.locale.Language
 import net.minecraft.network.chat.Component
 import org.polyfrost.evergreenhud.client.BlockPositionChangedEvent
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import kotlin.jvm.optionals.getOrNull
 
 class BiomeHud : TextHud(
@@ -19,14 +18,17 @@ class BiomeHud : TextHud(
     override fun setup() {
         super.setup()
         eventHandler { (x, y, z): BlockPositionChangedEvent ->
-            val world = world ?: return@eventHandler
 
-            val pos = OmniBlockPos(x, y, z)
-            if (!world.isBlockLoadedAt(pos.vanilla)) {
+            val level = mc.level ?: return@eventHandler
+
+            val pos = BlockPos(x, y, z)
+
+
+            if (!level.isInValidBounds(pos)) {
                 return@eventHandler
             }
 
-            val id = world.getBiome(pos.vanilla)
+            val id = level.getBiome(pos)
                 .unwrapKey()
                 // currently cant use '?.' as the first characters in stonecutter commented code
                 // so this is a workaround. once stonecutter 0.9 releases, this can be replaced

@@ -1,10 +1,9 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.api.client.world
-import dev.deftu.omnicore.api.world.currentTime
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
-import org.polyfrost.polyui.unit.milliseconds
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import kotlin.time.Duration.Companion.milliseconds
 
 // CHECK OK
 class InGameTimeHud : TextHud(
@@ -24,7 +23,7 @@ class InGameTimeHud : TextHud(
     }
 
     override fun getText(): String? {
-        val time = ((world?.currentTime ?: 0L) + 6000L) % 24000L
+        val time = ((mc.level?.dayTime ?: 0L) + 6000L) % 24000L
         val seconds = (time * 3.6).toLong()
         val minutes = (seconds % 3600L) / 60L
         val hours = (seconds / 3600L) % 24L
@@ -52,6 +51,6 @@ class InGameTimeHud : TextHud(
     }
 
     override fun updateFrequency(): Long {
-        return 500.milliseconds
+        return 500.milliseconds.inWholeNanoseconds
     }
 }

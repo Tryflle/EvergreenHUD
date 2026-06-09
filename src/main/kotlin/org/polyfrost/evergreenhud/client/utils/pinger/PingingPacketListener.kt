@@ -1,13 +1,10 @@
 package org.polyfrost.evergreenhud.client.utils.pinger
 
-import dev.deftu.omnicore.api.client.network.OmniServerInfo
-import dev.deftu.textile.Text
-import dev.deftu.textile.minecraft.MCText
-import dev.deftu.textile.minecraft.MCTextStyle
-import dev.deftu.textile.minecraft.TextColors
-import dev.deftu.textile.minecraft.asVanilla
+import net.minecraft.ChatFormatting
+import net.minecraft.client.multiplayer.ServerData
 import net.minecraft.network.Connection
 import net.minecraft.network.DisconnectionDetails
+import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket
 import net.minecraft.network.protocol.ping.ServerboundPingRequestPacket
 import net.minecraft.network.protocol.status.ClientStatusPacketListener
@@ -15,7 +12,7 @@ import net.minecraft.network.protocol.status.ClientboundStatusResponsePacket
 import net.minecraft.util.Util
 
 class PingingPacketListener(
-    private val server: OmniServerInfo,
+    private val server: ServerData,
     private val networkManager: Connection,
     private val callback: (Int) -> Unit
 ) : ClientStatusPacketListener {
@@ -29,32 +26,31 @@ class PingingPacketListener(
         details: DisconnectionDetails,
     ) {
         val reason = details.reason
-        println("Disconnected from server ${server.address} (${server.name}) with reason: ${MCText.wrap(reason).collapseToString()}")
+        println("Disconnected from server ${server.ip} (${server.name}) with reason: ${reason.string}")
         if (!started) {
-            throw IllegalStateException("Could not query server ${server.address} (${server.name}) for ping status. Reason: ${MCText.wrap(reason).collapseToString()}")
+            throw IllegalStateException("Could not query server ${server.ip} (${server.name}) for ping status. Reason: ${reason.string}")
         }
     }
 
     override fun handleStatusResponse(packetIn: ClientboundStatusResponsePacket) {
         if (started) {
             networkManager.disconnect(
-                Text.literal(
+                Component.literal(
                     "Received unrequested status packet",
-                    MCTextStyle.color(TextColors.RED)
-                ).asVanilla()
+                ).withStyle(ChatFormatting.RED),
             )
 
             return
         }
 
-        println("Received server info packet from ${server.address} (${server.name})")
+        println("Received server info packet from ${server.ip} (${server.name})")
         started = true
         startTime = currentTime
         networkManager.send(ServerboundPingRequestPacket(startTime))
     }
 
     override fun handlePongResponse(packetIn: ClientboundPongResponsePacket) {
-        println("Received pong packet from ${server.address} (${server.name})")
+        println("Received pong packet from ${server.ip} (${server.name})")
         callback((currentTime - startTime).toInt())
     }
 

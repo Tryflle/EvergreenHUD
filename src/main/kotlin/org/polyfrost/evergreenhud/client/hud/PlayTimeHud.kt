@@ -2,7 +2,7 @@ package org.polyfrost.evergreenhud.client.hud
 
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
-import org.polyfrost.polyui.unit.seconds
+import kotlin.time.Duration.Companion.seconds
 
 // CHECK OK
 class PlayTimeHud : TextHud(
@@ -49,6 +49,6 @@ class PlayTimeHud : TextHud(
     }
 
     override fun updateFrequency(): Long {
-        return 1.seconds
+        return 1.seconds.inWholeNanoseconds
     }
 }

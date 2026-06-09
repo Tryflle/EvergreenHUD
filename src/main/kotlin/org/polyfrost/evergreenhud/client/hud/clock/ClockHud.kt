@@ -1,16 +1,11 @@
 package org.polyfrost.evergreenhud.client.hud.clock
 
+import androidx.compose.runtime.Composable
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.hud.v1.Hud
-import org.polyfrost.polyui.color.Colors
-import org.polyfrost.polyui.component.Drawable
-import org.polyfrost.polyui.unit.Vec2
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
 
 // check OK
-class ClockHud : Hud<Drawable>(
+class ClockHud : Hud(
     id = "clock.json",
     title = "Clock",
     category = Category.INFO,
@@ -19,8 +14,9 @@ class ClockHud : Hud<Drawable>(
     @Slider(title = "Hand Width", min = 1F, max = 10F)
     var handWidth = 2f
 
-    override fun create(): Drawable {
-        return ClockDrawable(System.currentTimeMillis(), 100f, handWidth)
+    @Composable
+    override fun Content() {
+        Clock(System.currentTimeMillis(), handWidth)
     }
 
     override fun update(): Boolean {

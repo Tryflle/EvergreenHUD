@@ -1,12 +1,12 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.api.client.player
 import org.polyfrost.evergreenhud.client.ClientPlaceBlockEvent
+import org.polyfrost.evergreenhud.client.utils.fastRemoveIfReversed
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
-import org.polyfrost.polyui.unit.milliseconds
-import org.polyfrost.polyui.utils.fastRemoveIfReversed
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import kotlin.time.Duration.Companion.milliseconds
 
 // CHECK OK
 class PlaceCountHud : TextHud(
@@ -28,7 +28,7 @@ class PlaceCountHud : TextHud(
         if (isReal) {
             blockCount = ArrayList()
             eventHandler { event: ClientPlaceBlockEvent ->
-                if (event.player == player) {
+                if (event.player == mc.player) {
                     blockCount?.add(System.nanoTime())
                     updateAndRecalculate()
                 }
@@ -46,7 +46,7 @@ class PlaceCountHud : TextHud(
     }
 
     override fun updateFrequency(): Long {
-        return 50.milliseconds
+        return 50.milliseconds.inWholeNanoseconds
     }
 
 }

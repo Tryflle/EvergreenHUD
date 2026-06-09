@@ -1,17 +1,13 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.api.client.player
-import dev.deftu.omnicore.api.direction.OmniPlanarDirection
-import dev.deftu.omnicore.api.entity.currentX
-import dev.deftu.omnicore.api.entity.currentY
-import dev.deftu.omnicore.api.entity.currentYaw
-import dev.deftu.omnicore.api.entity.currentZ
+import org.polyfrost.evergreenhud.client.utils.Facing
 import org.polyfrost.evergreenhud.client.utils.GenericNumberHud
 import org.polyfrost.oneconfig.api.config.v1.annotations.Checkbox
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
 
 // TODO implement the facing stuff and pitch/yaw
 class PositionHud : GenericNumberHud(
@@ -39,18 +35,18 @@ class PositionHud : GenericNumberHud(
     @Checkbox(title = "Show Z")
     var showZ = true
 
-    private val facing get() = OmniPlanarDirection.from(player?.currentYaw ?: error("uh oh"), isExact = true)
-    private var x = 0.0
-    private var y = 0.0
-    private var z = 0.0
+    private val facing get() = Facing.parseExact(mc.player?.yRot ?: 0f)
+    private var px = 0.0
+    private var py = 0.0
+    private var pz = 0.0
 
     override fun setup() {
         super.setup()
         eventHandler { _: TickEvent.End ->
-            val player = player ?: return@eventHandler
-            this.x = player.currentX
-            this.y = player.currentY
-            this.z = player.currentZ
+            val player = mc.player ?: return@eventHandler
+            this.px = player.x
+            this.py = player.y
+            this.pz = player.z
             updateAndRecalculate()
         }
 
@@ -86,15 +82,15 @@ class PositionHud : GenericNumberHud(
     override fun getText(): String? {
         val facing = this.facing
         if (showX) {
-            createString('X', x, if (facing.isEast) '+' else if (facing.isWest) '-' else ' ')
+            createString('X', px, if (facing.isEast) '+' else if (facing.isWest) '-' else ' ')
         }
 
         if (showY) {
-            createString('Y', y, '\u0000')
+            createString('Y', py, '\u0000')
         }
 
         if (showZ) {
-            createString('Z', z, if (facing.isSouth) '+' else if (facing.isNorth) '-' else ' ')
+            createString('Z', pz, if (facing.isSouth) '+' else if (facing.isNorth) '-' else ' ')
         }
 
         return null

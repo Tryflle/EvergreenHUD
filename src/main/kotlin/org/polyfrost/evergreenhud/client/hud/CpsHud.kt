@@ -1,12 +1,12 @@
 package org.polyfrost.evergreenhud.client.hud
 
+import org.polyfrost.evergreenhud.client.utils.fastRemoveIfReversed
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Text
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.MouseInputEvent
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
-import org.polyfrost.polyui.unit.milliseconds
-import org.polyfrost.polyui.utils.fastRemoveIfReversed
+import kotlin.time.Duration.Companion.milliseconds
 
 // CHECK OK
 class CpsHud : TextHud(
@@ -76,5 +76,5 @@ class CpsHud : TextHud(
         return null
     }
 
-    override fun updateFrequency() = 100.milliseconds
+    override fun updateFrequency() = 100.milliseconds.inWholeNanoseconds
 }

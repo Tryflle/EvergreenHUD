@@ -1,11 +1,7 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.api.client.sound.OmniClientSound
-import dev.deftu.omnicore.api.client.world
-import dev.deftu.omnicore.api.data.pos.OmniBlockPos
-import dev.deftu.omnicore.api.sound.OmniSounds
-import dev.deftu.omnicore.api.world.getBlockTypeAt
-import dev.deftu.omnicore.api.world.maxWorldHeight
+import net.minecraft.core.BlockPos
+import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.level.block.BannerBlock
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
@@ -16,6 +12,7 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
 
 // CHECK OK
 class BlockAboveHud : TextHud(
@@ -52,16 +49,16 @@ class BlockAboveHud : TextHud(
     override fun setup() {
         super.setup()
         eventHandler { (x, y, z): BlockPositionChangedEvent ->
-            val world = world ?: return@eventHandler
+            val level = mc.level ?: return@eventHandler
 
             var above = 0
             for (i in 1..checkHeight) {
-                val pos = OmniBlockPos(x, y + 1 + i, z)
-                if (pos.y > world.maxWorldHeight) {
+                val pos = BlockPos(x, y + 1 + i, z)
+                if (pos.y > level.maxY) {
                     break
                 }
 
-                val block = world.getBlockTypeAt(pos.vanilla) ?: continue
+                val block = level.getBlockState(pos).block ?: continue
                 if (block.isIgnored) {
                     continue
                 }
@@ -69,7 +66,7 @@ class BlockAboveHud : TextHud(
                 above = i - 1
                 if (above <= notifyHeight && notify) {
                     if (!notified) {
-                        OmniClientSound.play(OmniSounds.ENTITY.experienceOrb, 0.25f, 1f)
+                        mc.player?.playSound(SoundEvents.EXPERIENCE_ORB_PICKUP, 0.25f, 1f)
                         notified = true
                     }
                 } else {

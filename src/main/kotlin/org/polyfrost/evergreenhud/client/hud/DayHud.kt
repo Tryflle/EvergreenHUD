@@ -1,9 +1,8 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.api.client.world
-import dev.deftu.omnicore.api.world.currentTime
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
-import org.polyfrost.polyui.unit.seconds
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import kotlin.time.Duration.Companion.seconds
 
 // CHECK OK
 class DayHud : TextHud(
@@ -13,11 +12,11 @@ class DayHud : TextHud(
     prefix = "Day: ",
 ) {
     override fun getText(): String? {
-        sb.append(world?.currentTime?.div(24000L)?.toString() ?: "0")
+        sb.append(mc.level?.dayTime?.div(24000L)?.toString() ?: "0")
         return null
     }
 
     override fun updateFrequency(): Long {
-        return 1.seconds
+        return 1.seconds.inWholeNanoseconds
     }
 }

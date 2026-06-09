@@ -1,8 +1,7 @@
-package org.polyfrost.evergreenhud.client.hud
+/*package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.textile.CollapseMode
-import dev.deftu.textile.minecraft.MCText
 import net.minecraft.core.component.DataComponents
+import net.minecraft.util.datafix.LegacyComponentDataFixUtils
 import net.minecraft.world.item.ItemStack
 import org.polyfrost.evergreenhud.client.SelectedItemChangedEvent
 import org.polyfrost.oneconfig.api.config.v1.annotations.Checkbox
@@ -11,10 +10,6 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
-import org.polyfrost.polyui.animate.Animations
-import org.polyfrost.polyui.operations.Fade
-import org.polyfrost.polyui.unit.milliseconds
-import org.polyfrost.polyui.utils.Clock
 
 class LoreHud : TextHud(
     id = "lore.json",
@@ -73,7 +68,7 @@ class LoreHud : TextHud(
         val item = theItem ?: return if (isReal) "Item Lore HUD" else null
 
         if (showName && item.isNameShown) {
-            val name = MCText.wrap(item.hoverName).collapseToString(CollapseMode.SCOPED)
+            val name = item.hoverName.string
             if (name.isNotEmpty()) {
                  sb.append(name).append('\n')
             }
@@ -94,7 +89,7 @@ class LoreHud : TextHud(
     private inline fun ItemStack.forEachLore(consumer: (String) -> Unit) {
         val lore = this.get(DataComponents.LORE) ?: return
         for (line in lore.lines) {
-            consumer(MCText.wrap(line).collapseToString(CollapseMode.SCOPED))
+            consumer(line.string)
         }
     }
-}
+}*/

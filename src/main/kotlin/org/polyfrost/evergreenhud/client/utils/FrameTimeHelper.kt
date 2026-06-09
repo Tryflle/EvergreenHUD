@@ -1,9 +1,9 @@
 package org.polyfrost.evergreenhud.client.utils
 
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents
 import org.polyfrost.oneconfig.api.event.v1.EventManager
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.Event
-import org.polyfrost.oneconfig.api.event.v1.events.RenderEvent
 import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 
 object FrameTimeHelper {
@@ -12,7 +12,7 @@ object FrameTimeHelper {
     private var tickCount = 0
 
     fun initialize() {
-        eventHandler { _: RenderEvent.Post ->
+        WorldRenderEvents.END_MAIN.register {
             frameTimes += System.nanoTime() - lastTime
             lastTime = System.nanoTime()
         }

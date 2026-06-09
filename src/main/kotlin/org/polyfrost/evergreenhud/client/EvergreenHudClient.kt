@@ -1,11 +1,7 @@
 package org.polyfrost.evergreenhud.client
 
-import dev.deftu.omnicore.api.client.player
-import dev.deftu.omnicore.api.client.resources.OmniClientResources
-import dev.deftu.omnicore.api.client.world
-import dev.deftu.omnicore.api.data.vec.OmniVec3d
-import dev.deftu.omnicore.api.entity.currentPos
 import net.fabricmc.api.ClientModInitializer
+import net.minecraft.core.BlockPos
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket
 import net.minecraft.world.entity.Entity
 import org.polyfrost.evergreenhud.client.hud.*
@@ -14,27 +10,28 @@ import org.polyfrost.evergreenhud.client.hud.clock.ClockHud
 import org.polyfrost.evergreenhud.client.hud.hypixel.*
 import org.polyfrost.evergreenhud.client.utils.FrameTimeHelper
 import org.polyfrost.evergreenhud.client.utils.PinkuluMapCache
-import org.polyfrost.evergreenhud.client.utils.ResourceReloadEventReloadListener
 import org.polyfrost.evergreenhud.client.utils.uniqueEntityId
 import org.polyfrost.oneconfig.api.event.v1.EventManager
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.PacketEvent
 import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
+import org.polyfrost.oneconfig.api.hud.v1.TextHud
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import kotlin.jvm.optionals.getOrNull
 
 object EvergreenHudClient : ClientModInitializer {
     override fun onInitializeClient() {
         FrameTimeHelper.initialize()
         PinkuluMapCache.initialize()
-        OmniClientResources.registerReloadListener(ResourceReloadEventReloadListener)
+        //OmniClientResources.registerReloadListener(ResourceReloadEventReloadListener)
 
-        HudManager.register(
+        val huds = arrayOf(
             BatteryHud(), /*BiomeHud(),*/ BlockAboveHud(),
             ClockHud(), ComboHud(), CpsHud(),
             DayHud(), EntityCounterHud(), FpsHud(),
             InGameTimeHud(), /*InventoryHud(),*/ /*ItemHud(),*/
-            KeyHud(), LoreHud(), MemoryHud(),
+            KeyHud(), /*LoreHud(),*/ MemoryHud(),
             PingHud(), PlaceCountHud(), /*PlayerPreviewHud(),*/
             PlayTimeHud(), PositionHud(), ReachHud(),
             /*ResourcePackHud(),*/ SaturationHud(), ServerAddressHud(),
@@ -47,19 +44,25 @@ object EvergreenHudClient : ClientModInitializer {
             HypixelLocationHud("Build Remaining") { PinkuluMapCache.getMapHeight(this).let { if (it == -1) "Unknown" else it.toString() } },
         )
 
+        huds.forEach {
+            if (it is TextHud) it.staticWidth = false
+        }
+
+        HudManager.register(*huds)
+
         BlockPositionChangedEvent()
         ServerDamageEntityEvent()
     }
 
     @Suppress("FunctionName", "AssignedValueIsNeverRead")
     private fun BlockPositionChangedEvent() {
-        var lastPos = OmniVec3d.ZERO
+        var lastPos = BlockPos.ZERO
         eventHandler { _: TickEvent.End ->
-            val player = player ?: return@eventHandler
-            val pos = player.currentPos
+            val player = mc.player ?: return@eventHandler
+            val pos = player.blockPosition()
             if (pos != lastPos) {
                 lastPos = pos
-                EventManager.INSTANCE.post(BlockPositionChangedEvent(pos.x.toInt(), pos.y.toInt(), pos.z.toInt()))
+                EventManager.INSTANCE.post(BlockPositionChangedEvent(pos.x, pos.y, pos.z))
             }
         }
     }
@@ -79,7 +82,7 @@ object EvergreenHudClient : ClientModInitializer {
                 return@eventHandler
             }
 
-            val world = world ?: return@eventHandler
+            val world = mc.level ?: return@eventHandler
             val target = packet.getEntity(world) ?: return@eventHandler
             if (lastAttacker == null || lastTargetId != target.uniqueEntityId) {
                 return@eventHandler

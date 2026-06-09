@@ -2,9 +2,11 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "2.3.0"
-    id("net.fabricmc.fabric-loom-remap") version "1.14-SNAPSHOT"
+    kotlin("jvm") version "2.4.0"
+    id("dev.kikugie.loom-back-compat")
     id("dev.deftu.gradle.bloom") version "0.2.0"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.4.0"
+    id("org.jetbrains.compose") version "1.11.0"
 }
 
 val modid = property("mod.id") as String
@@ -18,6 +20,10 @@ base {
 }
 
 repositories {
+    mavenCentral()
+    gradlePluginPortal()
+    google()
+
     maven("https://maven.parchmentmc.org")
     maven("https://repo.polyfrost.org/releases")
     maven("https://repo.polyfrost.org/snapshots")
@@ -27,6 +33,20 @@ repositories {
     maven("https://maven.bawnorton.com/releases") {
         content { includeGroup("com.github.bawnorton.mixinsquared") }
     }
+
+    maven("https://maven.logix.dev/snapshots")
+    maven("https://nexus.prsm.wtf/repository/maven-public/maven-repo/releases/")
+    maven("https://repo.hypixel.net/repository/Hypixel/")
+    maven("https://maven.deftu.dev/releases")
+
+    maven("https://maven.fabricmc.net/releases")
+    maven("https://jitpack.io") {
+        content { includeGroupAndSubgroups("com.github") }
+    }
+    maven("https://maven.azureaaron.net/releases") {
+        content { includeGroup("net.azureaaron") }
+    }
+    maven("https://redirector.kotlinlang.org/maven/compose-dev")
 }
 
 loom {
@@ -64,6 +84,7 @@ dependencies {
     modImplementation("org.polyfrost.oneconfig:ui:$oneconfigversion")
     modImplementation("org.polyfrost.oneconfig:utils:$oneconfigversion")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${property("fabric_api_version")}+$mcversion")
+    compileOnly(compose.desktop.currentOs)
 }
 
 bloom {

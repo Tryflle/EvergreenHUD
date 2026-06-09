@@ -1,5 +1,6 @@
 package org.polyfrost.evergreenhud.client
 
+import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
@@ -24,7 +25,7 @@ data class ClientPlaceBlockEvent(
 data class ServerChangedEvent(
     val ip: String?,
     val name: String?,
-    val motd: String?
+    val motd: Component?
 ) : Event
 
 data class SaturationChangedEvent(

@@ -1,4 +1,4 @@
-package org.polyfrost.evergreenhud.client.utils
+/*package org.polyfrost.evergreenhud.client.utils
 
 import dev.deftu.omnicore.api.locationOrThrow
 import dev.deftu.omnicore.api.resources.SimpleResourceReloadListener
@@ -29,3 +29,4 @@ object ResourceReloadEventReloadListener : SimpleResourceReloadListener<Unit> {
         }, executor)
     }
 }
+*/

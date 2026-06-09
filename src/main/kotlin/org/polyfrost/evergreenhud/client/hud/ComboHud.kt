@@ -1,6 +1,5 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.api.client.player
 import org.polyfrost.evergreenhud.client.ServerDamageEntityEvent
 import org.polyfrost.evergreenhud.client.utils.uniqueEntityId
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
@@ -8,6 +7,7 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Text
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
 
 // CHECK OK
 class ComboHud : TextHud(
@@ -43,12 +43,12 @@ class ComboHud : TextHud(
         }
 
         eventHandler { (attacker, target): ServerDamageEntityEvent ->
-            if (target == player) {
+            if (target == mc.player) {
                 currentCombo = 0
                 return@eventHandler
             }
 
-            if (attacker != player) {
+            if (attacker != mc.player) {
                 return@eventHandler
             }
 

@@ -1,6 +1,6 @@
 package org.polyfrost.evergreenhud.client.utils.pinger
 
-import dev.deftu.omnicore.api.client.network.OmniServerInfo
+import net.minecraft.client.multiplayer.ServerData
 import net.minecraft.client.multiplayer.resolver.ServerAddress
 import net.minecraft.client.multiplayer.resolver.ServerNameResolver
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
@@ -16,7 +16,7 @@ import net.minecraft.server.network.EventLoopGroupHolder
 
 class ServerPinger(
     private val intervalSupplier: () -> Int,
-    private val serverSupplier: () -> OmniServerInfo?
+    private val serverSupplier: () -> ServerData?
 ) {
 
     private var ticks = 0
@@ -41,10 +41,10 @@ class ServerPinger(
         }
     }
 
-    private fun ping(server: OmniServerInfo) {
-        println("Pinging server: ${server.address}")
+    private fun ping(server: ServerData) {
+        println("Pinging server: ${server.ip}")
 
-        val address = ServerAddress.parseString(server.address)
+        val address = ServerAddress.parseString(server.ip)
         val connection = Connection.connectToServer(
             ServerNameResolver.DEFAULT.resolveAddress(address).map { it.asInetSocketAddress()  }.orElseThrow(),
             //? if >= 1.21.11 {
@@ -60,7 +60,7 @@ class ServerPinger(
         }
     }
 
-    private fun Connection.sendHandshake(server: OmniServerInfo, address: ServerAddress) {
+    private fun Connection.sendHandshake(server: ServerData, address: ServerAddress) {
         initiateServerboundStatusConnection(
             address.host,
             address.port,
