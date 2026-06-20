@@ -9,11 +9,11 @@ import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import kotlin.time.Duration.Companion.seconds
 
-// CHECK OK
+// TODO: fix
 class ReachHud : GenericNumberHud(
     title = "Reach",
     category = Category.COMBAT,
-    suffix = " blocks"
+    suffix = "blocks"
 ) {
     @Slider(title = "Discard Time", min = 1000F, max = 10000F)
     var discardTime = 3000
@@ -34,6 +34,7 @@ class ReachHud : GenericNumberHud(
 
                 this.value = reach
                 this.lastTime = System.currentTimeMillis()
+                updateWithNumber(reach)
             }
 
             return@eventHandler false
@@ -46,7 +47,7 @@ class ReachHud : GenericNumberHud(
 
     override fun getText(): String? {
         if (value == 0f) {
-            sb.append(noHitMessage)
+            return noHitMessage
         }
 
         return super.getText()

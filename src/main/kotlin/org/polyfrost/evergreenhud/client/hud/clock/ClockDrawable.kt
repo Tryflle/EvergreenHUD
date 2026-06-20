@@ -10,7 +10,8 @@ import java.lang.Math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-@Composable
+
+/*@Composable
 fun Clock(
     timeMillis: Long,
     handWidth: Float = 2f,
@@ -64,3 +65,4 @@ fun Clock(
         )
     }
 }
+*/

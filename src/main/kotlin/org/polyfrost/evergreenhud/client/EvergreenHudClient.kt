@@ -2,11 +2,13 @@ package org.polyfrost.evergreenhud.client
 
 import net.fabricmc.api.ClientModInitializer
 import net.minecraft.core.BlockPos
+import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket
+import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket
 import net.minecraft.world.entity.Entity
 import org.polyfrost.evergreenhud.client.hud.*
 import org.polyfrost.evergreenhud.client.hud.battery.BatteryHud
-import org.polyfrost.evergreenhud.client.hud.clock.ClockHud
+//import org.polyfrost.evergreenhud.client.hud.clock.ClockHud
 import org.polyfrost.evergreenhud.client.hud.hypixel.*
 import org.polyfrost.evergreenhud.client.utils.FrameTimeHelper
 import org.polyfrost.evergreenhud.client.utils.PinkuluMapCache
@@ -18,6 +20,7 @@ import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.jvm.optionals.getOrNull
 
 object EvergreenHudClient : ClientModInitializer {
@@ -27,11 +30,11 @@ object EvergreenHudClient : ClientModInitializer {
         //OmniClientResources.registerReloadListener(ResourceReloadEventReloadListener)
 
         val huds = arrayOf(
-            BatteryHud(), /*BiomeHud(),*/ BlockAboveHud(),
-            ClockHud(), ComboHud(), CpsHud(),
+            BatteryHud(), BiomeHud(), BlockAboveHud(),
+            /*ClockHud(),*/ ComboHud(), CpsHud(),
             DayHud(), EntityCounterHud(), FpsHud(),
             InGameTimeHud(), /*InventoryHud(),*/ /*ItemHud(),*/
-            KeyHud(), /*LoreHud(),*/ MemoryHud(),
+            /*KeyHud(), *//*LoreHud(),*/ MemoryHud(),
             PingHud(), PlaceCountHud(), /*PlayerPreviewHud(),*/
             PlayTimeHud(), PositionHud(), ReachHud(),
             /*ResourcePackHud(),*/ SaturationHud(), ServerAddressHud(),
@@ -41,9 +44,11 @@ object EvergreenHudClient : ClientModInitializer {
             HypixelLocationHud("Map Name") { mapName.getOrNull() },
             HypixelLocationHud("Game Type") { gameType.getOrNull()?.name },
             HypixelLocationHud("Game Mode") { mode.getOrNull() },
+            // TODO: check that this actually works
             HypixelLocationHud("Build Remaining") { PinkuluMapCache.getMapHeight(this).let { if (it == -1) "Unknown" else it.toString() } },
         )
 
+        // TODO: improve this workaround
         huds.forEach {
             if (it is TextHud) it.staticWidth = false
         }
@@ -54,6 +59,24 @@ object EvergreenHudClient : ClientModInitializer {
         ServerDamageEntityEvent()
     }
 
+    private val recentBlockChanges = ConcurrentLinkedQueue<BlockPos>()
+
+    private fun BlockChangeEvent() {
+        eventHandler { event: PacketEvent.Receive ->
+            when (val packet = event.getPacket<Any>()) {
+                is ClientboundBlockUpdatePacket -> recentBlockChanges.add(packet.pos)
+                is ClientboundSectionBlocksUpdatePacket -> packet.runUpdates { pos, _ -> recentBlockChanges.add(pos) }
+
+            }
+        }
+        eventHandler { _: TickEvent ->
+            while (true) {
+                val pos = recentBlockChanges.poll() ?: break
+                EventManager.INSTANCE.post(BlockChangeEvent(pos))
+            }
+        }
+    }
+
     @Suppress("FunctionName", "AssignedValueIsNeverRead")
     private fun BlockPositionChangedEvent() {
         var lastPos = BlockPos.ZERO
@@ -62,7 +85,7 @@ object EvergreenHudClient : ClientModInitializer {
             val pos = player.blockPosition()
             if (pos != lastPos) {
                 lastPos = pos
-                EventManager.INSTANCE.post(BlockPositionChangedEvent(pos.x, pos.y, pos.z))
+                EventManager.INSTANCE.post(BlockPositionChangedEvent(pos))
             }
         }
     }
@@ -73,6 +96,8 @@ object EvergreenHudClient : ClientModInitializer {
         var lastTargetId: Int = -1
 
         eventHandler { (attacker, target): ClientDamageEntityEvent ->
+            fun isPlayer(entity: Entity) = entity == mc.player
+            println("Attacker: ${isPlayer(attacker)}, Target: $${isPlayer(target)}")
             lastAttacker = attacker
             lastTargetId = target.uniqueEntityId
         }

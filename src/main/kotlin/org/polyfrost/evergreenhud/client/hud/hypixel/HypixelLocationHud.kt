@@ -1,5 +1,6 @@
 package org.polyfrost.evergreenhud.client.hud.hypixel
 
+import org.polyfrost.evergreenhud.client.utils.CachedTextHud
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.config.v1.annotations.Text
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
@@ -9,15 +10,10 @@ import org.polyfrost.oneconfig.api.hypixel.v1.HypixelUtils.Location
 
 class HypixelLocationHud(
     title: String,
-    prefix: String = "$title: ",
-    suffix: String = "",
     private val getter: Location.() -> String?
-) : TextHud(
-    id = "${title.replace(' ', '_').lowercase()}.json",
+) : CachedTextHud(
     title = title,
     category = Category.INFO,
-    prefix = prefix,
-    suffix = suffix
 ) {
 
     @Switch(title = "Hide If Not In-Game or Supported")
@@ -26,28 +22,20 @@ class HypixelLocationHud(
     @Text(title = "No Location Text")
     var noLocationText = "Unknown"
 
+    override val defaultText: String by ::noLocationText
+
     override fun setup() {
         super.setup()
+        hidden = true
         eventHandler { event: HypixelLocationEvent ->
             val string = event.location.getter()
-            if (string != null) {
-                sb.append(string)
-                hidden = false
-            } else {
-                sb.append(noLocationText)
-                hidden = shouldHide
-            }
-
-            updateAndRecalculate()
+            hidden = string != null && shouldHide
+            updateWithText(string)
         }
 
         if (isReal) {
             updateWhenChanged("shouldHide")
         }
-    }
-
-    override fun getText(): String? {
-        return null
     }
 
 }

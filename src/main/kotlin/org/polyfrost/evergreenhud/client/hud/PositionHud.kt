@@ -10,6 +10,7 @@ import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 
 // TODO implement the facing stuff and pitch/yaw
+// i think this is already implemented?
 class PositionHud : GenericNumberHud(
     title = "Position",
     category = Category.INFO
@@ -60,39 +61,44 @@ class PositionHud : GenericNumberHud(
         }
     }
 
-    private fun createString(axis: Char, value: Double, sign: Char) {
-        if (sb.isNotEmpty()) {
+    override fun update(): Boolean {
+        currentText = createText()
+        return super.update()
+    }
+
+    private fun StringBuilder.createString(axis: Char, value: Double, sign: Char) {
+        if (isNotEmpty()) {
             if (displayMode == 0) {
-                sb.append('\n')
+                append('\n')
             } else {
-                sb.append(", ")
+                append(", ")
             }
         }
 
         if (showAxis) {
-            sb.append(axis).append(": ")
+            append(axis).append(": ")
         }
 
-        sb.append(df.format(value))
+        append(format(value))
         if (showDirection && sign != '\u0000') {
-            sb.append('(').append(sign).append(')')
+            append('(').append(sign).append(')')
         }
     }
 
-    override fun getText(): String? {
+    private fun createText(): String {
         val facing = this.facing
-        if (showX) {
-            createString('X', px, if (facing.isEast) '+' else if (facing.isWest) '-' else ' ')
-        }
+        return buildString {
+            if (showX) {
+                createString('X', px, if (facing.isEast) '+' else if (facing.isWest) '-' else ' ')
+            }
 
-        if (showY) {
-            createString('Y', py, '\u0000')
-        }
+            if (showY) {
+                createString('Y', py, '\u0000')
+            }
 
-        if (showZ) {
-            createString('Z', pz, if (facing.isSouth) '+' else if (facing.isNorth) '-' else ' ')
+            if (showZ) {
+                createString('Z', pz, if (facing.isSouth) '+' else if (facing.isNorth) '-' else ' ')
+            }
         }
-
-        return null
     }
 }

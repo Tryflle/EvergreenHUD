@@ -6,7 +6,6 @@ import org.polyfrost.evergreenhud.client.utils.GenericNumberHud
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.PacketEvent
 
-// CHECK OK
 class TpsHud : GenericNumberHud(
     title = "TPS",
     category = Category.INFO,
@@ -20,8 +19,7 @@ class TpsHud : GenericNumberHud(
                 val now = System.currentTimeMillis()
                 val timeTaken = now - lastUpdated
                 lastUpdated = now
-                value = (20000f / timeTaken).coerceIn(0f, 20f)
-                updateAndRecalculate()
+                updateWithNumber((20000f / timeTaken).coerceIn(0f, 20f))
             }
         }
     }

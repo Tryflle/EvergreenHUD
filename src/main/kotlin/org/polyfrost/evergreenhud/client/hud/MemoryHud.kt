@@ -1,5 +1,6 @@
 package org.polyfrost.evergreenhud.client.hud
 
+import org.polyfrost.evergreenhud.client.utils.CachedTextHud
 import org.polyfrost.evergreenhud.utils.decimalFormat
 import org.polyfrost.oneconfig.api.config.v1.annotations.Number
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
@@ -8,13 +9,10 @@ import org.polyfrost.oneconfig.api.hud.v1.TextHud
 import java.text.DecimalFormat
 import kotlin.time.Duration.Companion.seconds
 
-// CHECK OK
-class MemoryHud : TextHud(
-    id = "memory.json",
+class MemoryHud : CachedTextHud(
     title = "Memory",
     category = Category.INFO,
-    prefix = "Memory: ",
-    suffix = " GB"
+    suffix = "GB"
 ) {
     @RadioButton(
         title = "Display Type",
@@ -56,15 +54,13 @@ class MemoryHud : TextHud(
         return updateFrequency.toDouble().seconds.inWholeNanoseconds
     }
 
-    override fun getText(): String? {
+    override fun getText(): String {
         val r = Runtime.getRuntime()
         val usedBytes = bytesToMb(r.totalMemory() - r.freeMemory())
-        sb.append(df.format(when (displayType) {
+        return df.format(when (displayType) {
             1 -> usedBytes.toDouble() / bytesToMb(r.maxMemory()).toDouble()
             else -> usedBytes / 1024.0
-        }).trim())
-
-        return null
+        }).trim()
     }
 
     private fun bytesToMb(bytes: Long): Long {

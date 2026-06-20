@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.hud.v1.Hud
 
+// TODO: fix not working
+/*
 // check OK
 class ClockHud : Hud(
     id = "clock.json",
@@ -23,4 +25,4 @@ class ClockHud : Hud(
         return false
     }
 
-}
+}*/

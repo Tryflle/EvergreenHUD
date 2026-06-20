@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import org.polyfrost.compose.composables.*
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.evergreenhud.client.utils.battery.Battery
-import org.polyfrost.oneconfig.internal.ui.themes.LocalTheme
 
 const val BORDER = 2f
 const val RADIUS_OUTER = 5f
@@ -14,15 +13,15 @@ const val FONT_SIZE = 16f
 val successColor = PolyColor.rgb(35, 154, 96) to PolyColor.rgb(26, 139, 82)
 val warningColor = PolyColor.rgb(255, 171, 29) to PolyColor.rgb(233, 156, 27)
 
+// TODO: Battery data doesn't seem to properly work
 @Composable
 fun BatteryDrawable(
     battery: Battery = Battery.get(),
 ) {
-    val theme = LocalTheme.current
     val (backgroundColor, innerColor) = when {
         battery.isCharging -> successColor
         battery.isBatterySaverEnabled -> warningColor
-        else -> PolyColor.hex(theme.textColor.value.toInt()) to PolyColor.hex(theme.accentTextColor.value.toInt())
+        else -> successColor
     }
     val percent = battery.percentage.coerceIn(0, 100)
 

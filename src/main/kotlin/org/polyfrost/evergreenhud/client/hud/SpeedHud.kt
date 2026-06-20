@@ -7,7 +7,6 @@ import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import kotlin.math.sqrt
 import kotlin.time.Duration.Companion.milliseconds
 
-// CHECK OK
 class SpeedHud : GenericNumberHud(
     title = "Speed",
     category = Category.INFO,
@@ -50,19 +49,19 @@ class SpeedHud : GenericNumberHud(
         }
     }
 
-    override fun getText(): String? {
+    override fun getText(): String {
         val player = mc.player
         if (player == null) {
             value = 0f
-            return null
+            return format(value)
         }
 
         val dx = if (useX) (player.x - player.xo).toFloat() else 0f
-        val dy = if (useY) (player.x - player.yo).toFloat() else 0f
-        val dz = if (useZ) (player.x - player.zo).toFloat() else 0f
+        val dy = if (useY) (player.y - player.yo).toFloat() else 0f
+        val dz = if (useZ) (player.z - player.zo).toFloat() else 0f
         value = convertSpeed(sqrt(dx * dx + dy * dy + dz * dz))
 
-        return super.getText()
+        return format(value)
     }
 
     override fun updateFrequency(): Long {

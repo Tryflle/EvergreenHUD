@@ -1,5 +1,6 @@
 package org.polyfrost.evergreenhud.client
 
+import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.Player
@@ -36,10 +37,12 @@ data class SelectedItemChangedEvent(
     val item: ItemStack?
 ) : Event
 
+data class BlockChangeEvent(
+    val pos: BlockPos
+) : Event
+
 data class BlockPositionChangedEvent(
-    val x: Int,
-    val y: Int,
-    val z: Int
+    val pos: BlockPos,
 ) : Event
 
 data object ResourceReloadEvent : Event

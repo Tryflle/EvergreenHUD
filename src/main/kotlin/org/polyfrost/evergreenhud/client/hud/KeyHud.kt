@@ -22,7 +22,8 @@ import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.ui.v1.keybind.KeyModifiers
 import org.polyfrost.oneconfig.api.ui.v1.keybind.OneConfigKeybind
 
-//todo uh
+/*
+// TODO: fix
 class KeyHud : Hud(
     id = "key.json",
     title = "Key HUD",
@@ -135,3 +136,4 @@ class KeyHud : Hud(
         return parts.joinToString(" + ").ifEmpty { "None" }
     }
 }
+*/
