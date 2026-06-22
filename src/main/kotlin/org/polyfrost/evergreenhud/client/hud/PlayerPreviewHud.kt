@@ -1,6 +1,9 @@
 package org.polyfrost.evergreenhud.client.hud
 
+//? if < 26
 import net.minecraft.client.gui.GuiGraphics
+//? if >= 26
+/*import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics*/
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
@@ -29,24 +32,25 @@ class PlayerPreviewHud : LegacyHud(
 
         val player = mc.player ?: return
 
-        //? if >= 1.21.8 {
         val scale = effectiveScale
         val x1 = x.toInt()
         val y1 = y.toInt()
         val x2 = (x + width * scale).toInt()
         val y2 = (y + height * scale).toInt()
         val entityScale = (40f * scale).toInt()
-        //?} else {
-        /*val x1 = 0
-        val y1 = 0
-        val x2 = width.toInt()
-        val y2 = height.toInt()
-        val entityScale = 40
-        *///?}
 
         val centerX = (x1 + x2) / 2f
         val mouseX = centerX - (rotation - 180f)
+
+        //? if < 1.21.8 {
+        /*
+        graphics.pose().pushPose()
+        graphics.pose().last().pose().identity()*/
+        //?}
+        //? if < 26
         InventoryScreen.renderEntityInInventoryFollowsMouse(
+        //? if >= 26
+        /*InventoryScreen.extractEntityInInventoryFollowsMouse(*/
             graphics,
             x1, y1, x2, y2,
             entityScale,
@@ -55,5 +59,7 @@ class PlayerPreviewHud : LegacyHud(
             0f,
             player,
         )
+        //? if < 1.21.8
+        /*graphics.pose().popPose()*/
     }
 }

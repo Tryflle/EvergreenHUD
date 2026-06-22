@@ -20,7 +20,10 @@ class BiomeHud : CachedTextHud(
 
             val level = mc.level ?: return@eventHandler
 
+            //? if >= 1.21.11
             if (!level.isInValidBounds(pos)) {
+            //? if < 1.21.11
+            /*if (!level.isInWorldBounds(pos)) {*/
                 return@eventHandler
             }
 

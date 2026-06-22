@@ -59,7 +59,10 @@ class BlockAboveHud : CachedTextHud(
         var above = 0
         for (i in 1..checkHeight) {
             pos.move(Direction.UP)
+            //? if > 1.21.1
             if (pos.y > level.maxY) {
+            //? if <= 1.21.1
+            /*if (pos.y > level.maxBuildHeight) {*/
                 break
             }
 

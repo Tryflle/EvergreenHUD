@@ -1,6 +1,9 @@
 package org.polyfrost.evergreenhud.client.hud
 
+//? if < 26
 import net.minecraft.client.gui.GuiGraphics
+//? if >= 26
+/*import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics*/
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
@@ -46,10 +49,17 @@ class ItemHud : LegacyHud(
         val item = getItem(option) ?: return
         if (item.isEmpty) return
 
+        //? if < 26 {
         graphics.renderItem(item, 0, 0)
         if (showDecorations) {
             graphics.renderItemDecorations(mc.font, item, 0, 0)
         }
+        //?} else {
+        /*graphics.item(item, 0, 0)
+        if (showDecorations) {
+            graphics.itemDecorations(mc.font, item, 0, 0)
+        }
+        *///?}
     }
 
     private fun getItem(index: Int): ItemStack? {

@@ -1,3 +1,4 @@
+import dev.kikugie.loomx.LoomCompatDependencyExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -13,6 +14,7 @@ val modid = property("mod.id") as String
 val modname = property("mod.name") as String
 val modversion = property("mod.version") as String
 val mcversion = stonecutter.current.version
+val oneconfigmc = stonecutter.current.project
 val oneconfigversion = property("oneconfig_version") as String
 
 base {
@@ -34,10 +36,16 @@ repositories {
         content { includeGroup("com.github.bawnorton.mixinsquared") }
     }
 
-    maven("https://maven.logix.dev/snapshots")
+    maven("https://maven.logix.dev/snapshots") {
+        content { excludeGroup("net.kyori") }
+    }
     maven("https://nexus.prsm.wtf/repository/maven-public/maven-repo/releases/")
     maven("https://repo.hypixel.net/repository/Hypixel/")
     maven("https://maven.deftu.dev/releases")
+
+    maven("https://central.sonatype.com/repository/maven-snapshots") {
+        content { includeGroup("net.kyori") }
+    }
 
     maven("https://maven.fabricmc.net/releases")
     maven("https://jitpack.io") {
@@ -61,12 +69,12 @@ loom {
 dependencies {
     minecraft("com.mojang:minecraft:$mcversion")
     compileOnly("com.mojang:datafixerupper:4.0.26")
-    mappings(loom.officialMojangMappings())
+    the<LoomCompatDependencyExtension>().applyMojangMappings()
 
     modImplementation("net.fabricmc:fabric-loader:${property("loader_version")}")
     implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-common:0.3.3")!!)
 
-    modImplementation("org.polyfrost.oneconfig:$mcversion-fabric:$oneconfigversion")
+    modImplementation("org.polyfrost.oneconfig:$oneconfigmc-fabric:$oneconfigversion")
     modImplementation("org.polyfrost.oneconfig:commands:$oneconfigversion")
     modImplementation("org.polyfrost.oneconfig:config:$oneconfigversion")
     modImplementation("org.polyfrost.oneconfig:config-impl:$oneconfigversion")
@@ -110,19 +118,22 @@ tasks.build {
     }
 }
 
+val javaVersion = if (stonecutter.eval(mcversion, ">=26")) 25 else 21
+
 tasks.withType<JavaCompile>().configureEach {
-    options.release.set(21)
+    options.release.set(javaVersion)
 }
 
 tasks.withType<KotlinCompile>().configureEach {
-    compilerOptions.jvmTarget.set(JvmTarget.JVM_21)
+    compilerOptions.jvmTarget.set(JvmTarget.fromTarget(javaVersion.toString()))
     compilerOptions.freeCompilerArgs.add("-Xnullability-annotations=@org.jspecify.annotations:warn")
 }
 
 java {
     withSourcesJar()
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    toolchain.languageVersion.set(JavaLanguageVersion.of(javaVersion))
+    sourceCompatibility = JavaVersion.toVersion(javaVersion)
+    targetCompatibility = JavaVersion.toVersion(javaVersion)
 }
 
 tasks.jar {
