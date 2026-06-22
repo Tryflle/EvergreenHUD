@@ -8,7 +8,7 @@ import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket
 import net.minecraft.world.entity.Entity
 import org.polyfrost.evergreenhud.client.hud.*
 import org.polyfrost.evergreenhud.client.hud.battery.BatteryHud
-//import org.polyfrost.evergreenhud.client.hud.clock.ClockHud
+import org.polyfrost.evergreenhud.client.hud.clock.ClockHud
 import org.polyfrost.evergreenhud.client.hud.hypixel.*
 import org.polyfrost.evergreenhud.client.utils.FrameTimeHelper
 import org.polyfrost.evergreenhud.client.utils.PinkuluMapCache
@@ -31,11 +31,11 @@ object EvergreenHudClient : ClientModInitializer {
 
         val huds = arrayOf(
             BatteryHud(), BiomeHud(), BlockAboveHud(),
-            /*ClockHud(),*/ ComboHud(), CpsHud(),
+            ClockHud(), ComboHud(), CpsHud(),
             DayHud(), EntityCounterHud(), FpsHud(),
-            InGameTimeHud(), /*InventoryHud(),*/ /*ItemHud(),*/
-            /*KeyHud(), *//*LoreHud(),*/ MemoryHud(),
-            PingHud(), PlaceCountHud(), /*PlayerPreviewHud(),*/
+            InGameTimeHud(), InventoryHud(), ItemHud(),
+            LoreHud(), MemoryHud(),
+            PingHud(), PlaceCountHud(), PlayerPreviewHud(),
             PlayTimeHud(), PositionHud(), ReachHud(),
             /*ResourcePackHud(),*/ SaturationHud(), ServerAddressHud(),
             SpeedHud(), TpsHud(),

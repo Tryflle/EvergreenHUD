@@ -58,15 +58,6 @@ loom {
     runConfigs.remove(runConfigs["server"])
 }
 
-stonecutter {
-    val ignored = listOf(
-        "org.polyfrost.evergreenhud.client.hud.InventoryHud.kt",
-        "org.polyfrost.evergreenhud.client.hud.ItemHud.kt",
-        "org.polyfrost.evergreenhud.client.hud.PlayerPreviewHud.kt",
-    )
-    filters.exclude(*ignored.toTypedArray())
-}
-
 dependencies {
     minecraft("com.mojang:minecraft:$mcversion")
     compileOnly("com.mojang:datafixerupper:4.0.26")
