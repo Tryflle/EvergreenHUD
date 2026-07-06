@@ -1,0 +1,26 @@
+{
+    "schemaVersion": 1,
+    "id": "${mod_id}",
+    "version": "${mod_version}",
+    "name": "${mod_name}",
+    "description": "",
+    "authors": [
+        "Polyfrost"
+    ],
+    "environment": "*",
+    "entrypoints": {
+        "client": [
+            {
+                "value": "org.polyfrost.evergreenhud.client.EvergreenHudClient",
+                "adapter": "kotlin"
+            }
+        ]
+    },
+    "mixins": [
+        "mixins.${mod_id}.json"
+    ],
+    "depends": {
+        "minecraft": ">=${mc_version}",
+        "fabricloader": ">=0.15.11"
+    }
+}

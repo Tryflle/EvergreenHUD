@@ -1,0 +1,18 @@
+package org.polyfrost.evergreenhud.mixins.client;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import org.polyfrost.evergreenhud.client.SelectedItemChangedEvent;
+import org.polyfrost.oneconfig.api.event.v1.EventManager;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+@Mixin(ClientPacketListener.class)
+public class Mixin_NetHandlerPlayClient_SelectedItemChangedEvent {
+    @Inject(method = "handleSetHeldSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Inventory;setSelectedSlot(I)V", shift = At.Shift.AFTER))
+    private void selectedItemChangeCallback(CallbackInfo ci) {
+        EventManager.INSTANCE.post(new SelectedItemChangedEvent(Minecraft.getInstance().player.getMainHandItem()));
+    }
+}
