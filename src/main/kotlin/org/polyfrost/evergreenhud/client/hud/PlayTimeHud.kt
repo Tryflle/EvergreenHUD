@@ -1,15 +1,13 @@
 package org.polyfrost.evergreenhud.client.hud
 
+import org.polyfrost.evergreenhud.client.utils.CachedTextHud
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
-import org.polyfrost.oneconfig.api.hud.v1.TextHud
-import org.polyfrost.polyui.unit.seconds
+import kotlin.time.Duration.Companion.seconds
 
-// CHECK OK
-class PlayTimeHud : TextHud(
-    id = "playtime.json",
+class PlayTimeHud : CachedTextHud(
     title = "Play Time",
     category = Category.INFO,
-    prefix = "Time Played: ",
+    prefix = "Time Played:",
 ) {
     private var time: Long = 0L
 
@@ -18,37 +16,31 @@ class PlayTimeHud : TextHud(
 
     override fun setup() {
         super.setup()
+
         if (isReal) {
             updateWhenChanged("seconds")
         }
     }
 
-    override fun getText(): String? {
+    override fun getText(): String {
         time++
-        val hours = time / 60L / 60L % 60L
-        if (hours < 10L) {
-            sb.append('0')
+        val time = time.seconds
+        return time.toComponents { hours: Long, minutes: Int, seconds: Int, _: Int ->
+            buildString {
+                fun addNumber(number: Number) {
+                    if (!isEmpty()) append(":")
+                    append(number.toString().padStart(2, '0'))
+                }
+                addNumber(hours)
+                addNumber(minutes)
+                if (this@PlayTimeHud.seconds) addNumber(seconds)
+            }
         }
-
-        sb.append(hours).append(':')
-
-        val mins = time / 60L % 60L
-        if (mins < 10L) {
-            sb.append('0')
-        }
-
-        sb.append(mins)
-        if (seconds) {
-            sb.append(':')
-            val secs = time % 60L
-            if (secs < 10L) sb.append('0')
-            sb.append(secs)
-        }
-
-        return null
     }
 
+
+
     override fun updateFrequency(): Long {
-        return 1.seconds
+        return 1.seconds.inWholeNanoseconds
     }
 }

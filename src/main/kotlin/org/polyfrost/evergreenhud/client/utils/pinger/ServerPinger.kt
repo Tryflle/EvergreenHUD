@@ -1,33 +1,22 @@
 package org.polyfrost.evergreenhud.client.utils.pinger
 
-import dev.deftu.omnicore.api.client.network.OmniServerInfo
-import net.minecraft.client.multiplayer.ServerAddress
-import net.minecraft.network.EnumConnectionState
-import net.minecraft.network.NetworkManager
-import net.minecraft.network.handshake.client.C00Handshake
-import net.minecraft.network.status.client.C00PacketServerQuery
+import net.minecraft.client.multiplayer.ServerData
+import net.minecraft.client.multiplayer.resolver.ServerAddress
+import net.minecraft.client.multiplayer.resolver.ServerNameResolver
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 import org.polyfrost.oneconfig.utils.v1.Multithreading
+import net.minecraft.network.Connection
+import net.minecraft.network.protocol.status.ServerboundStatusRequestPacket
+import net.minecraft.util.debugchart.LocalSampleLogger
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
 
-//#if MC >= 1.20.6
-//$$ import net.minecraft.util.profiler.MultiValueDebugSampleLogImpl
-//#endif
-
-//#if MC == 1.20.4
-//$$ import net.minecraft.util.SampleLogger
-//#endif
-
-//#if MC >= 1.17.1
-//$$ import net.minecraft.client.network.Address
-//$$ import net.minecraft.client.network.AllowedAddressResolver
-//#else
-import java.net.InetAddress
-//#endif
+//? if >= 1.21.11
+import net.minecraft.server.network.EventLoopGroupHolder
 
 class ServerPinger(
     private val intervalSupplier: () -> Int,
-    private val serverSupplier: () -> OmniServerInfo?
+    private val serverSupplier: () -> ServerData?
 ) {
 
     private var ticks = 0
@@ -52,71 +41,35 @@ class ServerPinger(
         }
     }
 
-    private fun ping(server: OmniServerInfo) {
-        println("Pinging server: ${server.address}")
+    private fun ping(server: ServerData) {
+        println("Pinging server: ${server.ip}")
 
-        val address = ServerAddress.fromString(server.address)
-        val connection = NetworkManager.createNetworkManagerAndConnect(
-            //#if MC >= 1.17.1
-            //$$ AllowedAddressResolver.DEFAULT.resolve(address).map { it.inetSocketAddress }.orElseThrow(),
-            //#else
-            InetAddress.getByName(address.ip),
-            address.port,
-            //#endif
-            false,
-            //#if MC >= 1.20.6
-            //$$ null as MultiValueDebugSampleLogImpl?,
-            //#elseif MC >= 1.20.4
-            //$$ null as SampleLogger?,
-            //#endif
+        val address = ServerAddress.parseString(server.ip)
+        val connection = Connection.connectToServer(
+            ServerNameResolver.DEFAULT.resolveAddress(address).map { it.asInetSocketAddress()  }.orElseThrow(),
+            //? if >= 1.21.11 {
+            EventLoopGroupHolder.remote(mc.options.useNativeTransport()),
+            //?} else
+            /* false, */
+            null as LocalSampleLogger?,
         )
 
         connection.apply {
-            //#if MC < 1.20.4
-            netHandler = PingingPacketListener(server, this) { pingTime ->
-                ping = pingTime
-            }
-            //#endif
-
             sendHandshake(server, address)
             sendStatusQuery()
         }
     }
 
-    private fun NetworkManager.sendHandshake(server: OmniServerInfo, address: ServerAddress) {
-        //#if MC >= 1.20.4
-        //$$ initiateServerboundStatusConnection(
-        //$$     address.host,
-        //$$     address.port,
-        //$$     PingingPacketListener(server, this) { pingTime ->
-        //$$         ping = pingTime
-        //$$     }
-        //$$ )
-        //#elseif MC >= 1.12.2
-        //$$ send(HandshakeC2SPacket(
-        //$$     address.address,
-        //$$     address.port,
-        //$$     NetworkState.STATUS,
-        //#if MC == 1.12.2 && FORGE
-        //$$     false,
-        //#endif
-        //$$ ))
-        //#else
-        sendPacket(C00Handshake(
-            0,
-            address.ip,
+    private fun Connection.sendHandshake(server: ServerData, address: ServerAddress) {
+        initiateServerboundStatusConnection(
+            address.host,
             address.port,
-            EnumConnectionState.STATUS,
-        ))
-        //#endif
+            PingingPacketListener(server, this) { pingTime ->
+                ping = pingTime
+            }
+        )
     }
 
-    private fun NetworkManager.sendStatusQuery() {
-        //#if MC >= 1.20.6
-        //$$ send(QueryRequestC2SPacket.INSTANCE)
-        //#else
-        sendPacket(C00PacketServerQuery())
-        //#endif
-    }
+    private fun Connection.sendStatusQuery() = send(ServerboundStatusRequestPacket.INSTANCE)
 
 }

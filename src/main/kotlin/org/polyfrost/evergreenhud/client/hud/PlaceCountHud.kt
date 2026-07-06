@@ -1,52 +1,47 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.api.client.player
 import org.polyfrost.evergreenhud.client.ClientPlaceBlockEvent
+import org.polyfrost.evergreenhud.client.utils.CachedTextHud
+import org.polyfrost.evergreenhud.client.utils.fastRemoveIfReversed
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
-import org.polyfrost.polyui.unit.milliseconds
-import org.polyfrost.polyui.utils.fastRemoveIfReversed
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import kotlin.time.Duration.Companion.milliseconds
 
-// CHECK OK
-class PlaceCountHud : TextHud(
-    id = "placecount.json",
+class PlaceCountHud : CachedTextHud(
     title = "Block Place Count",
     category = Category.COMBAT,
-    prefix = "Blocks: ",
-    suffix = "/s"
+    prefix = "Blocks:",
 ) {
 
     @Slider(title = "Interval (ms)", min = 500F, max = 3000F)
     var interval = 1000
 
-    private var blockCount: ArrayList<Long>? = null
+    private val blockCount: ArrayList<Long> = ArrayList()
 
     override fun setup() {
         super.setup()
 
         if (isReal) {
-            blockCount = ArrayList()
             eventHandler { event: ClientPlaceBlockEvent ->
-                if (event.player == player) {
-                    blockCount?.add(System.nanoTime())
+                if (event.player == mc.player) {
+                    blockCount.add(System.nanoTime())
                     updateAndRecalculate()
                 }
             }
         }
     }
 
-    override fun getText(): String? {
+    override fun getText(): String {
         val time = System.nanoTime()
         val max = interval * 1_000_000L
-        blockCount?.fastRemoveIfReversed { time - it > max }
-        sb.append(blockCount?.size ?: 0L)
-
-        return null
+        blockCount.fastRemoveIfReversed { time - it > max }
+        return blockCount.size.toString() + "/s"
     }
 
     override fun updateFrequency(): Long {
-        return 50.milliseconds
+        return 50.milliseconds.inWholeNanoseconds
     }
 
 }

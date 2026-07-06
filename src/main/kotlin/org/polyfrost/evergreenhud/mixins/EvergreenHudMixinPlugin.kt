@@ -7,9 +7,7 @@ import org.spongepowered.asm.mixin.extensibility.IMixinInfo
 class EvergreenHudMixinPlugin : IMixinConfigPlugin {
     override fun getMixins(): List<String> {
         return buildList {
-            //#if MC >= 1.20.1
-            //$$ add("client.Mixin_InGameHud_SmuggleDrawContext")
-            //#endif
+            add("client.Mixin_InGameHud_SmuggleDrawContext")
         }
     }
 

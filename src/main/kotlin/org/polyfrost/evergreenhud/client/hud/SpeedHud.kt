@@ -1,19 +1,12 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.api.client.player
-import dev.deftu.omnicore.api.entity.currentX
-import dev.deftu.omnicore.api.entity.currentY
-import dev.deftu.omnicore.api.entity.currentZ
-import dev.deftu.omnicore.api.entity.prevX
-import dev.deftu.omnicore.api.entity.prevY
-import dev.deftu.omnicore.api.entity.prevZ
 import org.polyfrost.evergreenhud.client.utils.GenericNumberHud
 import org.polyfrost.oneconfig.api.config.v1.annotations.Dropdown
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
-import org.polyfrost.polyui.unit.milliseconds
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import kotlin.math.sqrt
+import kotlin.time.Duration.Companion.milliseconds
 
-// CHECK OK
 class SpeedHud : GenericNumberHud(
     title = "Speed",
     category = Category.INFO,
@@ -56,23 +49,23 @@ class SpeedHud : GenericNumberHud(
         }
     }
 
-    override fun getText(): String? {
-        val player = player
+    override fun getText(): String {
+        val player = mc.player
         if (player == null) {
             value = 0f
-            return null
+            return format(value)
         }
 
-        val dx = if (useX) (player.currentX - player.prevX).toFloat() else 0f
-        val dy = if (useY) (player.currentY - player.prevY).toFloat() else 0f
-        val dz = if (useZ) (player.currentZ - player.prevZ).toFloat() else 0f
+        val dx = if (useX) (player.x - player.xo).toFloat() else 0f
+        val dy = if (useY) (player.y - player.yo).toFloat() else 0f
+        val dz = if (useZ) (player.z - player.zo).toFloat() else 0f
         value = convertSpeed(sqrt(dx * dx + dy * dy + dz * dz))
 
-        return super.getText()
+        return format(value)
     }
 
     override fun updateFrequency(): Long {
-        return 50.milliseconds
+        return 50.milliseconds.inWholeNanoseconds
     }
 
     private fun convertSpeed(speed: Float): Float {

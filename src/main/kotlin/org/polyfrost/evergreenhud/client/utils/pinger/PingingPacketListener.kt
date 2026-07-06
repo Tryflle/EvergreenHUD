@@ -1,89 +1,60 @@
 package org.polyfrost.evergreenhud.client.utils.pinger
 
-import dev.deftu.omnicore.api.client.network.OmniServerInfo
-import dev.deftu.textile.minecraft.MCSimpleTextHolder
-import dev.deftu.textile.minecraft.MCTextFormat
-import dev.deftu.textile.minecraft.MCTextHolder
-import net.minecraft.network.NetworkManager
-import net.minecraft.network.status.INetHandlerStatusClient
-import net.minecraft.network.status.client.C01PacketPing
-import net.minecraft.network.status.server.S00PacketServerInfo
-import net.minecraft.network.status.server.S01PacketPong
-
-//#if MC >= 1.21.1
-//$$ import net.minecraft.network.DisconnectionInfo
-//#else
-import net.minecraft.util.IChatComponent
-//#endif
-
-//#if MC >= 1.16.5
-//$$ import net.minecraft.Util
-//#else
-import dev.deftu.omnicore.api.client.OmniClientRuntime
-//#endif
+import net.minecraft.ChatFormatting
+import net.minecraft.client.multiplayer.ServerData
+import net.minecraft.network.Connection
+import net.minecraft.network.DisconnectionDetails
+import net.minecraft.network.chat.Component
+import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket
+import net.minecraft.network.protocol.ping.ServerboundPingRequestPacket
+import net.minecraft.network.protocol.status.ClientStatusPacketListener
+import net.minecraft.network.protocol.status.ClientboundStatusResponsePacket
+import net.minecraft.util.Util
 
 class PingingPacketListener(
-    private val server: OmniServerInfo,
-    private val networkManager: NetworkManager,
+    private val server: ServerData,
+    private val networkManager: Connection,
     private val callback: (Int) -> Unit
-) : INetHandlerStatusClient {
+) : ClientStatusPacketListener {
     private var started = false
     private var startTime = -1L
 
     private val currentTime: Long
-        get() {
-            //#if MC >= 1.16.5
-            //$$ return Util.getMillis()
-            //#else
-            return OmniClientRuntime.nowMillis
-            //#endif
-        }
+        get() = Util.getMillis()
 
     override fun onDisconnect(
-        //#if MC >= 1.21.1
-        //$$ details: DisconnectionInfo,
-        //#else
-        reason: IChatComponent
-        //#endif
+        details: DisconnectionDetails,
     ) {
-        //#if MC >= 1.21.1
-        //$$ val reason = details.comp_2853
-        //#endif
-        println("Disconnected from server ${server.address} (${server.name}) with reason: ${MCTextHolder.convertFromVanilla(reason).asUnformattedString()}")
+        val reason = details.reason
+        println("Disconnected from server ${server.ip} (${server.name}) with reason: ${reason.string}")
         if (!started) {
-            throw IllegalStateException("Could not query server ${server.address} (${server.name}) for ping status. Reason: ${MCTextHolder.convertFromVanilla(reason).asUnformattedString()}")
+            throw IllegalStateException("Could not query server ${server.ip} (${server.name}) for ping status. Reason: ${reason.string}")
         }
     }
 
-    override fun handleServerInfo(packetIn: S00PacketServerInfo) {
+    override fun handleStatusResponse(packetIn: ClientboundStatusResponsePacket) {
         if (started) {
-            networkManager.closeChannel(
-                MCSimpleTextHolder("Received unrequested status packet")
-                    .withFormatting(MCTextFormat.RED)
-                    .asVanilla()
+            networkManager.disconnect(
+                Component.literal(
+                    "Received unrequested status packet",
+                ).withStyle(ChatFormatting.RED),
             )
 
             return
         }
 
-        println("Received server info packet from ${server.address} (${server.name})")
+        println("Received server info packet from ${server.ip} (${server.name})")
         started = true
         startTime = currentTime
-        networkManager.sendPacket(C01PacketPing(startTime))
+        networkManager.send(ServerboundPingRequestPacket(startTime))
     }
 
-    override fun handlePong(packetIn: S01PacketPong) {
-        println("Received pong packet from ${server.address} (${server.name})")
+    override fun handlePongResponse(packetIn: ClientboundPongResponsePacket) {
+        println("Received pong packet from ${server.ip} (${server.name})")
         callback((currentTime - startTime).toInt())
     }
 
-    //#if MC >= 1.19.4
-    //$$ override fun isAcceptingMessages(): Boolean {
-    //$$     return networkManager.isConnected
-    //$$ }
-    //#elseif MC >= 1.16.5
-    //$$ override fun getConnection(): Connection {
-    //$$     return networkManager
-    //$$ }
-    //#endif
+    override fun isAcceptingMessages(): Boolean {
+        return networkManager.isConnected
+    }
 }

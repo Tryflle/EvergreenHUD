@@ -1,48 +1,68 @@
 package org.polyfrost.evergreenhud.client.hud.clock
 
-import org.polyfrost.polyui.color.Colors
-import org.polyfrost.polyui.component.Drawable
-import org.polyfrost.polyui.unit.Vec2
-import kotlin.math.PI
+import androidx.compose.runtime.Composable
+import org.polyfrost.compose.composables.PolyCanvas
+import org.polyfrost.compose.composables.PolyModifier
+import org.polyfrost.compose.composables.size
+import org.polyfrost.compose.render.PolyColor
+import java.lang.Math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-class ClockDrawable(
+private val SECOND_HAND = PolyColor.rgba(170, 170, 170, 255)
+private val MINUTE_HAND = PolyColor.rgba(255, 255, 255, 255)
+private val HOUR_HAND = PolyColor.rgba(120, 180, 255, 255)
+
+@Composable
+fun Clock(
     timeMillis: Long,
-    radius: Float,
-    var handWidth: Float = 2f,
-    at: Vec2 = Vec2.Constants.ZERO,
-    visibleSize: Vec2 = Vec2.Constants.ZERO,
-    palette: Colors.Palette? = null
-) : Drawable(
-    at = at,
-    size = Vec2(radius * 2f, radius * 2f),
-    visibleSize = visibleSize,
-    palette = palette
+    handWidth: Float = 2f,
+    modifier: PolyModifier = PolyModifier
+        .size(200f, 200f)
 ) {
+    PolyCanvas(modifier) { _, _, width, height ->
 
-    var time: Long = timeMillis
+        val radius = minOf(width, height) / 2f
+        val cx = width / 2f
+        val cy = height / 2f
 
-    override fun preRender(delta: Long) {
-        time += delta / 1_000_000L
-        super.preRender(delta)
+        val secs = timeMillis / 1000.0
+
+        val secondAngle = (2 * PI * (secs % 60.0 / 60.0) - PI / 2).toFloat()
+
+        val minuteAngle = (2 * PI * ((secs / 60.0) % 60.0 / 60.0) - PI / 2).toFloat()
+
+        val hourAngle = (2 * PI * ((secs / 3600.0) % 12.0 / 12.0) - PI / 2).toFloat()
+
+        val secondLength = radius * 0.9f
+        val minuteLength = radius * 0.75f
+        val hourLength = radius * 0.4f
+
+        line(
+            cx,
+            cy,
+            cx + secondLength * cos(secondAngle),
+            cy + secondLength * sin(secondAngle),
+            SECOND_HAND,
+            handWidth * 0.6f
+        )
+
+        line(
+            cx,
+            cy,
+            cx + minuteLength * cos(minuteAngle),
+            cy + minuteLength * sin(minuteAngle),
+            MINUTE_HAND,
+            handWidth * 0.9f
+        )
+
+        line(
+            cx,
+            cy,
+            cx + hourLength * cos(hourAngle),
+            cy + hourLength * sin(hourAngle),
+            HOUR_HAND,
+            handWidth
+        )
     }
-
-    override fun render() {
-        val radius = width / 2f
-        val cx = x + radius
-        val cy = y + radius
-        val secs = time / 1000.0
-        val sA = (2 * PI * (secs % 60.0 / 60.0) - PI / 2).toFloat()
-        val mA = (2 * PI * ((secs / 60.0) % 60.0 / 60.0) - PI / 2).toFloat()
-        val hA = (2 * PI * ((secs / 3600.0) % 12.0 / 12.0) - PI / 2).toFloat()
-        val sL = radius * 0.9f
-        val mL = radius * 0.75f
-        val hL = radius * 0.4f
-        val bars = polyUI.colors.text
-        renderer.line(cx, cy, cx + sL * cos(sA), cy + sL * sin(sA), bars.secondary.normal, handWidth * 0.6f)
-        renderer.line(cx, cy, cx + mL * cos(mA), cy + mL * sin(mA), bars.primary.hovered, handWidth * 0.9f)
-        renderer.line(cx, cy, cx + hL * cos(hA), cy + hL * sin(hA), bars.primary.normal, handWidth)
-    }
-
 }

@@ -1,17 +1,17 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import dev.deftu.omnicore.api.client.isIntegratedServerRunning
 import org.polyfrost.evergreenhud.client.ServerChangedEvent
+import org.polyfrost.evergreenhud.client.utils.CachedTextHud
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.config.v1.annotations.Text
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
-import org.polyfrost.oneconfig.api.hud.v1.TextHud
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
 
-class ServerAddressHud : TextHud(
+class ServerAddressHud : CachedTextHud(
     id = "server_ip.json",
     title = "Server Address",
     category = Category.INFO,
-    prefix = "IP: ",
+    prefix = "IP:",
 ) {
     @Switch(title = "Show in Single Player")
     var showInSinglePlayer = true
@@ -19,14 +19,16 @@ class ServerAddressHud : TextHud(
     @Text(title = "No Server Text")
     var noServerText = "127.0.0.1"
 
+    override val defaultText: String by ::noServerText
+
     override fun setup() {
         super.setup()
         eventHandler { (ip, _, _): ServerChangedEvent ->
             if (!showInSinglePlayer) {
-                hidden = isIntegratedServerRunning
+                hidden = mc.hasSingleplayerServer()
             }
 
-            sb.append(ip ?: noServerText)
+            updateWithText(ip)
             updateAndRecalculate()
         }
 
@@ -34,9 +36,5 @@ class ServerAddressHud : TextHud(
             updateWhenChanged("showInSinglePlayer")
             updateWhenChanged("noServerText")
         }
-    }
-
-    override fun getText(): String? {
-        return null
     }
 }
