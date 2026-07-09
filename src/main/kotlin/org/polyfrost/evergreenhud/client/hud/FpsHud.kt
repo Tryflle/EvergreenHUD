@@ -5,12 +5,13 @@ import org.polyfrost.evergreenhud.client.utils.GenericNumberHud
 import org.polyfrost.evergreenhud.client.utils.replace
 import org.polyfrost.oneconfig.api.config.v1.annotations.Text
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
 
 class FpsHud : GenericNumberHud(
     title = "FPS",
     category = Category.INFO,
 ) {
-    @Text(title = "Format String", description = "Use #avg for average, #med for median, #fps for fps, #p95 for 95th percentile, #p99 for 99th percentile, #cst for consistency")
+    @Text(title = "Format String", description = "Use #avg for average, #med for median, #fps for fps, #p95 for 95th percentile, #p99 for 99th percentile, #cst for consistency, #mc for the vanilla counter")
     private var formatString = "#fps"
 
     override fun setup() {
@@ -24,6 +25,7 @@ class FpsHud : GenericNumberHud(
                 .replace("#p95", format(p95 / 1_000_000.0))
                 .replace("#p99", format(p99 / 1_000_000.0))
                 .replace("#cst", format((1.0 - cst) * 100.0))
+                .replace("#mc", format(mc.fps))
 
             updateWithText(text)
         }
