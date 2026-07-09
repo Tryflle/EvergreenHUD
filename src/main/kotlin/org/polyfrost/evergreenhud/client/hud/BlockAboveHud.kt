@@ -62,7 +62,7 @@ class BlockAboveHud : CachedTextHud(
             //? if > 1.21.1
             if (pos.y > level.maxY) {
             //? if <= 1.21.1
-            /*if (pos.y > level.maxBuildHeight) {*/
+            //if (pos.y > level.maxBuildHeight) {
                 break
             }
 

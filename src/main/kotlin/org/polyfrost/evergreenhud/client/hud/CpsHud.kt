@@ -101,16 +101,16 @@ class CpsHud : CachedTextHud(
         //? if >= 1.21.10 {
         return matchesMouse(MouseButtonEvent(0.0, 0.0, MouseButtonInfo(button, 0)))
         //?} else {
-        /*return matchesMouse(button)*/
-        //?}
+        /*return matchesMouse(button)
+        *///?}
     }
 
     private fun KeyMapping.matchesKeyCode(keyCode: Int): Boolean {
         //? if >= 1.21.10 {
         return matches(KeyEvent(keyCode, 0, 0))
         //?} else {
-        /*return matches(keyCode, 0)*/
-        //?}
+        /*return matches(keyCode, 0)
+        *///?}
     }
 
     override fun getText(): String {

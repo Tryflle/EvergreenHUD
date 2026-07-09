@@ -32,7 +32,7 @@ fun calculateReachDistanceToEntity(entity: Entity): Float {
     //? if > 1.21.1
     val profiler = Profiler.get()
     //? if <= 1.21.1
-    /*val profiler = mc.profiler*/
+    //val profiler = mc.profiler
     val player = mc.player ?: return 0f
     if (!player.isAlive) return 0f
     profiler.push("evergreenhud_reach_distance_calculation")

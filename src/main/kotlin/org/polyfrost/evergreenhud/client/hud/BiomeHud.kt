@@ -23,7 +23,7 @@ class BiomeHud : CachedTextHud(
             //? if >= 1.21.11
             if (!level.isInValidBounds(pos)) {
             //? if < 1.21.11
-            /*if (!level.isInWorldBounds(pos)) {*/
+            //if (!level.isInWorldBounds(pos)) {
                 return@eventHandler
             }
 

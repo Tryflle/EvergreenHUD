@@ -5,7 +5,7 @@ package org.polyfrost.evergreenhud.client.utils
 //? if >= 1.21.10 && < 26
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents
 //? if < 1.21.10
-/*import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents*/
+//import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import org.polyfrost.oneconfig.api.event.v1.EventManager
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.Event
@@ -20,7 +20,7 @@ object FrameTimeHelper {
         //? if >= 1.21.10
         WorldRenderEvents.END_MAIN.register {
         //? if < 1.21.10
-        /*WorldRenderEvents.END.register {*/
+        //WorldRenderEvents.END.register {
             frameTimes += System.nanoTime() - lastTime
             lastTime = System.nanoTime()
         }

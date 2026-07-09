@@ -27,22 +27,22 @@ public abstract class Mixin_RenderGlobal_EntityCounterEvent {
     @Shadow private ClientLevel level;
 
     //? if < 1.21.10 {
-    /*@Shadow private int visibleEntityCount;*/
-    //?} else
+    /*@Shadow private int visibleEntityCount;
+    *///?} else
     @Shadow @Final private LevelRenderState levelRenderState;
 
     @Inject(
             //? if < 1.21.10 {
-            /*method = "renderEntities",*/
-            //?} else
+            /*method = "renderEntities",
+            *///?} else
             method = "extractVisibleEntities",
         at = @At("TAIL")
     )
     private void evergreen$readEntityRenderCount(CallbackInfo ci) {
         EntityCounterEvent.setRendered(
                 //? if < 1.21.10 {
-                /*this.visibleEntityCount*/
-                //?} else
+                /*this.visibleEntityCount
+                *///?} else
                 this.levelRenderState.entityRenderStates.size()
         );
         EntityCounterEvent.setTotal(this.level.getEntityCount());

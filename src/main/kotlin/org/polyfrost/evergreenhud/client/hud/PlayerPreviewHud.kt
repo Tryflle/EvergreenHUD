@@ -65,10 +65,10 @@ class PlayerPreviewHud : LegacyHud(
         }
 
         //? if < 1.21.8 {
-        /*
-        graphics.pose().pushPose()
-        graphics.pose().last().pose().identity()*/
-        //?}
+        
+        /*graphics.pose().pushPose()
+        graphics.pose().last().pose().identity()
+        *///?}
         //? if < 26
         InventoryScreen.renderEntityInInventoryFollowsMouse(
         //? if >= 26
@@ -82,6 +82,6 @@ class PlayerPreviewHud : LegacyHud(
             player,
         )
         //? if < 1.21.8
-        /*graphics.pose().popPose()*/
+        //graphics.pose().popPose()
     }
 }
