@@ -5,7 +5,6 @@ import org.polyfrost.evergreenhud.utils.decimalFormat
 import org.polyfrost.oneconfig.api.config.v1.annotations.Number
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
-import org.polyfrost.oneconfig.api.hud.v1.TextHud
 import java.text.DecimalFormat
 import kotlin.time.Duration.Companion.seconds
 
@@ -39,7 +38,7 @@ class MemoryHud : CachedTextHud(
 
             addCallback("displayType") { value: Int ->
                 suffix = when (value) {
-                    1 -> "%"
+                    1 -> ""
                     else -> " GB"
                 }
 
