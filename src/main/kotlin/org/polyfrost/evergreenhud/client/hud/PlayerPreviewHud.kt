@@ -78,7 +78,7 @@ class PlayerPreviewHud : LegacyHud(
             entityScale,
             0.0625f,
             centerX - yawOffset,
-            centerY - pitchOffset,
+            centerY + pitchOffset,
             player,
         )
         //? if < 1.21.8
