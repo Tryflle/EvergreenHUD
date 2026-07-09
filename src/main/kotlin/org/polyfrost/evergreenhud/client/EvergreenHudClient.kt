@@ -9,6 +9,7 @@ import net.minecraft.world.entity.Entity
 import org.polyfrost.evergreenhud.client.hud.*
 import org.polyfrost.evergreenhud.client.hud.battery.BatteryHud
 import org.polyfrost.evergreenhud.client.hud.clock.ClockHud
+import org.polyfrost.evergreenhud.client.hud.clock.DigitalClockHud
 import org.polyfrost.evergreenhud.client.hud.hypixel.*
 import org.polyfrost.evergreenhud.client.utils.FrameTimeHelper
 import org.polyfrost.evergreenhud.client.utils.PinkuluMapCache
@@ -31,7 +32,7 @@ object EvergreenHudClient : ClientModInitializer {
 
         val huds = arrayOf(
             BatteryHud(), BiomeHud(), BlockAboveHud(),
-            ClockHud(), ComboHud(), CpsHud(),
+            ClockHud(), DigitalClockHud(), ComboHud(), CpsHud(),
             DayHud(), EntityCounterHud(), FpsHud(),
             InGameTimeHud(), InventoryHud(), ItemHud(),
             LoreHud(), MemoryHud(),
@@ -77,7 +78,7 @@ object EvergreenHudClient : ClientModInitializer {
         }
     }
 
-    @Suppress("FunctionName", "AssignedValueIsNeverRead")
+    @Suppress("FunctionName")
     private fun BlockPositionChangedEvent() {
         var lastPos = BlockPos.ZERO
         eventHandler { _: TickEvent.End ->
@@ -90,7 +91,7 @@ object EvergreenHudClient : ClientModInitializer {
         }
     }
 
-    @Suppress("FunctionName", "AssignedValueIsNeverRead")
+    @Suppress("FunctionName")
     private fun ServerDamageEntityEvent() {
         var lastAttacker: Entity? = null
         var lastTargetId: Int = -1
