@@ -37,8 +37,18 @@ repositories {
     }
 
     maven("https://maven.logix.dev/snapshots") {
-        content { excludeGroup("net.kyori") }
+        content {
+            excludeGroup("net.kyori")
+            excludeGroup("com.terraformersmc")
+        }
     }
+
+    maven("https://maven.terraformersmc.com/releases") {
+        content {
+            includeGroup("com.terraformersmc")
+        }
+    }
+
     maven("https://nexus.prsm.wtf/repository/maven-public/maven-repo/releases/")
     maven("https://repo.hypixel.net/repository/Hypixel/")
     maven("https://maven.deftu.dev/releases")
