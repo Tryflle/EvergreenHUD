@@ -10,6 +10,7 @@ import org.polyfrost.evergreenhud.client.hud.*
 import org.polyfrost.evergreenhud.client.hud.battery.BatteryHud
 import org.polyfrost.evergreenhud.client.hud.clock.ClockHud
 import org.polyfrost.evergreenhud.client.hud.clock.DigitalClockHud
+import org.polyfrost.evergreenhud.client.hud.keystrokes.KeystrokesHud
 import org.polyfrost.evergreenhud.client.hud.hypixel.*
 import org.polyfrost.evergreenhud.client.utils.FrameTimeHelper
 import org.polyfrost.evergreenhud.client.utils.PinkuluMapCache
@@ -35,6 +36,7 @@ object EvergreenHudClient : ClientModInitializer {
             ClockHud(), DigitalClockHud(), ComboHud(), CpsHud(),
             DayHud(), EntityCounterHud(), FpsHud(),
             InGameTimeHud(), InventoryHud(), ItemHud(),
+            KeystrokesHud(),
             LoreHud(), MemoryHud(),
             PingHud(), PlaceCountHud(), PlayerPreviewHud(),
             PlayTimeHud(), PositionHud(), ReachHud(),
