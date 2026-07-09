@@ -1,13 +1,21 @@
 package org.polyfrost.evergreenhud.client.hud
 
+//? if >= 1.21.10 {
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.input.MouseButtonInfo
+//?}
+import net.minecraft.client.KeyMapping
 import org.polyfrost.evergreenhud.client.utils.CachedTextHud
 import org.polyfrost.evergreenhud.client.utils.fastRemoveIfReversed
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Text
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
+import org.polyfrost.oneconfig.api.event.v1.events.KeyInputEvent
 import org.polyfrost.oneconfig.api.event.v1.events.MouseInputEvent
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
+import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import kotlin.time.Duration.Companion.milliseconds
 
 class CpsHud : CachedTextHud(
@@ -51,12 +59,20 @@ class CpsHud : CachedTextHud(
             }
             eventHandler { (btn, state): MouseInputEvent ->
                 if (state == 0) {
-                    when (btn) {
-                        0 -> onLeftClick()
-                        1 -> onRightClick()
-                    }
-
-                    updateAndRecalculate()
+                    val options = mc.options ?: return@eventHandler
+                    var counted = false
+                    if (options.keyAttack.matchesMouseButton(btn)) { onLeftClick(); counted = true }
+                    if (options.keyUse.matchesMouseButton(btn)) { onRightClick(); counted = true }
+                    if (counted) updateAndRecalculate()
+                }
+            }
+            eventHandler { (key, _, state): KeyInputEvent ->
+                if (state == 1 && key != 0) {
+                    val options = mc.options ?: return@eventHandler
+                    var counted = false
+                    if (options.keyAttack.matchesKeyCode(key)) { onLeftClick(); counted = true }
+                    if (options.keyUse.matchesKeyCode(key)) { onRightClick(); counted = true }
+                    if (counted) updateAndRecalculate()
                 }
             }
         }
@@ -79,6 +95,22 @@ class CpsHud : CachedTextHud(
     private fun registerClick() {
         lastClick = System.nanoTime()
         hidden = false
+    }
+
+    private fun KeyMapping.matchesMouseButton(button: Int): Boolean {
+        //? if >= 1.21.10 {
+        return matchesMouse(MouseButtonEvent(0.0, 0.0, MouseButtonInfo(button, 0)))
+        //?} else {
+        /*return matchesMouse(button)*/
+        //?}
+    }
+
+    private fun KeyMapping.matchesKeyCode(keyCode: Int): Boolean {
+        //? if >= 1.21.10 {
+        return matches(KeyEvent(keyCode, 0, 0))
+        //?} else {
+        /*return matches(keyCode, 0)*/
+        //?}
     }
 
     override fun getText(): String {
