@@ -32,6 +32,7 @@ object EvergreenHudClient : ClientModInitializer {
         //OmniClientResources.registerReloadListener(ResourceReloadEventReloadListener)
 
         val huds = arrayOf(
+            ArmorHud(),
             BatteryHud(), BiomeHud(), BlockAboveHud(),
             ClockHud(), DigitalClockHud(), ComboHud(), CpsHud(),
             DayHud(), EntityCounterHud(), FpsHud(),
