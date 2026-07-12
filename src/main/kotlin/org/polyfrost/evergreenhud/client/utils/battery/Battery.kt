@@ -11,6 +11,9 @@ sealed interface Battery {
                 else -> UnknownBattery
             }
         }
+
+        @JvmStatic
+        fun isSupported(): Boolean = get() !is UnknownBattery
     }
 
     data object UnknownBattery : Battery {

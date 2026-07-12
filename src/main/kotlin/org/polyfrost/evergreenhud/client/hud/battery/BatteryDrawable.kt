@@ -13,17 +13,18 @@ const val FONT_SIZE = 16f
 val successColor = PolyColor.rgb(35, 154, 96) to PolyColor.rgb(26, 139, 82)
 val warningColor = PolyColor.rgb(255, 171, 29) to PolyColor.rgb(233, 156, 27)
 
-// TODO: Battery data doesn't seem to properly work
+const val LOW_BATTERY_THRESHOLD = 20
+
 @Composable
 fun BatteryDrawable(
     battery: Battery = Battery.get(),
 ) {
+    val percent = battery.percentage.coerceIn(0, 100)
     val (backgroundColor, innerColor) = when {
         battery.isCharging -> successColor
-        battery.isBatterySaverEnabled -> warningColor
+        battery.isBatterySaverEnabled || percent <= LOW_BATTERY_THRESHOLD -> warningColor
         else -> successColor
     }
-    val percent = battery.percentage.coerceIn(0, 100)
 
     PolyBox(
         PolyModifier.width(60f)

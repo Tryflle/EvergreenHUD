@@ -8,6 +8,7 @@ import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket
 import net.minecraft.world.entity.Entity
 import org.polyfrost.evergreenhud.client.hud.*
 import org.polyfrost.evergreenhud.client.hud.battery.BatteryHud
+import org.polyfrost.evergreenhud.client.utils.battery.Battery
 import org.polyfrost.evergreenhud.client.hud.clock.ClockHud
 import org.polyfrost.evergreenhud.client.hud.clock.DigitalClockHud
 import org.polyfrost.evergreenhud.client.hud.keystrokes.KeystrokesHud
@@ -33,7 +34,7 @@ object EvergreenHudClient : ClientModInitializer {
 
         val huds = arrayOf(
             ArmorHud(),
-            BatteryHud(), BiomeHud(), BlockAboveHud(),
+            BiomeHud(), BlockAboveHud(),
             ClockHud(), DigitalClockHud(), ComboHud(), CpsHud(),
             DayHud(), EntityCounterHud(), FpsHud(),
             InGameTimeHud(), InventoryHud(), ItemHud(),
@@ -58,6 +59,10 @@ object EvergreenHudClient : ClientModInitializer {
         }
 
         HudManager.register(*huds)
+
+        if (Battery.isSupported()) {
+            HudManager.register(BatteryHud())
+        }
 
         BlockPositionChangedEvent()
         ServerDamageEntityEvent()

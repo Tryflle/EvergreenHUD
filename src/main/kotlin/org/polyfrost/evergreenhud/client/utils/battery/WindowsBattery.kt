@@ -12,6 +12,10 @@ object WindowsBattery {
             return Battery.UnknownBattery
         }
 
+        if (!status.hasBattery) {
+            return Battery.UnknownBattery
+        }
+
         return status
     }
 
@@ -26,19 +30,27 @@ object WindowsBattery {
     @Suppress("unused")
     class SYSTEM_POWER_STATUS : Battery, Structure() {
         @JvmField var ACLineStatus: Byte = 0
+        @JvmField var BatteryFlag: Byte = 0
         @JvmField var BatteryLifePercent: Byte = 0
         @JvmField var SystemStatusFlag: Byte = 0
         @JvmField var BatteryLifeTime: Int = 0
         @JvmField var BatteryFullLifeTime: Int = 0
 
-        override val percentage get() = BatteryLifePercent.toInt().coerceIn(0, 100)
-        override val isCharging get() = ACLineStatus != 0.toByte()
+        val hasBattery
+            get() = BatteryFlag.toInt() and 0xFF != 0xFF &&
+                BatteryFlag.toInt() and 0x80 == 0 &&
+                BatteryLifePercent.toInt() and 0xFF != 0xFF
+
+        override val percentage get() = (BatteryLifePercent.toInt() and 0xFF).coerceIn(0, 100)
+
+        override val isCharging get() = ACLineStatus == 1.toByte() || BatteryFlag.toInt() and 0x08 != 0
         override val lifetimeRemaining get() = BatteryLifeTime
         override val isBatterySaverEnabled get() = SystemStatusFlag.toInt() and 0x01 != 0
 
         override fun getFieldOrder(): List<String> {
             return listOf(
                 "ACLineStatus",
+                "BatteryFlag",
                 "BatteryLifePercent",
                 "SystemStatusFlag",
                 "BatteryLifeTime",
