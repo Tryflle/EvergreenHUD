@@ -6,6 +6,7 @@ import net.minecraft.client.gui.GuiGraphics
 /*import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics*/
 import net.minecraft.world.Container
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 
@@ -15,10 +16,13 @@ class InventoryHud : LegacyHud(
     category = Category.PLAYER,
 ) {
     override val width get() = 176f
-    override val height get() = 92f
+    override val height get() = if (showTitle) 92f else 78f
 
     @RadioButton(title = "Inventory", options = ["Player", "Ender Chest"])
     var type = 0
+
+    @Switch(title = "Show Title")
+    var showTitle = true
 
     override fun setup() {
         super.setup()
@@ -37,10 +41,12 @@ class InventoryHud : LegacyHud(
 
     override fun render(graphics: GuiGraphics) {
         graphics.fill(0, 0, width.toInt(), height.toInt(), 0x90000000.toInt())
-        //? if < 26
-        graphics.drawString(mc.font, if (type == 0) "Inventory" else "Ender Chest", 8, 6, 0xFFFFFFFF.toInt())
-        //? if >= 26
-        /*graphics.text(mc.font, if (type == 0) "Inventory" else "Ender Chest", 8, 6, 0xFFFFFFFF.toInt())*/
+        if (showTitle) {
+            //? if < 26
+            graphics.drawString(mc.font, if (type == 0) "Inventory" else "Ender Chest", 8, 6, 0xFFFFFFFF.toInt())
+            //? if >= 26
+            /*graphics.text(mc.font, if (type == 0) "Inventory" else "Ender Chest", 8, 6, 0xFFFFFFFF.toInt())*/
+        }
 
         val inv = container ?: return
         val font = mc.font
@@ -51,7 +57,7 @@ class InventoryHud : LegacyHud(
             val item = inv.getItem(slot)
             if (item.isEmpty) continue
             val itemX = 8 + (i % 9) * 18
-            val itemY = 20 + (i / 9) * 18
+            val itemY = (if (showTitle) 20 else 6) + (i / 9) * 18
             //? if < 26 {
             graphics.renderItem(item, itemX, itemY)
             graphics.renderItemDecorations(font, item, itemX, itemY)
