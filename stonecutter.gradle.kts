@@ -1,12 +1,18 @@
 plugins {
     id("dev.kikugie.stonecutter")
 }
-stonecutter active "1.21.11"
+
+stonecutter active "1.21.11" /* [SC] DO NOT EDIT */
 
 stonecutter parameters {
-    replacements.string {
-        direction = eval(current.version, "< 1.21.11")
-        from = "net.minecraft.util.Util"
-        to = "net.minecraft.Util"
+    swaps["mod_version"] = "\"${property("mod.version")}\";"
+    swaps["minecraft"] = "\"${node.metadata.version}\";"
+    constants["release"] = property("mod.id") != "template"
+    dependencies["fapi"] = node.project.property("deps.fabric_api") as String
+
+    replacements {
+        string(current.parsed < "1.21.11") {
+            replace("net.minecraft.Util", "net.minecraft.util.Util")
+        }
     }
 }
