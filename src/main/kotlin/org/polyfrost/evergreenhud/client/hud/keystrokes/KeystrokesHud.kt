@@ -66,12 +66,6 @@ class KeystrokesHud : Hud(
     @Slider(title = "Fade Out Duration (ms)", description = "How long a key takes to fade from the pressed to the unpressed colours.", min = 1F, max = 250F, step = 1F)
     var fadeOutMs = 150f
 
-    @Color(title = "Unpressed Background Color")
-    var unpressedBg = PolyColor(0x6E000000)
-
-    @Color(title = "Unpressed Text Color")
-    var unpressedText = PolyColor(0xFFFFFFFF.toInt())
-
     @Color(title = "Pressed Background Color")
     var pressedBg = PolyColor(0xFFFFFFFF.toInt())
 
@@ -114,8 +108,6 @@ class KeystrokesHud : Hud(
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
 
     override fun clone(): Hud = (super.clone() as KeystrokesHud).apply {
-        unpressedBg = unpressedBg.copy()
-        unpressedText = unpressedText.copy()
         pressedBg = pressedBg.copy()
         pressedText = pressedText.copy()
         forward = mutableStateOf(0f)
@@ -217,13 +209,24 @@ class KeystrokesHud : Hud(
         }
     }
 
+    private fun blend(unpressed: PolyColor, pressed: PolyColor, progress: Float): PolyColor = when {
+        progress <= 0f -> unpressed
+        progress >= 1f -> pressed
+        else -> unpressed.lerp(pressed, progress)
+    }
+
+    private fun keyFg(progress: Float): PolyColor =
+        blend(PolyColor(textColor, textChroma, textChromaSpeed), pressedText, progress)
+
+    private fun keyBg(progress: Float): PolyColor =
+        blend(PolyColor(bgColor, bgChroma, bgChromaSpeed), pressedBg, progress)
+
     @Composable
     private fun Key(label: String, progress: Float, w: Float, h: Float, align: PolyAlign? = null) {
-        val fg = unpressedText.lerp(pressedText, progress)
+        val fg = keyFg(progress)
         var mod = PolyModifier.size(w, h)
         if (showBackground) {
-            val bg = unpressedBg.lerp(pressedBg, progress)
-            mod = mod.background(bg, bgRadius)
+            mod = mod.background(keyBg(progress), bgRadius)
         }
         if (align != null) mod = mod.align(align)
         PolyBox(modifier = mod) {
@@ -253,11 +256,10 @@ class KeystrokesHud : Hud(
 
     @Composable
     private fun SpaceKey(progress: Float, w: Float, h: Float) {
-        val fg = unpressedText.lerp(pressedText, progress)
+        val fg = keyFg(progress)
         var mod = PolyModifier.size(w, h)
         if (showBackground) {
-            val bg = unpressedBg.lerp(pressedBg, progress)
-            mod = mod.background(bg, bgRadius)
+            mod = mod.background(keyBg(progress), bgRadius)
         }
         PolyBox(modifier = mod) {
             PolyCanvas(PolyModifier.size(w, h)) { x, y, cw, ch ->

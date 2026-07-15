@@ -24,7 +24,7 @@ class BlockAboveHud : CachedTextHud(
     defaultText = "0",
 ) {
 
-    private var notified = false
+    private var lastDistance = Int.MAX_VALUE
 
     @Switch(title = "Notify With Sound")
     var notify = false
@@ -57,6 +57,7 @@ class BlockAboveHud : CachedTextHud(
         val pos = currentPos.mutable().move(Direction.UP)
 
         var above = 0
+        var found = false
         for (i in 1..checkHeight) {
             pos.move(Direction.UP)
             //? if > 1.21.1
@@ -72,17 +73,15 @@ class BlockAboveHud : CachedTextHud(
             }
 
             above = i - 1
-            if (above <= notifyHeight && notify) {
-                if (!notified) {
-                    mc.player?.playSound(SoundEvents.EXPERIENCE_ORB_PICKUP, 0.25f, 1f)
-                    notified = true
-                }
-            } else {
-                notified = false
-            }
-
+            found = true
             break
         }
+
+        val distance = if (found) above else Int.MAX_VALUE
+        if (notify && distance <= notifyHeight && distance < lastDistance) {
+            mc.player?.playSound(SoundEvents.EXPERIENCE_ORB_PICKUP, 0.25f, 1f)
+        }
+        lastDistance = distance
 
         updateWithText(above)
     }

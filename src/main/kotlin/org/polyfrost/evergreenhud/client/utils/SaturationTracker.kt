@@ -147,7 +147,6 @@ object SaturationTracker {
             player.onClimbable() -> {}
 
             player.onGround() -> {
-                // Walking and crouching are charged 0.0F per centimetre, so only sprinting matters.
                 val cm = centimetres(dx, 0.0, dz)
                 if (cm > 0 && player.isSprinting) addExhaustion(SPRINT_EXHAUSTION_PER_CM * cm * 0.01f)
             }

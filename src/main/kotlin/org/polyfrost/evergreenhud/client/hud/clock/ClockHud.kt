@@ -3,6 +3,7 @@ package org.polyfrost.evergreenhud.client.hud.clock
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.withFrameMillis
@@ -11,9 +12,18 @@ import org.polyfrost.compose.composables.PolyModifier
 import org.polyfrost.compose.composables.background
 import org.polyfrost.compose.composables.size
 import org.polyfrost.compose.render.PolyColor
+import org.polyfrost.oneconfig.api.config.v1.annotations.MultiSelectDropdown
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.Hud
+import java.time.LocalTime
+import java.time.ZoneId
+
+private const val DETAIL_FIVE_MINUTE_MARKS = 0
+private const val DETAIL_MINUTE_MARKS = 1
+private const val DETAIL_NUMBERS = 2
+
+private fun millisOfDay(zone: ZoneId): Long = LocalTime.now(zone).toNanoOfDay() / 1_000_000L
 
 class ClockHud : Hud(
     id = "clock.json",
@@ -27,10 +37,25 @@ class ClockHud : Hud(
     @Switch(title = "Ticking")
     var ticking = false
 
+    @MultiSelectDropdown(title = "Details", options = ["5-Minute Marks", "Minute Marks", "Numbers"])
+    var details = booleanArrayOf(false, false, false)
+
+    private var rev = mutableStateOf(0)
+
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
+
+    override fun clone(): Hud = (super.clone() as ClockHud).apply {
+        details = this@ClockHud.details.copyOf()
+        rev = mutableStateOf(0)
+    }
 
     override fun setup() {
         super.setup()
+        if (isReal) {
+            for (option in listOf("details", "handWidth", "ticking")) {
+                addCallback(option) { rev.value++ }
+            }
+        }
         staticWidth = true
         val side = when {
             staticW < 16f || staticH < 16f -> 64f
@@ -45,25 +70,34 @@ class ClockHud : Hud(
 
     @Composable
     override fun Content() {
+        rev.value
         val sizeModifier = PolyModifier.size(scaledWidth, scaledHeight)
-        val timeState = remember { mutableLongStateOf(System.currentTimeMillis()) }
-        LaunchedEffect(Unit) {
+        val zone = remember { ZoneId.systemDefault() }
+        val timeState = remember { mutableLongStateOf(millisOfDay(zone)) }
+        LaunchedEffect(zone) {
             while (true) {
-                withFrameMillis { timeState.longValue = System.currentTimeMillis() }
+                withFrameMillis { timeState.longValue = millisOfDay(zone) }
             }
         }
         val timeMillis by timeState
+        val fiveMinuteMarks = detailEnabled(DETAIL_FIVE_MINUTE_MARKS)
+        val minuteMarks = detailEnabled(DETAIL_MINUTE_MARKS)
+        val numbers = detailEnabled(DETAIL_NUMBERS)
+        val detailColor = PolyColor(textColor, textChroma, textChromaSpeed)
+        val fontName = getPoppinsFontName()
         if (showBackground) {
             PolyBox(
                 modifier = sizeModifier
                     .background(PolyColor(bgColor, bgChroma, bgChromaSpeed), bgRadius)
             ) {
-                Clock(timeMillis, handWidth, ticking, sizeModifier)
+                Clock(timeMillis, handWidth, ticking, fiveMinuteMarks, minuteMarks, numbers, detailColor, fontName, bgRadius, sizeModifier)
             }
         } else {
-            Clock(timeMillis, handWidth, ticking, sizeModifier)
+            Clock(timeMillis, handWidth, ticking, fiveMinuteMarks, minuteMarks, numbers, detailColor, fontName, null, sizeModifier)
         }
     }
+
+    private fun detailEnabled(index: Int): Boolean = details.getOrElse(index) { false }
 
     override fun update(): Boolean {
         return false

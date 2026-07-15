@@ -4,21 +4,57 @@ import androidx.compose.runtime.Composable
 import org.polyfrost.compose.composables.PolyCanvas
 import org.polyfrost.compose.composables.PolyModifier
 import org.polyfrost.compose.composables.size
+import org.polyfrost.compose.render.FontManager
 import org.polyfrost.compose.render.PolyColor
+import org.polyfrost.compose.render.RenderContext
 import java.lang.Math.PI
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.floor
+import kotlin.math.sign
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 private val SECOND_HAND = PolyColor.rgba(170, 170, 170, 255)
 private val MINUTE_HAND = PolyColor.rgba(255, 255, 255, 255)
 private val HOUR_HAND = PolyColor.rgba(120, 180, 255, 255)
+private val DETAIL = PolyColor.rgba(255, 255, 255, 255)
 
+/**
+ * Ring the details are laid on. [cornerRadius] is the background's corner radius, or null when
+ * there is no background, in which case the details sit on a circle.
+ */
+private class Outline(val hw: Float, val hh: Float, val cornerRadius: Float?) {
+    private val inscribed = minOf(hw, hh)
+    private val corner = cornerRadius?.coerceIn(0f, inscribed) ?: inscribed
+
+    /** Distance from the centre to the outline along the unit vector ([dx], [dy]). */
+    fun distance(dx: Float, dy: Float): Float {
+        val tx = if (abs(dx) < 1e-5f) Float.MAX_VALUE else hw / abs(dx)
+        val ty = if (abs(dy) < 1e-5f) Float.MAX_VALUE else hh / abs(dy)
+        val edge = minOf(tx, ty)
+        if (abs(dx) * edge <= hw - corner || abs(dy) * edge <= hh - corner) return edge
+
+        val ccx = sign(dx) * (hw - corner)
+        val ccy = sign(dy) * (hh - corner)
+        val b = dx * ccx + dy * ccy
+        val disc = b * b - (ccx * ccx + ccy * ccy - corner * corner)
+        return if (disc < 0f) edge else b + sqrt(disc)
+    }
+}
+
+/** [millisOfDay] is the local time since midnight, as the hour hand is read straight off it. */
 @Composable
 fun Clock(
-    timeMillis: Long,
+    millisOfDay: Long,
     handWidth: Float = 2f,
     ticking: Boolean = false,
+    fiveMinuteMarks: Boolean = false,
+    minuteMarks: Boolean = false,
+    numbers: Boolean = false,
+    detailColor: PolyColor = DETAIL,
+    fontName: String? = null,
+    cornerRadius: Float? = null,
     modifier: PolyModifier = PolyModifier
         .size(200f, 200f)
 ) {
@@ -27,8 +63,14 @@ fun Clock(
         val radius = minOf(width, height) / 2f
         val cx = width / 2f
         val cy = height / 2f
+        val outline = Outline(width / 2f, height / 2f, cornerRadius)
 
-        val secs = if (ticking) floor(timeMillis / 1000.0) else timeMillis / 1000.0
+        if (fiveMinuteMarks || minuteMarks) {
+            marks(cx, cy, radius, outline, handWidth, fiveMinuteMarks, minuteMarks, detailColor)
+        }
+        if (numbers) numbers(cx, cy, radius, outline, fiveMinuteMarks || minuteMarks, detailColor, fontName)
+
+        val secs = if (ticking) floor(millisOfDay / 1000.0) else millisOfDay / 1000.0
 
         val secondAngle = (2 * PI * (secs % 60.0 / 60.0) - PI / 2).toFloat()
 
@@ -66,5 +108,64 @@ fun Clock(
             HOUR_HAND,
             handWidth
         )
+    }
+}
+
+private fun RenderContext.marks(
+    cx: Float,
+    cy: Float,
+    radius: Float,
+    outline: Outline,
+    handWidth: Float,
+    fiveMinute: Boolean,
+    minute: Boolean,
+    color: PolyColor,
+) {
+    for (i in 0 until 60) {
+        val onFive = i % 5 == 0
+        if (if (onFive) !fiveMinute else !minute) continue
+
+        val quarter = i % 15 == 0
+        val length = radius * when {
+            quarter -> 0.15f
+            onFive -> 0.09f
+            else -> 0.05f
+        }
+        val width = handWidth * when {
+            quarter -> 0.7f
+            onFive -> 0.4f
+            else -> 0.25f
+        }
+        val angle = (2 * PI * (i / 60.0) - PI / 2).toFloat()
+        val dx = cos(angle)
+        val dy = sin(angle)
+        val outer = outline.distance(dx, dy) - radius * 0.03f
+        val inner = outer - length
+        line(cx + inner * dx, cy + inner * dy, cx + outer * dx, cy + outer * dy, color, width)
+    }
+}
+
+private fun RenderContext.numbers(
+    cx: Float,
+    cy: Float,
+    radius: Float,
+    outline: Outline,
+    marks: Boolean,
+    color: PolyColor,
+    fontName: String?,
+) {
+    val font = if (fontName != null) FontManager.getFont(radius * 0.2f, fontName) else FontManager.getFont(radius * 0.2f)
+    val metrics = font.metrics
+    val inset = radius * if (marks) 0.32f else 0.2f
+
+    for (hour in 1..12) {
+        val angle = (2 * PI * (hour / 12.0) - PI / 2).toFloat()
+        val dx = cos(angle)
+        val dy = sin(angle)
+        val ring = (outline.distance(dx, dy) - inset).coerceAtLeast(0f)
+        val text = hour.toString()
+        val x = cx + ring * dx - font.measureTextWidth(text) / 2f
+        val y = cy + ring * dy - (metrics.ascent + metrics.descent) / 2f
+        text(text, x, y, color, font)
     }
 }
