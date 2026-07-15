@@ -31,17 +31,16 @@ private const val GAP = 2f
 private const val SPACE_H = 11f
 private const val FONT = 8f
 
-private const val UP = "▲"    // ▲
-private const val DOWN = "▼"  // ▼
-private const val LEFT = "◀"  // ◀
-private const val RIGHT = "▶" // ▶
+private const val UP = "▲"
+private const val DOWN = "▼"
+private const val LEFT = "◀"
+private const val RIGHT = "▶"
 
 class KeystrokesHud : Hud(
     id = "keystrokes.json",
     title = "Keystrokes",
     category = Category.INFO,
 ) {
-
     @Switch(title = "Movement Keys")
     var showMovement = true
 

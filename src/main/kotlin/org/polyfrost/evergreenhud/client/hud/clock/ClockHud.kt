@@ -57,5 +57,4 @@ class ClockHud : Hud(
     override fun update(): Boolean {
         return false
     }
-
 }

@@ -14,7 +14,6 @@ class HypixelLocationHud(
     title = title,
     category = Category.INFO,
 ) {
-
     @Switch(title = "Hide If Not In-Game or Supported")
     var shouldHide = true
 
@@ -36,5 +35,4 @@ class HypixelLocationHud(
             updateWhenChanged("shouldHide")
         }
     }
-
 }

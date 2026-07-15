@@ -11,9 +11,8 @@ class DigitalClockHud : TextHud(
     id = "digital_clock.json",
     title = "Digital Clock",
     category = Category.INFO,
-    prefix = "",
+    prefix = "Clock:",
 ) {
-
     @Switch(title = "24-Hour Format")
     var twentyFourHour = true
 
