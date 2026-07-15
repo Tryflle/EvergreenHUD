@@ -74,8 +74,8 @@ class ShapeHud : Hud(
     override fun setup() {
         super.setup()
         staticWidth = true
-        if (staticW < 4f) staticW = 64f
-        if (staticH < 4f) staticH = 16f
+        if (staticW < 4f) staticW = 48f
+        if (staticH < 4f) staticH = 48f
 
         if (isReal) {
             hideIf("cornerRadius") { shape != RECTANGLE }
@@ -114,7 +114,7 @@ class ShapeHud : Hud(
     @Composable
     override fun Content() {
         if (!isReal) {
-            PolyText(text = "Shapes", fontSize = 12f)
+            PolyText(text = "Shapes", color = PREVIEW_TEXT, fontSize = 6f)
             return
         }
 
@@ -205,6 +205,8 @@ class ShapeHud : Hud(
     )
 
     companion object {
+        private val PREVIEW_TEXT = PolyColor(0xFFB9BFDF.toInt())
+
         private const val RECTANGLE = 0
         private const val ELLIPSE = 1
         private const val TRIANGLE = 2

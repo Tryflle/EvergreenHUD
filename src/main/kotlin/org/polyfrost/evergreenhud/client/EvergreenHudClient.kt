@@ -16,6 +16,8 @@ import org.polyfrost.evergreenhud.client.hud.clock.ClockHud
 import org.polyfrost.evergreenhud.client.hud.clock.DigitalClockHud
 import org.polyfrost.evergreenhud.client.hud.direction.DirectionHud
 import org.polyfrost.evergreenhud.client.hud.keystrokes.KeystrokesHud
+import org.polyfrost.evergreenhud.client.hud.mouse.MouseStrokesHud
+import org.polyfrost.evergreenhud.client.hud.potion.PotionEffectsHud
 import org.polyfrost.evergreenhud.client.hud.shape.ShapeHud
 import org.polyfrost.evergreenhud.client.utils.FrameTimeHelper
 import org.polyfrost.evergreenhud.client.utils.uniqueEntityId
@@ -43,9 +45,9 @@ object EvergreenHudClient : ClientModInitializer {
             DayHud(), DirectionHud(), EntityCounterHud(), FpsHud(),
             InGameTimeHud(), InventoryHud(),
             KeystrokesHud(),
-            LoreHud(), MemoryHud(),
+            LoreHud(), MemoryHud(), MouseStrokesHud(),
             PingHud(), PlaceCountHud(), PlayerPreviewHud(),
-            PlayTimeHud(), PositionHud(), ReachHud(),
+            PlayTimeHud(), PositionHud(), PotionEffectsHud(), ReachHud(),
             ResourcePackHud(), SaturationHud(), ServerAddressHud(),
             ShapeHud(), SpeedHud(), TpsHud(),
         )
