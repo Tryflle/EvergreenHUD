@@ -23,11 +23,19 @@ class ClockHud : Hud(
     @Slider(title = "Hand Width", min = 1F, max = 10F, step = 1F)
     var handWidth = 2f
 
+    override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
+
     override fun setup() {
         super.setup()
         staticWidth = true
-        if (staticW < 16f) staticW = 64f
-        if (staticH < 16f) staticH = 64f
+        val side = when {
+            staticW < 16f || staticH < 16f -> 64f
+            // untouched Hud base defaults (200x48) - not a size the user picked
+            staticW == 200f && staticH == 48f -> 64f
+            else -> minOf(staticW, staticH)
+        }
+        staticW = side
+        staticH = side
     }
 
     override fun minimumSize(): Pair<Float, Float> = 16f to 16f

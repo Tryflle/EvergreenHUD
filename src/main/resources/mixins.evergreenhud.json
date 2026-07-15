@@ -10,6 +10,7 @@
   "verbose": true,
   "client": [
     "client.Mixin_ClientCommonPacketListenerImpl_ServerChangedEvent",
+    "client.Mixin_ClientPacketListener_ForcePingSample",
     "client.Mixin_Player_ClientDamageEntityEvent",
     "client.Mixin_FoodStats_SaturationChangedEvent",
     "client.Mixin_InGameHud_SmuggleDrawContext",

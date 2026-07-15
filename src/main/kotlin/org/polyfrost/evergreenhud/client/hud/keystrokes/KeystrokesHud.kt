@@ -50,6 +50,12 @@ class KeystrokesHud : Hud(
     @Switch(title = "Attack & Use")
     var showClicks = true
 
+    @Switch(title = "Sprint", description = "Show the sprint key.")
+    var showSprint = false
+
+    @Switch(title = "Sneak", description = "Show the sneak key.")
+    var showSneak = false
+
     @Switch(title = "Arrows", description = "Replace the movement keys with arrows.")
     var arrows = false
 
@@ -75,10 +81,14 @@ class KeystrokesHud : Hud(
     private val jump = mutableStateOf(0f)
     private val attack = mutableStateOf(0f)
     private val use = mutableStateOf(0f)
+    private val sprint = mutableStateOf(0f)
+    private val sneak = mutableStateOf(0f)
 
     private val rev = mutableStateOf(0)
 
     private var lastNanos = System.nanoTime()
+
+    override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
 
     override fun multipleInstancesAllowed() = false
 
@@ -88,7 +98,7 @@ class KeystrokesHud : Hud(
             addDependency("arrows", null) {
                 if (font != Font.Minecraft) Property.Display.DISABLED else Property.Display.SHOWN
             }
-            for (option in listOf("showMovement", "showJump", "showClicks", "arrows")) {
+            for (option in listOf("showMovement", "showJump", "showClicks", "showSprint", "showSneak", "arrows")) {
                 addCallback(option) { rev.value++ }
             }
         }
@@ -121,6 +131,8 @@ class KeystrokesHud : Hud(
         poll(jump, o.keyJump)
         poll(attack, o.keyAttack)
         poll(use, o.keyUse)
+        poll(sprint, o.keySprint)
+        poll(sneak, o.keyShift)
         return changed
     }
 
@@ -155,6 +167,12 @@ class KeystrokesHud : Hud(
                     Key("LMB", attack.value, clickW, key)
                     Key("RMB", use.value, clickW, key)
                 }
+            }
+            if (showSprint) {
+                Key(o.keySprint.label(), sprint.value, rowW, key)
+            }
+            if (showSneak) {
+                Key(o.keyShift.label(), sneak.value, rowW, key)
             }
         }
     }

@@ -12,7 +12,8 @@ import org.polyfrost.oneconfig.utils.v1.dsl.mc
 // TODO pitch/yaw are still not shown; facing is handled by showDirection
 class PositionHud : GenericNumberHud(
     title = "Position",
-    category = Category.INFO
+    category = Category.INFO,
+    prefix = ""
 ) {
     @RadioButton(
         title = "Mode",
@@ -80,7 +81,7 @@ class PositionHud : GenericNumberHud(
 
         append(format(value))
         if (showDirection && sign != '\u0000') {
-            append('(').append(sign).append(')')
+            append(" (").append(sign).append(')')
         }
     }
 
@@ -100,4 +101,6 @@ class PositionHud : GenericNumberHud(
             }
         }
     }
+
+    override fun defaultPosition(): Pair<Float, Float> = 1f to 1f
 }

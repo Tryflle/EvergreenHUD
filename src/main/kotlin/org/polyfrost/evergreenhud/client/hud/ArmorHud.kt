@@ -96,6 +96,8 @@ class ArmorHud : LegacyHud(
     override val width get() = actualW
     override val height get() = actualH
 
+    override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
+
     override fun update(): Boolean {
         recompute()
         return false

@@ -12,7 +12,11 @@ class FpsHud : GenericNumberHud(
     category = Category.INFO,
 ) {
     @Text(title = "Format String", description = "Use #avg for average, #med for median, #fps for fps, #p95 for 95th percentile, #p99 for 99th percentile, #cst for consistency, #mc for the vanilla counter")
-    private var formatString = "#fps"
+    private var formatString = "#mc"
+
+    init {
+        accuracy = 0
+    }
 
     override fun setup() {
         super.setup()

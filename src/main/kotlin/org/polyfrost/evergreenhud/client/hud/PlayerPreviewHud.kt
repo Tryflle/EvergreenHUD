@@ -28,6 +28,8 @@ class PlayerPreviewHud : LegacyHud(
     override val width get() = 80f
     override val height get() = 120f
 
+    override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
+
     override fun setup() {
         super.setup()
         staticWidth = true

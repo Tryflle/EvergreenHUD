@@ -92,6 +92,8 @@ class InventoryHud : LegacyHud(
     override val width get() = if (visible) 176f else 0f
     override val height get() = if (!visible) 0f else if (showTitle) 92f else 78f
 
+    override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
+
     override fun setup() {
         super.setup()
         staticWidth = true

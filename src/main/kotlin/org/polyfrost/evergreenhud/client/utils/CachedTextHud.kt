@@ -19,4 +19,6 @@ abstract class CachedTextHud(
 
     override fun getText(): String? = currentText
 
+    override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
+
 }

@@ -19,6 +19,8 @@ class DigitalClockHud : TextHud(
     @Switch(title = "Show Seconds")
     var showSeconds = true
 
+    override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
+
     override fun setup() {
         super.setup()
         if (isReal) {

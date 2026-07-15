@@ -27,6 +27,8 @@ class LoreHud : TextHud(
     private val ItemStack.isNameShown: Boolean
         get() = has(DataComponents.CUSTOM_NAME)
 
+    override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
+
     override fun setup() {
         super.setup()
         if (isReal) {

@@ -1,31 +1,41 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import com.mojang.blaze3d.platform.NativeImage
-//? if < 26
-import net.minecraft.client.gui.GuiGraphics
-//? if >= 26
-//import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics
-//? if >= 1.21.4 && < 1.21.8
-//import net.minecraft.client.renderer.RenderType
-//? if >= 1.21.8
-import net.minecraft.client.renderer.RenderPipelines
-import net.minecraft.client.renderer.texture.DynamicTexture
-import net.minecraft.network.chat.Component
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 //? if < 1.21.11
 //import net.minecraft.resources.ResourceLocation
 //? if >= 1.21.11
 import net.minecraft.resources.Identifier as ResourceLocation
-import net.minecraft.server.packs.repository.Pack
-import net.minecraft.util.FormattedCharSequence
-import org.polyfrost.evergreenhud.EvergreenHudConstants
+import org.jetbrains.skia.Image
+import org.jetbrains.skia.Paint
+import org.polyfrost.compose.composables.PolyBox
+import org.polyfrost.compose.composables.PolyCanvas
+import org.polyfrost.compose.composables.PolyColumn
+import org.polyfrost.compose.composables.PolyMcText
+import org.polyfrost.compose.composables.PolyModifier
+import org.polyfrost.compose.composables.PolyRow
+import org.polyfrost.compose.composables.PolyText
+import org.polyfrost.compose.composables.background
+import org.polyfrost.compose.composables.padding
+import org.polyfrost.compose.composables.size
+import org.polyfrost.compose.mc.McFontQueue
+import org.polyfrost.compose.render.FontManager
+import org.polyfrost.compose.render.ImageLoader
+import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
-import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
+import org.polyfrost.oneconfig.api.hud.v1.Font
+import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import org.slf4j.LoggerFactory
-import java.security.MessageDigest
-import kotlin.math.max
+import kotlin.time.Duration.Companion.seconds
 
-class ResourcePackHud : LegacyHud(
+private const val ICON = 32f
+private const val GAP = 4f
+private const val TITLE_GAP = 1f
+private const val DESCRIPTION_WIDTH = 140f
+private const val FONT_SIZE = 8f
+
+class ResourcePackHud : Hud(
     id = "resource_pack.json",
     title = "Resource Pack",
     category = Category.INFO,
@@ -33,52 +43,50 @@ class ResourcePackHud : LegacyHud(
     private companion object {
         private val LOGGER = LoggerFactory.getLogger("EvergreenHUD/Resource Pack")
 
-        private const val ICON = 64
-        private const val GAP = 6
-        private const val TITLE_GAP = 2
-        private const val DESCRIPTION_WIDTH = 140
-
         private const val DEFAULT_TITLE = "Default"
         private const val DEFAULT_DESCRIPTION = "The classic Minecraft experience."
 
         private val DEFAULT_ICON = ResourceLocation.withDefaultNamespace("textures/misc/unknown_pack.png")
 
-        private val iconCache = HashMap<String, ResourceLocation>()
+        private val iconPaint = Paint()
+        private val iconCache = HashMap<String, Image>()
         private var cachedIds: List<String>? = null
+        private var defaultIcon: Image? = null
+        private var defaultIconLoaded = false
 
         fun syncIcons(ids: List<String>) {
             if (ids == cachedIds) return
             cachedIds = ids
-            if (iconCache.isEmpty()) return
-            val textureManager = mc.textureManager
-            for (location in iconCache.values) {
-                if (location != DEFAULT_ICON) textureManager.release(location)
-            }
             iconCache.clear()
         }
 
-        fun iconFor(id: String?): ResourceLocation {
-            if (id == null) return DEFAULT_ICON
+        fun iconFor(id: String?): Image? {
+            if (id == null) return defaultIcon()
             iconCache[id]?.let { return it }
-            val icon = loadIcon(id) ?: DEFAULT_ICON
+            val icon = loadIcon(id) ?: defaultIcon() ?: return null
             iconCache[id] = icon
             return icon
         }
 
-        private fun loadIcon(id: String): ResourceLocation? {
+        private fun defaultIcon(): Image? {
+            if (defaultIconLoaded) return defaultIcon
+            defaultIconLoaded = true
+            defaultIcon = try {
+                mc.resourceManager.getResource(DEFAULT_ICON).orElse(null)
+                    ?.open()?.use { ImageLoader.fromBytes(it.readBytes()) }
+            } catch (e: Exception) {
+                LOGGER.warn("Failed to load the fallback pack icon", e)
+                null
+            }
+            return defaultIcon
+        }
+
+        private fun loadIcon(id: String): Image? {
             val pack = mc.resourcePackRepository.getPack(id) ?: return null
             return try {
                 pack.open().use { resources ->
                     val supplier = resources.getRootResource("pack.png") ?: return null
-                    val location = iconLocation(id)
-                    supplier.get().use { stream ->
-                        val image = NativeImage.read(stream)
-                        //? if < 1.21.5
-                        //mc.textureManager.register(location, DynamicTexture(image))
-                        //? if >= 1.21.5
-                        mc.textureManager.register(location, DynamicTexture({ location.toString() }, image))
-                    }
-                    location
+                    supplier.get().use { ImageLoader.fromBytes(it.readBytes()) }
                 }
             } catch (e: Exception) {
                 LOGGER.warn("Failed to load icon from pack {}", id, e)
@@ -86,18 +94,27 @@ class ResourcePackHud : LegacyHud(
             }
         }
 
-        private fun iconLocation(id: String): ResourceLocation {
-            val sanitized = buildString(id.length) {
-                for (c in id.lowercase()) {
-                    append(if (c in 'a'..'z' || c in '0'..'9' || c == '_' || c == '-' || c == '.') c else '_')
+        /** Greedy word wrap, measured with whichever font the HUD is currently set to. */
+        fun wrap(text: String, maxWidth: Float, measure: (String) -> Float): List<String> {
+            val lines = ArrayList<String>()
+            for (paragraph in text.split('\n')) {
+                var line = StringBuilder()
+                for (word in paragraph.split(' ')) {
+                    if (line.isEmpty()) {
+                        line.append(word)
+                        continue
+                    }
+                    val candidate = "$line $word"
+                    if (measure(candidate) <= maxWidth) {
+                        line = StringBuilder(candidate)
+                    } else {
+                        lines.add(line.toString())
+                        line = StringBuilder(word)
+                    }
                 }
+                lines.add(line.toString())
             }
-            return ResourceLocation.fromNamespaceAndPath(EvergreenHudConstants.ID, "pack/$sanitized/${sha1(id)}/icon")
-        }
-
-        private fun sha1(value: String): String {
-            val digest = MessageDigest.getInstance("SHA-1").digest(value.toByteArray(Charsets.UTF_8))
-            return buildString(digest.size * 2) { for (b in digest) append("%02x".format(b)) }
+            return lines
         }
     }
 
@@ -107,14 +124,26 @@ class ResourcePackHud : LegacyHud(
     private var lastPackId: String? = null
     private var lastIgnoreOverlay: Boolean? = null
 
-    private var packId: String? = null
-    private var packTitle = DEFAULT_TITLE
-    private var descriptionLines: List<FormattedCharSequence> = emptyList()
-    private var actualW = ICON.toFloat()
-    private var actualH = ICON.toFloat()
+    private var packTitle = mutableStateOf(DEFAULT_TITLE)
+    private var packDescription = mutableStateOf(DEFAULT_DESCRIPTION)
+    private var packIcon = mutableStateOf<Image?>(null)
 
-    override val width get() = actualW
-    override val height get() = actualH
+    init {
+        padLeft = 4f
+        padRight = 4f
+        padTop = 4f
+        padBottom = 4f
+    }
+
+    override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
+
+    override fun updateFrequency(): Long = 1.seconds.inWholeNanoseconds
+
+    override fun setup() {
+        super.setup()
+        if (isReal) updateWhenChanged("ignoreOverlay")
+        update()
+    }
 
     override fun update(): Boolean {
         val packs = mc.resourcePackRepository.selectedPacks.filter { !it.isRequired }
@@ -124,49 +153,80 @@ class ResourcePackHud : LegacyHud(
         if (pack?.id == lastPackId && ignoreOverlay == lastIgnoreOverlay) return false
         lastPackId = pack?.id
         lastIgnoreOverlay = ignoreOverlay
-        recompute(pack)
-        return false
+
+        packTitle.value = pack?.title?.string ?: DEFAULT_TITLE
+        packDescription.value = pack?.description?.string ?: DEFAULT_DESCRIPTION
+        packIcon.value = iconFor(pack?.id)
+        return true
     }
 
-    private fun recompute(pack: Pack?) {
-        val font = mc.font
-        packId = pack?.id
-        packTitle = pack?.title?.string ?: DEFAULT_TITLE
-        descriptionLines = font.split(pack?.description ?: Component.literal(DEFAULT_DESCRIPTION), DESCRIPTION_WIDTH)
+    @Composable
+    override fun Content() {
+        val scale = textScale.coerceAtLeast(0.01f)
+        val skiaFont = if (font == Font.Poppins) FontManager.getFont(FONT_SIZE * scale, getPoppinsFontName()) else null
+        val measure: (String) -> Float =
+            if (skiaFont != null) skiaFont::measureTextWidth
+            else { text -> McFontQueue.measureTextWidth(text, scale) }
 
-        val textW = max(font.width(packTitle), descriptionLines.maxOfOrNull { font.width(it) } ?: 0)
-        val textH = font.lineHeight * (1 + descriptionLines.size) + TITLE_GAP
-        actualW = (ICON + GAP + textW).toFloat()
-        actualH = max(ICON, textH).toFloat()
-    }
+        val lines = wrap(packDescription.value, DESCRIPTION_WIDTH * scale, measure)
 
-    override fun render(graphics: GuiGraphics) {
+        var modifier = PolyModifier.padding(padLeft, padTop, padRight, padBottom)
         if (showBackground) {
-            graphics.fill(0, 0, actualW.toInt(), actualH.toInt(), bgColor)
+            modifier = PolyModifier
+                .background(PolyColor(bgColor, bgChroma, bgChromaSpeed), bgRadius)
+                .padding(padLeft, padTop, padRight, padBottom)
         }
 
-        val icon = iconFor(packId)
-        //? if < 1.21.4
-        //graphics.blit(icon, 0, 0, 0f, 0f, ICON, ICON, ICON, ICON)
-        //? if >= 1.21.4 && < 1.21.8
-        //graphics.blit(RenderType::guiTextured, icon, 0, 0, 0f, 0f, ICON, ICON, ICON, ICON)
-        //? if >= 1.21.8
-        graphics.blit(RenderPipelines.GUI_TEXTURED, icon, 0, 0, 0f, 0f, ICON, ICON, ICON, ICON)
-
-        val font = mc.font
-        val textX = ICON + GAP
-        //? if < 26
-        graphics.drawString(font, packTitle, textX, 0, textColor)
-        //? if >= 26
-        //graphics.text(font, packTitle, textX, 0, textColor)
-
-        var lineY = font.lineHeight + TITLE_GAP
-        for (line in descriptionLines) {
-            //? if < 26
-            graphics.drawString(font, line, textX, lineY, textColor)
-            //? if >= 26
-            //graphics.text(font, line, textX, lineY, textColor)
-            lineY += font.lineHeight
+        PolyBox(modifier = modifier) {
+            PolyRow(gap = GAP * scale) {
+                Icon(ICON * scale, if (showBackground) bgRadius else 0f)
+                PolyColumn(gap = TITLE_GAP * scale) {
+                    Line(packTitle.value, scale)
+                    for (line in lines) Line(line, scale)
+                }
+            }
         }
+    }
+
+    @Composable
+    private fun Icon(size: Float, radius: Float) {
+        val icon = packIcon.value ?: return
+        PolyCanvas(PolyModifier.size(size, size)) { x, y, w, h ->
+            val corner = radius.coerceIn(0f, minOf(w, h) / 2f)
+            if (corner <= 0f) {
+                image(icon, x, y, w, h, iconPaint)
+                return@PolyCanvas
+            }
+            save()
+            clipRRect(x, y, w, h, corner)
+            image(icon, x, y, w, h, iconPaint)
+            restore()
+        }
+    }
+
+    @Composable
+    private fun Line(text: String, scale: Float) {
+        val color = PolyColor(textColor, textChroma, textChromaSpeed)
+        if (font == Font.Minecraft) {
+            PolyMcText(text, color = color, shadow = showShadow, scale = scale)
+        } else {
+            PolyText(
+                text,
+                color = color,
+                fontSize = FONT_SIZE * scale,
+                shadow = showShadow,
+                shadowColor = PolyColor(shadowColor, shadowChroma, shadowChromaSpeed),
+                shadowOffset = shadowOffsetX,
+                font = getPoppinsFontName(),
+            )
+        }
+    }
+
+    override fun clone(): Hud = (super.clone() as ResourcePackHud).also {
+        it.packTitle = mutableStateOf(DEFAULT_TITLE)
+        it.packDescription = mutableStateOf(DEFAULT_DESCRIPTION)
+        it.packIcon = mutableStateOf(null)
+        it.lastPackId = null
+        it.lastIgnoreOverlay = null
     }
 }
