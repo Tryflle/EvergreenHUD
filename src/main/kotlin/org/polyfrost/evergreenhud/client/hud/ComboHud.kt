@@ -1,6 +1,5 @@
 package org.polyfrost.evergreenhud.client.hud
 
-import org.polyfrost.evergreenhud.client.ClientDamageEntityEvent
 import org.polyfrost.evergreenhud.client.ServerDamageEntityEvent
 import org.polyfrost.evergreenhud.client.utils.CachedTextHud
 import org.polyfrost.evergreenhud.client.utils.uniqueEntityId
@@ -11,7 +10,6 @@ import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 
-// TODO: fix
 class ComboHud : CachedTextHud(
     title = "Combo",
     category = Category.COMBAT,
@@ -25,27 +23,25 @@ class ComboHud : CachedTextHud(
     var noHitMessage = "0"
 
     private var lastHitTime = 0L
-    private var lastAttackId = 0
+    private var lastAttackId = -1
 
     private var currentCombo = 0
         set(value) {
+            if (field == value) return
             field = value
             if (value == 0) updateWithText(noHitMessage)
-            else updateWithText(currentCombo)
+            else updateWithText(value)
         }
 
     override fun setup() {
         super.setup()
 
         eventHandler<TickEvent.Start> {
+            if (currentCombo == 0) return@eventHandler
             if (System.currentTimeMillis() - lastHitTime >= discardTime * 1000L) {
                 currentCombo = 0
+                lastAttackId = -1
             }
-        }
-
-        eventHandler<ClientDamageEntityEvent> { (attacker, target) ->
-            if (target == mc.player)
-            if (attacker != mc.player) return@eventHandler
         }
 
         eventHandler { (attacker, target): ServerDamageEntityEvent ->
@@ -58,7 +54,6 @@ class ComboHud : CachedTextHud(
                 return@eventHandler
             }
 
-            println("Shmacked ${target.name} with ID ${target.uniqueEntityId}")
             if (target.uniqueEntityId == lastAttackId) {
                 currentCombo++
             } else {

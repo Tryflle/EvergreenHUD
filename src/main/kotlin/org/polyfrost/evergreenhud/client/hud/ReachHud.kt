@@ -9,7 +9,6 @@ import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import kotlin.time.Duration.Companion.seconds
 
-// TODO: fix
 class ReachHud : GenericNumberHud(
     title = "Reach",
     category = Category.COMBAT,

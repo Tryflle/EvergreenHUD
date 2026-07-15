@@ -14,7 +14,7 @@ data class ClientDamageEntityEvent(
 ) : Event
 
 data class ServerDamageEntityEvent(
-    val attacker: Entity,
+    val attacker: Entity?,
     val target: Entity
 ) : Event
 
@@ -47,7 +47,6 @@ data class BlockPositionChangedEvent(
 
 data object ResourceReloadEvent : Event
 
-/** This is an object so that we don't need to create a new one every frame. Slight optimization. */
 data object EntityCounterEvent : Event {
 
     @JvmStatic

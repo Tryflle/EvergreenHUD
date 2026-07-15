@@ -2,7 +2,6 @@ package org.polyfrost.evergreenhud.client.hud
 
 import org.polyfrost.evergreenhud.client.utils.CachedTextHud
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
-import org.polyfrost.oneconfig.api.hud.v1.TextHud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -24,7 +23,7 @@ class InGameTimeHud : CachedTextHud(
         //? if < 26
         val time = ((mc.level?.dayTime ?: 0L) + 6000L) % 24000L
         //? if >= 26
-        /*val time = ((mc.level?.overworldClockTime ?: 0L) + 6000L) % 24000L*/
+        //val time = ((mc.level?.overworldClockTime ?: 0L) + 6000L) % 24000L
         val seconds = (time * 3.6).toLong()
         val minutes = (seconds % 3600L) / 60L
         val hours = (seconds / 3600L) % 24L

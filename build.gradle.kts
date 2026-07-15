@@ -1,6 +1,8 @@
 plugins {
     id("dev.kikugie.loom-back-compat")
-    id("org.jetbrains.kotlin.jvm") version "2.3.0"
+    id("org.jetbrains.kotlin.jvm") version "2.4.0"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.4.0"
+    id("org.jetbrains.compose") version "1.11.0"
     id("dev.deftu.gradle.bloom") version "0.2.0"
     id("me.modmuss50.mod-publish-plugin") version "2.0.0"
 }
@@ -76,6 +78,7 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:${sc.properties["deps.fabric_api"] as String}")
 
     modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.2")
+    compileOnly(compose.desktop.currentOs)
 }
 
 loom {

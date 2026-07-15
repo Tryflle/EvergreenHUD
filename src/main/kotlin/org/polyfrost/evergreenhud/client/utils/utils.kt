@@ -1,16 +1,13 @@
 package org.polyfrost.evergreenhud.client.utils
 
 //? if > 1.21.1
+import androidx.compose.ui.graphics.Color
 import net.minecraft.util.profiling.Profiler
 import net.minecraft.world.entity.Entity
-import net.minecraft.world.entity.projectile.ProjectileUtil
 import net.minecraft.world.phys.AABB
-import net.minecraft.world.phys.HitResult
-import net.minecraft.world.phys.Vec3
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 
-// Maximum reach distance in blocks, used for ray casting
 private const val MAX_REACH_DISTANCE = 6.0f
 
 private val Entity.accurateCollisionBox: AABB
@@ -42,21 +39,12 @@ fun calculateReachDistanceToEntity(entity: Entity): Float {
     val eyePos = player.getEyePosition(1.0f)
     val lookPos = player.getViewVector(1.0f)
     val adjustedPos = eyePos.add(lookPos.x * MAX_REACH_DISTANCE, lookPos.y * MAX_REACH_DISTANCE, lookPos.z * MAX_REACH_DISTANCE)
-    val movingObjectPosition = collisionBox.castTo(entity, eyePos, adjustedPos)
-    if (movingObjectPosition != null) {
-        val otherEntityVec = movingObjectPosition.location
-        result = eyePos.distanceTo(otherEntityVec).toFloat()
+    val hit = collisionBox.clip(eyePos, adjustedPos).orElse(null)
+    if (hit != null) {
+        result = eyePos.distanceTo(hit).toFloat()
     }
     profiler.pop()
     return result
-}
-
-private fun AABB.castTo(
-    entity: Entity,
-    start: Vec3,
-    end: Vec3,
-): HitResult? {
-    return ProjectileUtil.getEntityHitResult(entity, start, end, this, { true }, MAX_REACH_DISTANCE.toDouble())
 }
 
 inline fun <L, E> L.fastRemoveIfReversed(predicate: (E) -> Boolean) where L : MutableList<E>, L : RandomAccess {
@@ -71,10 +59,12 @@ inline fun <L, E> L.fastRemoveIfReversed(predicate: (E) -> Boolean) where L : Mu
     }
 }
 
-fun PolyColor.toComposeColor(): androidx.compose.ui.graphics.Color {
-    return androidx.compose.ui.graphics.Color(red, green, blue, alpha)
+fun PolyColor.copy(): PolyColor = PolyColor(rawArgb, chroma, chromaSpeed)
+
+fun PolyColor.toComposeColor(): Color {
+    return Color(red, green, blue, alpha)
 }
 
-fun androidx.compose.ui.graphics.Color.toPolyColor(): PolyColor {
+fun Color.toPolyColor(): PolyColor {
     return PolyColor.hex(value.toInt())
 }

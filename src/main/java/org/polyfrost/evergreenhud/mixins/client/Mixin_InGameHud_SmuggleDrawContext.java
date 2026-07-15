@@ -4,11 +4,11 @@ import net.minecraft.client.DeltaTracker;
 //? if < 26.2
 import net.minecraft.client.gui.Gui;
 //? if >= 26.2
-/*import net.minecraft.client.gui.Hud;*/
+//import net.minecraft.client.gui.Hud;
 //? if < 26
 import net.minecraft.client.gui.GuiGraphics;
 //? if >= 26
-/*import net.minecraft.client.gui.GuiGraphicsExtractor;*/
+//import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.polyfrost.evergreenhud.client.hooks.SmuggledHudDrawContext;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,21 +18,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 //? if < 26.2
 @Mixin(Gui.class)
 //? if >= 26.2
-/*@Mixin(Hud.class)*/
+//@Mixin(Hud.class)
 public class Mixin_InGameHud_SmuggleDrawContext {
 
     @Inject(
         //? if < 26
         method = "render",
         //? if >= 26
-        /*method = "extractRenderState",*/
+        //method = "extractRenderState",
         at = @At("HEAD")
     )
     private void evergreenhud$smuggleDrawContext(
             //? if < 26
             GuiGraphics graphics,
             //? if >= 26
-            /*GuiGraphicsExtractor graphics,*/
+            //GuiGraphicsExtractor graphics,
             DeltaTracker deltaTracker,
             CallbackInfo ci
     ) {

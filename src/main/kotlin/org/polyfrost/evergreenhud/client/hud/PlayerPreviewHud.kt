@@ -3,7 +3,7 @@ package org.polyfrost.evergreenhud.client.hud
 //? if < 26
 import net.minecraft.client.gui.GuiGraphics
 //? if >= 26
-/*import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics*/
+//import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.minecraft.util.Mth
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
@@ -72,7 +72,7 @@ class PlayerPreviewHud : LegacyHud(
         //? if < 26
         InventoryScreen.renderEntityInInventoryFollowsMouse(
         //? if >= 26
-        /*InventoryScreen.extractEntityInInventoryFollowsMouse(*/
+        //InventoryScreen.extractEntityInInventoryFollowsMouse(
             graphics,
             x1, y1, x2, y2,
             entityScale,

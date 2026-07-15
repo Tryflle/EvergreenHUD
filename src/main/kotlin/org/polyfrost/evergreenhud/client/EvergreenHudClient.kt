@@ -3,23 +3,29 @@ package org.polyfrost.evergreenhud.client
 import net.fabricmc.api.ClientModInitializer
 import net.minecraft.core.BlockPos
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket
-import net.minecraft.network.protocol.game.ClientboundEntityEventPacket
+import net.minecraft.network.protocol.game.ClientboundDamageEventPacket
+import net.minecraft.network.protocol.game.ClientboundHurtAnimationPacket
 import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket
 import net.minecraft.world.entity.Entity
+import org.polyfrost.evergreenhud.client.config.GlobalConfig
+import org.polyfrost.evergreenhud.client.hooks.EnderChestTracker
 import org.polyfrost.evergreenhud.client.hud.*
 import org.polyfrost.evergreenhud.client.hud.battery.BatteryHud
 import org.polyfrost.evergreenhud.client.utils.battery.Battery
 import org.polyfrost.evergreenhud.client.hud.clock.ClockHud
 import org.polyfrost.evergreenhud.client.hud.clock.DigitalClockHud
 import org.polyfrost.evergreenhud.client.hud.keystrokes.KeystrokesHud
+import org.polyfrost.evergreenhud.client.hud.shape.ShapeHud
 import org.polyfrost.evergreenhud.client.hud.hypixel.*
 import org.polyfrost.evergreenhud.client.utils.FrameTimeHelper
 import org.polyfrost.evergreenhud.client.utils.PinkuluMapCache
 import org.polyfrost.evergreenhud.client.utils.uniqueEntityId
 import org.polyfrost.oneconfig.api.event.v1.EventManager
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
+import org.polyfrost.oneconfig.api.event.v1.events.InitializationEvent
 import org.polyfrost.oneconfig.api.event.v1.events.PacketEvent
 import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
+import org.polyfrost.oneconfig.api.event.v1.invoke.EventHandler
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
@@ -30,6 +36,8 @@ object EvergreenHudClient : ClientModInitializer {
     override fun onInitializeClient() {
         FrameTimeHelper.initialize()
         PinkuluMapCache.initialize()
+        EnderChestTracker.initialize()
+        GlobalConfig.preload()
         //OmniClientResources.registerReloadListener(ResourceReloadEventReloadListener)
 
         val huds = arrayOf(
@@ -42,15 +50,14 @@ object EvergreenHudClient : ClientModInitializer {
             LoreHud(), MemoryHud(),
             PingHud(), PlaceCountHud(), PlayerPreviewHud(),
             PlayTimeHud(), PositionHud(), ReachHud(),
-            /*ResourcePackHud(),*/ SaturationHud(), ServerAddressHud(),
-            SpeedHud(), TpsHud(),
+            ResourcePackHud(), SaturationHud(), ServerAddressHud(),
+            ShapeHud(), SpeedHud(), TpsHud(),
 
             // Hypixel HUDs
             HypixelLocationHud("Map Name") { mapName.getOrNull() },
             HypixelLocationHud("Game Type") { gameType.getOrNull()?.name },
             HypixelLocationHud("Game Mode") { mode.getOrNull() },
-            // TODO: check that this actually works
-            HypixelLocationHud("Build Remaining") { PinkuluMapCache.getMapHeight(this).let { if (it == -1) "Unknown" else it.toString() } },
+            HypixelLocationHud("Build Remaining") { PinkuluMapCache.getMapHeight(this).takeIf { it != -1 }?.toString() },
         )
 
         // TODO: improve this workaround
@@ -62,6 +69,17 @@ object EvergreenHudClient : ClientModInitializer {
 
         if (Battery.isSupported()) {
             HudManager.register(BatteryHud())
+        } else {
+            EventManager.INSTANCE.register(object : EventHandler<InitializationEvent>() {
+                override fun handle(event: InitializationEvent): Boolean {
+                    HudManager.unregister(BatteryHud(), removeActiveInstances = true)
+                    return false
+                }
+
+                override fun getEventClass(): Class<InitializationEvent> = InitializationEvent::class.java
+
+                override fun getPriority(): Int = Int.MIN_VALUE
+            })
         }
 
         BlockPositionChangedEvent()
@@ -99,32 +117,62 @@ object EvergreenHudClient : ClientModInitializer {
         }
     }
 
+    private const val ATTACK_CORRELATION_WINDOW_MS = 1000L
+
+    private const val DUPLICATE_HURT_WINDOW_MS = 50L
+
+    @Volatile
+    private var lastAttacker: Entity? = null
+
+    @Volatile
+    private var lastTargetId = -1
+
+    @Volatile
+    private var lastAttackTime = 0L
+
     @Suppress("FunctionName")
     private fun ServerDamageEntityEvent() {
-        var lastAttacker: Entity? = null
-        var lastTargetId: Int = -1
-
         eventHandler { (attacker, target): ClientDamageEntityEvent ->
-            fun isPlayer(entity: Entity) = entity == mc.player
-            println("Attacker: ${isPlayer(attacker)}, Target: $${isPlayer(target)}")
             lastAttacker = attacker
             lastTargetId = target.uniqueEntityId
+            lastAttackTime = System.currentTimeMillis()
         }
 
         eventHandler { (packet): PacketEvent.Receive ->
-            if (packet !is ClientboundEntityEventPacket || packet.eventId.toInt() != 2) {
-                return@eventHandler
+            when (packet) {
+                is ClientboundDamageEventPacket -> postServerDamage(packet.entityId, packet.sourceCauseId)
+                is ClientboundHurtAnimationPacket -> postServerDamage(packet.id, causeId = -1)
+            }
+        }
+    }
+
+    @Volatile
+    private var lastPostedTargetId = -1
+
+    @Volatile
+    private var lastPostedTime = 0L
+
+    private fun postServerDamage(targetId: Int, causeId: Int) {
+        val world = mc.level ?: return
+        val target = world.getEntity(targetId) ?: return
+        val now = System.currentTimeMillis()
+
+        val attacker = world.getEntity(causeId)
+            ?: lastAttacker?.takeIf {
+                lastTargetId == targetId && now - lastAttackTime <= ATTACK_CORRELATION_WINDOW_MS
             }
 
-            val world = mc.level ?: return@eventHandler
-            val target = packet.getEntity(world) ?: return@eventHandler
-            if (lastAttacker == null || lastTargetId != target.uniqueEntityId) {
-                return@eventHandler
-            }
+        if (targetId == lastPostedTargetId && now - lastPostedTime <= DUPLICATE_HURT_WINDOW_MS) {
+            return
+        }
+        lastPostedTargetId = targetId
+        lastPostedTime = now
 
-            EventManager.INSTANCE.post(ServerDamageEntityEvent(lastAttacker!!, target))
+        if (lastTargetId == targetId) {
             lastAttacker = null
             lastTargetId = -1
         }
+
+        EventManager.INSTANCE.post(ServerDamageEntityEvent(attacker, target))
     }
 }

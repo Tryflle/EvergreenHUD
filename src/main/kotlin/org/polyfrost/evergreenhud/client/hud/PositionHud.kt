@@ -9,8 +9,7 @@ import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 
-// TODO implement the facing stuff and pitch/yaw
-// i think this is already implemented?
+// TODO pitch/yaw are still not shown; facing is handled by showDirection
 class PositionHud : GenericNumberHud(
     title = "Position",
     category = Category.INFO

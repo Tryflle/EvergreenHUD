@@ -3,7 +3,7 @@ package org.polyfrost.evergreenhud.client.hud
 //? if < 26
 import net.minecraft.client.gui.GuiGraphics
 //? if >= 26
-/*import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics*/
+//import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
@@ -235,7 +235,7 @@ class ArmorHud : LegacyHud(
                 //? if < 26
                 graphics.drawString(font, e.text, e.textX, e.textY, e.textColor)
                 //? if >= 26
-                /*graphics.text(font, e.text, e.textX, e.textY, e.textColor)*/
+                //graphics.text(font, e.text, e.textX, e.textY, e.textColor)
             }
         }
     }

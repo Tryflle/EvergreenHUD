@@ -1,6 +1,11 @@
 package org.polyfrost.evergreenhud.client.hud.clock
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.withFrameMillis
 import org.polyfrost.compose.composables.PolyBox
 import org.polyfrost.compose.composables.PolyModifier
 import org.polyfrost.compose.composables.background
@@ -30,15 +35,22 @@ class ClockHud : Hud(
     @Composable
     override fun Content() {
         val sizeModifier = PolyModifier.size(scaledWidth, scaledHeight)
+        val timeState = remember { mutableLongStateOf(System.currentTimeMillis()) }
+        LaunchedEffect(Unit) {
+            while (true) {
+                withFrameMillis { timeState.longValue = System.currentTimeMillis() }
+            }
+        }
+        val timeMillis by timeState
         if (showBackground) {
             PolyBox(
                 modifier = sizeModifier
                     .background(PolyColor(bgColor, bgChroma, bgChromaSpeed), bgRadius)
             ) {
-                Clock(System.currentTimeMillis(), handWidth, sizeModifier)
+                Clock(timeMillis, handWidth, sizeModifier)
             }
         } else {
-            Clock(System.currentTimeMillis(), handWidth, sizeModifier)
+            Clock(timeMillis, handWidth, sizeModifier)
         }
     }
 

@@ -14,7 +14,7 @@ class DayHud : CachedTextHud(
         //? if < 26
         return mc.level?.dayTime?.div(24000L)?.toString() ?: "0"
         //? if >= 26
-        /*return mc.level?.overworldClockTime?.div(24000L)?.toString() ?: "0"*/
+        //return mc.level?.overworldClockTime?.div(24000L)?.toString() ?: "0"
     }
 
     override fun updateFrequency(): Long = 1.seconds.inWholeNanoseconds

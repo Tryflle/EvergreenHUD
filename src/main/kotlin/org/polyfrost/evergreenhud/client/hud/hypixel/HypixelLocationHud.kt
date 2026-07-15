@@ -5,7 +5,6 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.config.v1.annotations.Text
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.HypixelLocationEvent
-import org.polyfrost.oneconfig.api.hud.v1.TextHud
 import org.polyfrost.oneconfig.api.hypixel.v1.HypixelUtils.Location
 
 class HypixelLocationHud(
@@ -29,7 +28,7 @@ class HypixelLocationHud(
         hidden = true
         eventHandler { event: HypixelLocationEvent ->
             val string = event.location.getter()
-            hidden = string != null && shouldHide
+            hidden = string == null && shouldHide
             updateWithText(string)
         }
 
