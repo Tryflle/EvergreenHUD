@@ -2,7 +2,7 @@ plugins {
     id("dev.kikugie.stonecutter")
 }
 
-stonecutter active "1.21.11" /* [SC] DO NOT EDIT */
+stonecutter active "26.2" /* [SC] DO NOT EDIT */
 
 stonecutter parameters {
     swaps["mod_version"] = "\"${property("mod.version")}\";"

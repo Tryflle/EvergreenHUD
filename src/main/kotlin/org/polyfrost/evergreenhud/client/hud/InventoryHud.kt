@@ -2,9 +2,9 @@ package org.polyfrost.evergreenhud.client.hud
 
 import com.mojang.blaze3d.platform.InputConstants
 //? if < 26
-import net.minecraft.client.gui.GuiGraphics
+//import net.minecraft.client.gui.GuiGraphics
 //? if >= 26
-//import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics
 import net.minecraft.core.component.DataComponents
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
@@ -125,9 +125,9 @@ class InventoryHud : LegacyHud(
         graphics.fill(0, 0, width.toInt(), height.toInt(), 0x90000000.toInt())
         if (showTitle) {
             //? if < 26
-            graphics.drawString(mc.font, titleText(), EDGE, 6, 0xFFFFFFFF.toInt())
+            //graphics.drawString(mc.font, titleText(), EDGE, 6, 0xFFFFFFFF.toInt())
             //? if >= 26
-            //graphics.text(mc.font, titleText(), EDGE, 6, 0xFFFFFFFF.toInt())
+            graphics.text(mc.font, titleText(), EDGE, 6, 0xFFFFFFFF.toInt())
         }
 
         val items = contents() ?: return
@@ -141,12 +141,12 @@ class InventoryHud : LegacyHud(
             val itemX = EDGE + (i % COLS) * SLOT
             val itemY = top + (i / COLS) * SLOT
             //? if < 26 {
-            graphics.renderItem(item, itemX, itemY)
+            /*graphics.renderItem(item, itemX, itemY)
             graphics.renderItemDecorations(font, item, itemX, itemY)
-            //?} else {
-            /*graphics.item(item, itemX, itemY)
+            *///?} else {
+            graphics.item(item, itemX, itemY)
             graphics.itemDecorations(font, item, itemX, itemY)
-            *///?}
+            //?}
             slots?.add(ShulkerPreview.Slot(x + itemX * effectiveScale, y + itemY * effectiveScale, ITEM * effectiveScale, item))
         }
 

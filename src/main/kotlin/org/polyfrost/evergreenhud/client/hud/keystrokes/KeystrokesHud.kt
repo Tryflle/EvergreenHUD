@@ -59,8 +59,11 @@ class KeystrokesHud : Hud(
     @Switch(title = "Arrows", description = "Replace the movement keys with arrows.")
     var arrows = false
 
-    @Slider(title = "Fade Duration (ms)", description = "How long a key takes to fade between the unpressed and pressed colours.", min = 1F, max = 250F, step = 1F)
-    var fadeMs = 150f
+    @Slider(title = "Fade In Duration (ms)", description = "How long a key takes to fade from the unpressed to the pressed colours.", min = 1F, max = 250F, step = 1F)
+    var fadeInMs = 150f
+
+    @Slider(title = "Fade Out Duration (ms)", description = "How long a key takes to fade from the pressed to the unpressed colours.", min = 1F, max = 250F, step = 1F)
+    var fadeOutMs = 150f
 
     @Color(title = "Unpressed Background Color")
     var unpressedBg = PolyColor(0x6E000000)
@@ -109,14 +112,15 @@ class KeystrokesHud : Hud(
         val now = System.nanoTime()
         val dtMs = (now - lastNanos).coerceAtLeast(0L) / 1_000_000f
         lastNanos = now
-        val step = if (fadeMs <= 0f) 1f else dtMs / fadeMs
+        val inStep = if (fadeInMs <= 0f) 1f else dtMs / fadeInMs
+        val outStep = if (fadeOutMs <= 0f) 1f else dtMs / fadeOutMs
         var changed = false
         fun poll(state: MutableState<Float>, key: KeyMapping) {
             val target = if (key.isDown) 1f else 0f
             val cur = state.value
             val next = when {
-                cur < target -> (cur + step).coerceAtMost(target)
-                cur > target -> (cur - step).coerceAtLeast(target)
+                cur < target -> (cur + inStep).coerceAtMost(target)
+                cur > target -> (cur - outStep).coerceAtLeast(target)
                 else -> cur
             }
             if (next != cur) {

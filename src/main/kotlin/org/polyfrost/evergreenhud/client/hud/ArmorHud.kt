@@ -1,9 +1,9 @@
 package org.polyfrost.evergreenhud.client.hud
 
 //? if < 26
-import net.minecraft.client.gui.GuiGraphics
+//import net.minecraft.client.gui.GuiGraphics
 //? if >= 26
-//import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
@@ -226,18 +226,18 @@ class ArmorHud : LegacyHud(
         val font = mc.font
         for (e in entries) {
             //? if < 26 {
-            graphics.renderItem(e.stack, e.iconX, e.iconY)
+            /*graphics.renderItem(e.stack, e.iconX, e.iconY)
             if (showDecorations) graphics.renderItemDecorations(font, e.stack, e.iconX, e.iconY)
-            //?} else {
-            /*graphics.item(e.stack, e.iconX, e.iconY)
+            *///?} else {
+            graphics.item(e.stack, e.iconX, e.iconY)
             if (showDecorations) graphics.itemDecorations(font, e.stack, e.iconX, e.iconY)
-            *///?}
+            //?}
 
             if (e.text.isNotEmpty()) {
                 //? if < 26
-                graphics.drawString(font, e.text, e.textX, e.textY, e.textColor)
+                //graphics.drawString(font, e.text, e.textX, e.textY, e.textColor)
                 //? if >= 26
-                //graphics.text(font, e.text, e.textX, e.textY, e.textColor)
+                graphics.text(font, e.text, e.textX, e.textY, e.textColor)
             }
         }
     }

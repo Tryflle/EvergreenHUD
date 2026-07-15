@@ -1,11 +1,13 @@
 package org.polyfrost.evergreenhud.client.hud
 
 //? if < 26
-import net.minecraft.client.gui.GuiGraphics
+//import net.minecraft.client.gui.GuiGraphics
 //? if >= 26
-//import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.minecraft.util.Mth
+import org.polyfrost.evergreenhud.client.hooks.playerPreviewPartialTick
+import org.polyfrost.evergreenhud.client.hooks.smuggledHudPartialTick
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
@@ -56,34 +58,42 @@ class PlayerPreviewHud : LegacyHud(
         val centerX = (x1 + x2) / 2f
         val centerY = (y1 + y2) / 2f
 
+        val partialTick = smuggledHudPartialTick
+
         val yawOffset: Float
         val pitchOffset: Float
         if (paperDoll) {
-            yawOffset = Mth.wrapDegrees(player.yHeadRot - player.yBodyRot)
+            val bodyYaw = Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot)
+            yawOffset = Mth.wrapDegrees(player.yRot - bodyYaw)
             pitchOffset = player.xRot
         } else {
             yawOffset = rotation - 180f
             pitchOffset = pitch
         }
 
-        //? if < 1.21.8 {
-        
-        /*graphics.pose().pushPose()
-        graphics.pose().last().pose().identity()
-        *///?}
-        //? if < 26
-        InventoryScreen.renderEntityInInventoryFollowsMouse(
-        //? if >= 26
-        //InventoryScreen.extractEntityInInventoryFollowsMouse(
-            graphics,
-            x1, y1, x2, y2,
-            entityScale,
-            0.0625f,
-            centerX - yawOffset,
-            centerY + pitchOffset,
-            player,
-        )
-        //? if < 1.21.8
-        //graphics.pose().popPose()
+        playerPreviewPartialTick = partialTick
+        try {
+            //? if < 1.21.8 {
+
+            /*graphics.pose().pushPose()
+            graphics.pose().last().pose().identity()
+            *///?}
+            //? if < 26
+            //InventoryScreen.renderEntityInInventoryFollowsMouse(
+            //? if >= 26
+            InventoryScreen.extractEntityInInventoryFollowsMouse(
+                graphics,
+                x1, y1, x2, y2,
+                entityScale,
+                0.0625f,
+                centerX - yawOffset,
+                centerY + pitchOffset,
+                player,
+            )
+            //? if < 1.21.8
+            //graphics.pose().popPose()
+        } finally {
+            playerPreviewPartialTick = -1f
+        }
     }
 }

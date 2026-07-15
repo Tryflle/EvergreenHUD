@@ -2,9 +2,9 @@ package org.polyfrost.evergreenhud.mixins.client;
 
 import net.minecraft.client.Minecraft;
 //? if < 26
-import net.minecraft.client.gui.GuiGraphics;
+//import net.minecraft.client.gui.GuiGraphics;
 //? if >= 26
-//import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.world.item.ItemStack;
 import org.polyfrost.evergreenhud.client.hooks.ShulkerPreview;
@@ -18,16 +18,16 @@ public class Mixin_AbstractContainerScreen_ShulkerPreviewTooltip {
 
     @Inject(
         //? if < 26
-        method = "render",
+        //method = "render",
         //? if >= 26
-        //method = "extractRenderState",
+        method = "extractRenderState",
         at = @At("TAIL")
     )
     private void evergreenhud$shulkerPreviewTooltip(
             //? if < 26
-            GuiGraphics graphics,
+            //GuiGraphics graphics,
             //? if >= 26
-            //GuiGraphicsExtractor graphics,
+            GuiGraphicsExtractor graphics,
             int mouseX, int mouseY, float partialTick, CallbackInfo ci
     ) {
         ItemStack hovered = ShulkerPreview.consumeHovered(mouseX, mouseY);

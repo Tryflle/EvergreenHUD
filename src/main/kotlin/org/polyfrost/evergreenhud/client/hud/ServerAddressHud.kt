@@ -27,7 +27,6 @@ class ServerAddressHud : CachedTextHud(
             applyServer(ip)
         }
 
-        // ServerChangedEvent only fires on connect, so a hud added mid-session must read the current server itself
         applyServer(mc.currentServer?.ip)
 
         if (isReal) {

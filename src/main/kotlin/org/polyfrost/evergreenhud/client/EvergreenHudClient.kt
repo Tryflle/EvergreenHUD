@@ -27,6 +27,7 @@ import org.polyfrost.oneconfig.api.event.v1.events.InitializationEvent
 import org.polyfrost.oneconfig.api.event.v1.events.PacketEvent
 import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 import org.polyfrost.oneconfig.api.event.v1.invoke.EventHandler
+import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
@@ -52,15 +53,10 @@ object EvergreenHudClient : ClientModInitializer {
             ShapeHud(), SpeedHud(), TpsHud(),
         )
 
-        // TODO: improve this workaround
-        huds.forEach {
-            if (it is TextHud) it.staticWidth = false
-        }
-
-        HudManager.register(*huds)
+        huds.forEach(::register)
 
         if (Battery.isSupported()) {
-            HudManager.register(BatteryHud())
+            register(BatteryHud())
         } else {
             EventManager.INSTANCE.register(object : EventHandler<InitializationEvent>() {
                 override fun handle(event: InitializationEvent): Boolean {
@@ -76,6 +72,11 @@ object EvergreenHudClient : ClientModInitializer {
 
         BlockPositionChangedEvent()
         ServerDamageEntityEvent()
+    }
+
+    private fun register(hud: Hud) {
+        if (hud is TextHud) hud.staticWidth = false
+        HudManager.register(hud, GlobalConfig.id, GlobalConfig.iconPath)
     }
 
     private val recentBlockChanges = ConcurrentLinkedQueue<BlockPos>()

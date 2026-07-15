@@ -29,17 +29,14 @@ object EnderChestTracker {
 
     private fun capture() {
         //? if < 26.2
-        val screen = mc.screen as? AbstractContainerScreen<*> ?: return
+        //val screen = mc.screen as? AbstractContainerScreen<*> ?: return
         //? if >= 26.2
-        //val screen = mc.gui.screen() as? AbstractContainerScreen<*> ?: return
+        val screen = mc.gui.screen() as? AbstractContainerScreen<*> ?: return
         val menu = screen.menu as? ChestMenu ?: return
-        // The title is the only thing separating an ender chest from any other 3-row chest, since both
-        // arrive as a plain GENERIC_9x3 menu. EnderChestBlockEntity cannot be renamed, so the key holds.
         if (menu.rowCount != 3 || screen.title.contents != enderChestTitle) return
 
         val container = menu.container
         if (container.containerSize != ENDER_CHEST_SLOTS) return
-        // copied: the menu's container is discarded and its stacks mutated once the screen closes
         contents = List(ENDER_CHEST_SLOTS) { container.getItem(it).copy() }
     }
 }

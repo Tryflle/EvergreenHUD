@@ -3,7 +3,7 @@ package org.polyfrost.evergreenhud.mixins.client;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
 //? if >= 26.2
-//import net.minecraft.client.renderer.extract.LevelExtractor;
+import net.minecraft.client.renderer.extract.LevelExtractor;
 import org.polyfrost.evergreenhud.client.EntityCounterEvent;
 import org.polyfrost.oneconfig.api.event.v1.EventManager;
 import org.spongepowered.asm.mixin.Final;
@@ -14,14 +14,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //? if >= 1.21.10 && < 26
-import net.minecraft.client.renderer.state.LevelRenderState;
+//import net.minecraft.client.renderer.state.LevelRenderState;
 //? if >= 26
-//import net.minecraft.client.renderer.state.level.LevelRenderState;
+import net.minecraft.client.renderer.state.level.LevelRenderState;
 
 //? if < 26.2
-@Mixin(LevelRenderer.class)
+//@Mixin(LevelRenderer.class)
 //? if >= 26.2
-//@Mixin(LevelExtractor.class)
+@Mixin(LevelExtractor.class)
 public abstract class Mixin_RenderGlobal_EntityCounterEvent {
 
     @Shadow private ClientLevel level;
