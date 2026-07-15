@@ -25,13 +25,12 @@ class MemoryHud : CachedTextHud(
     @Number(title = "Update Frequency (requires restart)", min = 0.5F, max = 5F)
     var updateFrequency = 0.5F
 
-    private var df: DecimalFormat = decimalFormat(1, trailingZeros)
+    private val df: DecimalFormat get() = decimalFormat(1, trailingZeros, displayType == 1)
 
     override fun setup() {
         super.setup()
         if (isReal) {
-            addCallback("trailingZeros") { state: Boolean ->
-                df = decimalFormat(1, state, displayType == 1)
+            addCallback("trailingZeros") { _: Boolean ->
                 updateAndRecalculate()
                 false
             }
@@ -42,7 +41,6 @@ class MemoryHud : CachedTextHud(
                     else -> " GB"
                 }
 
-                df = decimalFormat(1, trailingZeros, value == 1)
                 updateAndRecalculate()
                 false
             }

@@ -18,6 +18,7 @@ import org.polyfrost.compose.composables.size
 import org.polyfrost.compose.layout.PolyAlign
 import org.polyfrost.compose.mc.McFontQueue
 import org.polyfrost.compose.render.PolyColor
+import org.polyfrost.evergreenhud.client.utils.copy
 import org.polyfrost.oneconfig.api.config.v1.Property
 import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
@@ -77,23 +78,58 @@ class KeystrokesHud : Hud(
     @Color(title = "Pressed Text Color")
     var pressedText = PolyColor(0xFF000000.toInt())
 
-    private val forward = mutableStateOf(0f)
-    private val left = mutableStateOf(0f)
-    private val back = mutableStateOf(0f)
-    private val right = mutableStateOf(0f)
-    private val jump = mutableStateOf(0f)
-    private val attack = mutableStateOf(0f)
-    private val use = mutableStateOf(0f)
-    private val sprint = mutableStateOf(0f)
-    private val sneak = mutableStateOf(0f)
+    @Transient
+    private var forward = mutableStateOf(0f)
 
-    private val rev = mutableStateOf(0)
+    @Transient
+    private var left = mutableStateOf(0f)
 
+    @Transient
+    private var back = mutableStateOf(0f)
+
+    @Transient
+    private var right = mutableStateOf(0f)
+
+    @Transient
+    private var jump = mutableStateOf(0f)
+
+    @Transient
+    private var attack = mutableStateOf(0f)
+
+    @Transient
+    private var use = mutableStateOf(0f)
+
+    @Transient
+    private var sprint = mutableStateOf(0f)
+
+    @Transient
+    private var sneak = mutableStateOf(0f)
+
+    @Transient
+    private var rev = mutableStateOf(0)
+
+    @Transient
     private var lastNanos = System.nanoTime()
 
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
 
-    override fun multipleInstancesAllowed() = false
+    override fun clone(): Hud = (super.clone() as KeystrokesHud).apply {
+        unpressedBg = unpressedBg.copy()
+        unpressedText = unpressedText.copy()
+        pressedBg = pressedBg.copy()
+        pressedText = pressedText.copy()
+        forward = mutableStateOf(0f)
+        left = mutableStateOf(0f)
+        back = mutableStateOf(0f)
+        right = mutableStateOf(0f)
+        jump = mutableStateOf(0f)
+        attack = mutableStateOf(0f)
+        use = mutableStateOf(0f)
+        sprint = mutableStateOf(0f)
+        sneak = mutableStateOf(0f)
+        rev = mutableStateOf(0)
+        lastNanos = System.nanoTime()
+    }
 
     override fun setup() {
         super.setup()

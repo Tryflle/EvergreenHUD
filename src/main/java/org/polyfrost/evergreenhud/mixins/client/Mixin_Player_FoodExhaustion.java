@@ -3,17 +3,17 @@
 
 package org.polyfrost.evergreenhud.mixins.client;
 
-import net.minecraft.world.food.FoodData;
+import net.minecraft.world.entity.player.Player;
 import org.polyfrost.evergreenhud.client.utils.SaturationTracker;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(FoodData.class)
-public class Mixin_FoodStats_SaturationChangedEvent {
-    @Inject(method = "setSaturation", at = @At("RETURN"))
-    private void evergreenhud$onServerSync(float saturation, CallbackInfo ci) {
-        SaturationTracker.INSTANCE.onServerSync((FoodData) (Object) this);
+@Mixin(Player.class)
+public class Mixin_Player_FoodExhaustion {
+    @Inject(method = "causeFoodExhaustion", at = @At("HEAD"))
+    private void evergreenhud$trackExhaustion(float amount, CallbackInfo ci) {
+        SaturationTracker.INSTANCE.onCauseFoodExhaustion((Player) (Object) this, amount);
     }
 }

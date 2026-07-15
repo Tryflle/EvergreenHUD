@@ -20,6 +20,7 @@ import org.polyfrost.evergreenhud.client.hud.mouse.MouseStrokesHud
 import org.polyfrost.evergreenhud.client.hud.potion.PotionEffectsHud
 import org.polyfrost.evergreenhud.client.hud.shape.ShapeHud
 import org.polyfrost.evergreenhud.client.utils.FrameTimeHelper
+import org.polyfrost.evergreenhud.client.utils.SaturationTracker
 import org.polyfrost.evergreenhud.client.utils.uniqueEntityId
 import org.polyfrost.oneconfig.api.event.v1.EventManager
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
@@ -37,6 +38,7 @@ object EvergreenHudClient : ClientModInitializer {
     override fun onInitializeClient() {
         FrameTimeHelper.initialize()
         EnderChestTracker.initialize()
+        SaturationTracker.initialize()
         GlobalConfig.preload()
 
         val huds = arrayOf(

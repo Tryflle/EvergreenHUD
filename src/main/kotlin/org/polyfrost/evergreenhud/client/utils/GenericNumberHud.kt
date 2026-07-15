@@ -4,22 +4,33 @@ import org.polyfrost.evergreenhud.utils.decimalFormat
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 
+private const val DEFAULT_ACCURACY = 2
+private const val DEFAULT_TRAILING_ZEROS = true
+
 open class GenericNumberHud(
     title: String,
     category: Category,
     prefix: String = "$title:",
     suffix: String = "",
     id: String = "${title.replace(' ', '_').lowercase()}.json",
-) : CachedTextHud(title, category, prefix, suffix, id) {
+    defaultValue: Float = 0f,
+) : CachedTextHud(
+    title,
+    category,
+    prefix,
+    suffix,
+    id,
+    decimalFormat(DEFAULT_ACCURACY, DEFAULT_TRAILING_ZEROS).format(defaultValue),
+) {
 
     @Slider(title = "Accuracy", min = 0F, max = 8F, step = 1F)
-    var accuracy = 2
+    var accuracy = DEFAULT_ACCURACY
 
     @Switch(title = "Trailing Zeros")
-    var trailingZeros = true
+    var trailingZeros = DEFAULT_TRAILING_ZEROS
 
-    private var df = decimalFormat(accuracy, trailingZeros)
-    protected var value = 0f
+    private val df get() = decimalFormat(accuracy, trailingZeros)
+    protected var value = defaultValue
 
     protected fun format(number: Number): String = df.format(number)
 
@@ -32,13 +43,11 @@ open class GenericNumberHud(
         super.setup()
 
         if (isReal) {
-            addCallback("accuracy") { value: Int ->
-                df = decimalFormat(value, trailingZeros)
+            addCallback("accuracy") { _: Int ->
                 updateWithNumber(this.value)
                 false
             }
-            addCallback("trailingZeros") { state: Boolean ->
-                df = decimalFormat(accuracy, state)
+            addCallback("trailingZeros") { _: Boolean ->
                 updateWithNumber(this.value)
                 false
             }
