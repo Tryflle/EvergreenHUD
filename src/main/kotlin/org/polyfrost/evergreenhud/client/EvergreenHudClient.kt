@@ -14,11 +14,10 @@ import org.polyfrost.evergreenhud.client.hud.battery.BatteryHud
 import org.polyfrost.evergreenhud.client.utils.battery.Battery
 import org.polyfrost.evergreenhud.client.hud.clock.ClockHud
 import org.polyfrost.evergreenhud.client.hud.clock.DigitalClockHud
+import org.polyfrost.evergreenhud.client.hud.direction.DirectionHud
 import org.polyfrost.evergreenhud.client.hud.keystrokes.KeystrokesHud
 import org.polyfrost.evergreenhud.client.hud.shape.ShapeHud
-import org.polyfrost.evergreenhud.client.hud.hypixel.*
 import org.polyfrost.evergreenhud.client.utils.FrameTimeHelper
-import org.polyfrost.evergreenhud.client.utils.PinkuluMapCache
 import org.polyfrost.evergreenhud.client.utils.uniqueEntityId
 import org.polyfrost.oneconfig.api.event.v1.EventManager
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
@@ -30,21 +29,18 @@ import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.TextHud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import java.util.concurrent.ConcurrentLinkedQueue
-import kotlin.jvm.optionals.getOrNull
 
 object EvergreenHudClient : ClientModInitializer {
     override fun onInitializeClient() {
         FrameTimeHelper.initialize()
-        PinkuluMapCache.initialize()
         EnderChestTracker.initialize()
         GlobalConfig.preload()
-        //OmniClientResources.registerReloadListener(ResourceReloadEventReloadListener)
 
         val huds = arrayOf(
             ArmorHud(),
             BiomeHud(), BlockAboveHud(),
             ClockHud(), DigitalClockHud(), ComboHud(), CpsHud(),
-            DayHud(), EntityCounterHud(), FpsHud(),
+            DayHud(), DirectionHud(), EntityCounterHud(), FpsHud(),
             InGameTimeHud(), InventoryHud(),
             KeystrokesHud(),
             LoreHud(), MemoryHud(),
@@ -52,12 +48,6 @@ object EvergreenHudClient : ClientModInitializer {
             PlayTimeHud(), PositionHud(), ReachHud(),
             ResourcePackHud(), SaturationHud(), ServerAddressHud(),
             ShapeHud(), SpeedHud(), TpsHud(),
-
-            // Hypixel HUDs
-            HypixelLocationHud("Map Name") { mapName.getOrNull() },
-            HypixelLocationHud("Game Type") { gameType.getOrNull()?.name },
-            HypixelLocationHud("Game Mode") { mode.getOrNull() },
-            HypixelLocationHud("Build Remaining") { PinkuluMapCache.getMapHeight(this).takeIf { it != -1 }?.toString() },
         )
 
         // TODO: improve this workaround

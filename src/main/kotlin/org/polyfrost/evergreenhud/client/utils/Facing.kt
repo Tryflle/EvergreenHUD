@@ -2,17 +2,19 @@ package org.polyfrost.evergreenhud.client.utils
 
 enum class Facing(
     val full: String,
-    val abbreviated: String
+    val abbreviated: String,
+    val bearing: Float
 ) {
+    NORTH("North", "N", 0f),
+    NORTH_EAST("North East", "NE", 45f),
+    EAST("East", "E", 90f),
+    SOUTH_EAST("South East", "SE", 135f),
+    SOUTH("South", "S", 180f),
+    SOUTH_WEST("South West", "SW", 225f),
+    WEST("West", "W", 270f),
+    NORTH_WEST("North West", "NW", 315f);
 
-    NORTH("North", "N"),
-    NORTH_EAST("North East", "NE"),
-    EAST("East", "E"),
-    SOUTH_EAST("South East", "SE"),
-    SOUTH("South", "S"),
-    SOUTH_WEST("South West", "SW"),
-    WEST("West", "W"),
-    NORTH_WEST("North West", "NW");
+    val isCardinal get() = bearing % 90f == 0f
 
     val isNorth get() = this == NORTH || this == NORTH_WEST || this == NORTH_EAST
     val isSouth get() = this == SOUTH || this == SOUTH_WEST || this == SOUTH_EAST
@@ -51,7 +53,12 @@ enum class Facing(
             }
         }
 
-        private fun wrapDegrees(value: Float): Float {
+        fun bearingOf(yaw: Float): Float {
+            val bearing = (yaw + 180f) % 360f
+            return if (bearing < 0f) bearing + 360f else bearing
+        }
+
+        fun wrapDegrees(value: Float): Float {
             var new = value
             new %= 360.0f
             if (new >= 180.0f) {
@@ -65,5 +72,4 @@ enum class Facing(
             return new
         }
     }
-
 }

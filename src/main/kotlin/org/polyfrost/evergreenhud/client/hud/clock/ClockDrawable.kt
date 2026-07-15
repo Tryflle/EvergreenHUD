@@ -7,6 +7,7 @@ import org.polyfrost.compose.composables.size
 import org.polyfrost.compose.render.PolyColor
 import java.lang.Math.PI
 import kotlin.math.cos
+import kotlin.math.floor
 import kotlin.math.sin
 
 private val SECOND_HAND = PolyColor.rgba(170, 170, 170, 255)
@@ -17,6 +18,7 @@ private val HOUR_HAND = PolyColor.rgba(120, 180, 255, 255)
 fun Clock(
     timeMillis: Long,
     handWidth: Float = 2f,
+    ticking: Boolean = false,
     modifier: PolyModifier = PolyModifier
         .size(200f, 200f)
 ) {
@@ -26,7 +28,7 @@ fun Clock(
         val cx = width / 2f
         val cy = height / 2f
 
-        val secs = timeMillis / 1000.0
+        val secs = if (ticking) floor(timeMillis / 1000.0) else timeMillis / 1000.0
 
         val secondAngle = (2 * PI * (secs % 60.0 / 60.0) - PI / 2).toFloat()
 

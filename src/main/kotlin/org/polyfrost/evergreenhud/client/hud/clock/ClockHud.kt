@@ -12,6 +12,7 @@ import org.polyfrost.compose.composables.background
 import org.polyfrost.compose.composables.size
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.Hud
 
 class ClockHud : Hud(
@@ -23,6 +24,9 @@ class ClockHud : Hud(
     @Slider(title = "Hand Width", min = 1F, max = 10F, step = 1F)
     var handWidth = 2f
 
+    @Switch(title = "Ticking")
+    var ticking = false
+
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
 
     override fun setup() {
@@ -30,7 +34,6 @@ class ClockHud : Hud(
         staticWidth = true
         val side = when {
             staticW < 16f || staticH < 16f -> 64f
-            // untouched Hud base defaults (200x48) - not a size the user picked
             staticW == 200f && staticH == 48f -> 64f
             else -> minOf(staticW, staticH)
         }
@@ -55,10 +58,10 @@ class ClockHud : Hud(
                 modifier = sizeModifier
                     .background(PolyColor(bgColor, bgChroma, bgChromaSpeed), bgRadius)
             ) {
-                Clock(timeMillis, handWidth, sizeModifier)
+                Clock(timeMillis, handWidth, ticking, sizeModifier)
             }
         } else {
-            Clock(timeMillis, handWidth, sizeModifier)
+            Clock(timeMillis, handWidth, ticking, sizeModifier)
         }
     }
 
