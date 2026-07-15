@@ -24,17 +24,20 @@ class ServerAddressHud : CachedTextHud(
     override fun setup() {
         super.setup()
         eventHandler { (ip, _, _): ServerChangedEvent ->
-            if (!showInSinglePlayer) {
-                hidden = mc.hasSingleplayerServer()
-            }
-
-            updateWithText(ip)
-            updateAndRecalculate()
+            applyServer(ip)
         }
+
+        // ServerChangedEvent only fires on connect, so a hud added mid-session must read the current server itself
+        applyServer(mc.currentServer?.ip)
 
         if (isReal) {
             updateWhenChanged("showInSinglePlayer")
             updateWhenChanged("noServerText")
         }
+    }
+
+    private fun applyServer(ip: String?) {
+        hidden = !showInSinglePlayer && mc.hasSingleplayerServer()
+        updateWithText(ip)
     }
 }
