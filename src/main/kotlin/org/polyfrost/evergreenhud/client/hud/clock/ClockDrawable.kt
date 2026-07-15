@@ -52,6 +52,9 @@ fun Clock(
     fiveMinuteMarks: Boolean = false,
     minuteMarks: Boolean = false,
     numbers: Boolean = false,
+    hourHandColor: PolyColor = HOUR_HAND,
+    minuteHandColor: PolyColor = MINUTE_HAND,
+    secondHandColor: PolyColor = SECOND_HAND,
     detailColor: PolyColor = DETAIL,
     fontName: String? = null,
     cornerRadius: Float? = null,
@@ -87,7 +90,7 @@ fun Clock(
             cy,
             cx + secondLength * cos(secondAngle),
             cy + secondLength * sin(secondAngle),
-            SECOND_HAND,
+            secondHandColor,
             handWidth * 0.6f
         )
 
@@ -96,7 +99,7 @@ fun Clock(
             cy,
             cx + minuteLength * cos(minuteAngle),
             cy + minuteLength * sin(minuteAngle),
-            MINUTE_HAND,
+            minuteHandColor,
             handWidth * 0.9f
         )
 
@@ -105,7 +108,7 @@ fun Clock(
             cy,
             cx + hourLength * cos(hourAngle),
             cy + hourLength * sin(hourAngle),
-            HOUR_HAND,
+            hourHandColor,
             handWidth
         )
     }

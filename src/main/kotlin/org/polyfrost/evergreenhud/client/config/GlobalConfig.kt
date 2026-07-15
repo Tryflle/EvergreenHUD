@@ -2,6 +2,7 @@ package org.polyfrost.evergreenhud.client.config
 
 import androidx.compose.runtime.snapshots.Snapshot
 import org.polyfrost.compose.render.PolyColor
+import org.polyfrost.evergreenhud.client.hud.clock.ClockHud
 import org.polyfrost.oneconfig.api.config.v1.Config
 import org.polyfrost.oneconfig.api.config.v1.Property
 import org.polyfrost.oneconfig.api.config.v1.annotations.Color
@@ -93,6 +94,7 @@ object GlobalConfig : Config(
             h.textColor = textColor.rawArgb
             h.textChroma = textColor.chroma
             h.textChromaSpeed = textColor.chromaSpeed
+            if (h is ClockHud) h.applyGlobalColor(textColor)
         },
         "textScale" to { h -> h.textScale = textScale },
         "textWeight" to { h -> h.textWeight = textWeight },

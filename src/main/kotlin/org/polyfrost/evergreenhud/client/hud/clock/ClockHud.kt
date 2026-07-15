@@ -12,6 +12,8 @@ import org.polyfrost.compose.composables.PolyModifier
 import org.polyfrost.compose.composables.background
 import org.polyfrost.compose.composables.size
 import org.polyfrost.compose.render.PolyColor
+import org.polyfrost.evergreenhud.client.utils.copy
+import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.MultiSelectDropdown
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
@@ -40,19 +42,38 @@ class ClockHud : Hud(
     @MultiSelectDropdown(title = "Details", options = ["5-Minute Marks", "Minute Marks", "Numbers"])
     var details = booleanArrayOf(false, false, false)
 
+    @Color(title = "Hour Hand Color")
+    var hourHandColor = PolyColor(0xFF78B4FF.toInt())
+
+    @Color(title = "Minute Hand Color")
+    var minuteHandColor = PolyColor(0xFFFFFFFF.toInt())
+
+    @Color(title = "Second Hand Color")
+    var secondHandColor = PolyColor(0xFFAAAAAA.toInt())
+
     private var rev = mutableStateOf(0)
 
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
 
     override fun clone(): Hud = (super.clone() as ClockHud).apply {
         details = this@ClockHud.details.copyOf()
+        hourHandColor = this@ClockHud.hourHandColor.copy()
+        minuteHandColor = this@ClockHud.minuteHandColor.copy()
+        secondHandColor = this@ClockHud.secondHandColor.copy()
         rev = mutableStateOf(0)
+    }
+
+    fun applyGlobalColor(color: PolyColor) {
+        hourHandColor = color.copy()
+        minuteHandColor = color.copy()
+        secondHandColor = color.copy()
+        rev.value++
     }
 
     override fun setup() {
         super.setup()
         if (isReal) {
-            for (option in listOf("details", "handWidth", "ticking")) {
+            for (option in listOf("details", "handWidth", "ticking", "hourHandColor", "minuteHandColor", "secondHandColor")) {
                 addCallback(option) { rev.value++ }
             }
         }
@@ -90,10 +111,10 @@ class ClockHud : Hud(
                 modifier = sizeModifier
                     .background(PolyColor(bgColor, bgChroma, bgChromaSpeed), bgRadius)
             ) {
-                Clock(timeMillis, handWidth, ticking, fiveMinuteMarks, minuteMarks, numbers, detailColor, fontName, bgRadius, sizeModifier)
+                Clock(timeMillis, handWidth, ticking, fiveMinuteMarks, minuteMarks, numbers, hourHandColor, minuteHandColor, secondHandColor, detailColor, fontName, bgRadius, sizeModifier)
             }
         } else {
-            Clock(timeMillis, handWidth, ticking, fiveMinuteMarks, minuteMarks, numbers, detailColor, fontName, null, sizeModifier)
+            Clock(timeMillis, handWidth, ticking, fiveMinuteMarks, minuteMarks, numbers, hourHandColor, minuteHandColor, secondHandColor, detailColor, fontName, null, sizeModifier)
         }
     }
 
