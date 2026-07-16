@@ -5,7 +5,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import org.polyfrost.evergreenhud.client.utils.Facing
 import org.polyfrost.evergreenhud.client.utils.GenericNumberHud
-import org.polyfrost.evergreenhud.client.utils.HudTextLines
+import org.polyfrost.evergreenhud.client.utils.HudStyledLines
+import org.polyfrost.evergreenhud.client.utils.StyledRun
 import org.polyfrost.oneconfig.api.config.v1.annotations.Checkbox
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
@@ -15,6 +16,8 @@ import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 
 private const val NO_SIGN = ' '
+
+private const val CELL_SEP = '\u0000'
 
 // TODO pitch/yaw are still not shown; facing is handled by showDirection
 class PositionHud : GenericNumberHud(
@@ -34,6 +37,9 @@ class PositionHud : GenericNumberHud(
     @Switch(title = "Show Direction")
     var showDirection = false
 
+    @Switch(title = "Align Direction")
+    var alignDirection = false
+
     @Checkbox(title = "Show X")
     var showX = true
 
@@ -48,7 +54,8 @@ class PositionHud : GenericNumberHud(
     private var py = 0.0
     private var pz = 0.0
 
-    private var linesState: MutableState<List<String>> = mutableStateOf(emptyList())
+    private var linesState: MutableState<List<List<StyledRun>>> = mutableStateOf(emptyList())
+    private var alignState: MutableState<Boolean> = mutableStateOf(false)
 
     override fun setup() {
         super.setup()
@@ -62,23 +69,29 @@ class PositionHud : GenericNumberHud(
 
         if (isReal) {
             updateWhenChanged("showDirection")
+            updateWhenChanged("alignDirection")
             updateWhenChanged("showX")
             updateWhenChanged("showY")
             updateWhenChanged("showZ")
             updateWhenChanged("showAxis")
             updateWhenChanged("displayMode")
+
+            hideIf("alignDirection") { !showDirection || displayMode != 0 }
         }
     }
 
     @Composable
-    override fun Content() = HudTextLines(linesState.value)
+    override fun Content() = HudStyledLines(linesState.value, alignColumns = alignState.value)
 
     override fun update(): Boolean {
-        currentText = createText()
+        val raw = createText()
+        currentText = raw.replace(CELL_SEP.toString(), "")
         val result = super.update()
-        // Concatenate first so prefix and suffix land on the first and last line, the same way they
-        // did when this HUD handed one \n-joined string to TextHud.
-        linesState.value = concat(prefix, currentText, suffix).lines()
+
+        linesState.value = concat(prefix, raw, suffix).lines().map { line ->
+            line.split(CELL_SEP).map { StyledRun(it, null, false, false) }
+        }
+        alignState.value = alignDirection && showDirection && displayMode == 0
         return result
     }
 
@@ -89,7 +102,7 @@ class PositionHud : GenericNumberHud(
 
         append(format(value))
         if (showDirection && sign != NO_SIGN) {
-            append("  (").append(sign).append(')')
+            append(CELL_SEP).append("  (").append(sign).append(')')
         }
     }
 
@@ -114,6 +127,7 @@ class PositionHud : GenericNumberHud(
 
     override fun clone(): Hud = (super.clone() as PositionHud).also {
         it.linesState = mutableStateOf(emptyList())
+        it.alignState = mutableStateOf(false)
     }
 
     override fun defaultPosition(): Pair<Float, Float> = 1f to 1f

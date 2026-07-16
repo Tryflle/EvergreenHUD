@@ -3,18 +3,14 @@ package org.polyfrost.evergreenhud.client.hud
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.sounds.SoundEvents
-import net.minecraft.world.level.block.BannerBlock
-import net.minecraft.world.level.block.Block
-import net.minecraft.world.level.block.Blocks
-import net.minecraft.world.level.block.SignBlock
-import net.minecraft.world.level.block.VineBlock
+import net.minecraft.world.level.block.*
 import org.polyfrost.evergreenhud.client.BlockChangeEvent
 import org.polyfrost.evergreenhud.client.BlockPositionChangedEvent
 import org.polyfrost.evergreenhud.client.utils.CachedTextHud
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
-import org.polyfrost.oneconfig.api.hud.v1.TextHud
+import org.polyfrost.oneconfig.api.event.v1.invoke.EventHandler
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 
 class BlockAboveHud : CachedTextHud(
@@ -25,6 +21,7 @@ class BlockAboveHud : CachedTextHud(
 ) {
 
     private var lastDistance = Int.MAX_VALUE
+    private var handlers = emptyList<EventHandler<*>>()
 
     @Switch(title = "Notify With Sound")
     var notify = false
@@ -37,19 +34,29 @@ class BlockAboveHud : CachedTextHud(
 
     override fun setup() {
         super.setup()
-        eventHandler { (pos): BlockPositionChangedEvent ->
-            update(pos)
-        }
-        eventHandler { (pos): BlockChangeEvent ->
-            val player = mc.player?.blockPosition() ?: return@eventHandler
-            if (pos.y > player.y && pos.x == player.x && pos.z == player.z) {
-                update(player)
-            }
+        if (!isReal) {
+            return
         }
 
-        if (isReal) {
-            updateWhenChanged("checkHeight")
-        }
+        handlers = listOf(
+            eventHandler { (pos): BlockPositionChangedEvent ->
+                update(pos)
+            },
+            eventHandler { (pos): BlockChangeEvent ->
+                val player = mc.player?.blockPosition() ?: return@eventHandler
+                if (pos.y > player.y && pos.x == player.x && pos.z == player.z) {
+                    update(player)
+                }
+            },
+        )
+
+        updateWhenChanged("checkHeight")
+    }
+
+    override fun remove() {
+        super.remove()
+        handlers.forEach { it.unregister() }
+        handlers = emptyList()
     }
 
     private fun update(currentPos: BlockPos) {
@@ -78,7 +85,7 @@ class BlockAboveHud : CachedTextHud(
         }
 
         val distance = if (found) above else Int.MAX_VALUE
-        if (notify && distance <= notifyHeight && distance < lastDistance) {
+        if (notify && !hidden && distance <= notifyHeight && distance < lastDistance) {
             mc.player?.playSound(SoundEvents.EXPERIENCE_ORB_PICKUP, 0.25f, 1f)
         }
         lastDistance = distance

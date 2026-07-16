@@ -14,6 +14,8 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Text
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.KeyInputEvent
 import org.polyfrost.oneconfig.api.event.v1.events.MouseInputEvent
+import org.polyfrost.oneconfig.api.event.v1.invoke.EventHandler
+import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import kotlin.time.Duration.Companion.milliseconds
@@ -39,8 +41,10 @@ class CpsHud : CachedTextHud(
     )
     var hideAfter = 0f
 
-    private val left: ArrayList<Long> = ArrayList(20)
-    private val right: ArrayList<Long> = ArrayList(10)
+    private var left: ArrayList<Long> = ArrayList(20)
+    private var right: ArrayList<Long> = ArrayList(10)
+
+    private var handlers: ArrayList<EventHandler<*>> = ArrayList(2)
 
     private var lastClick = System.nanoTime()
 
@@ -57,7 +61,7 @@ class CpsHud : CachedTextHud(
                 hidden = false
                 updateAndRecalculate()
             }
-            eventHandler { (btn, state): MouseInputEvent ->
+            handlers.add(eventHandler { (btn, state): MouseInputEvent ->
                 if (state == 0) {
                     val options = mc.options ?: return@eventHandler
                     var counted = false
@@ -65,8 +69,8 @@ class CpsHud : CachedTextHud(
                     if (options.keyUse.matchesMouseButton(btn)) { onRightClick(); counted = true }
                     if (counted) updateAndRecalculate()
                 }
-            }
-            eventHandler { (key, _, state): KeyInputEvent ->
+            })
+            handlers.add(eventHandler { (key, _, state): KeyInputEvent ->
                 if (state == 1 && key != 0) {
                     val options = mc.options ?: return@eventHandler
                     var counted = false
@@ -74,8 +78,21 @@ class CpsHud : CachedTextHud(
                     if (options.keyUse.matchesKeyCode(key)) { onRightClick(); counted = true }
                     if (counted) updateAndRecalculate()
                 }
-            }
+            })
         }
+    }
+
+    override fun clone(): Hud = (super.clone() as CpsHud).apply {
+        left = ArrayList(20)
+        right = ArrayList(10)
+        handlers = ArrayList(2)
+    }
+
+    override fun remove() {
+        for (handler in handlers) handler.unregister()
+        handlers.clear()
+        left.clear()
+        right.clear()
     }
 
     private fun onLeftClick() {

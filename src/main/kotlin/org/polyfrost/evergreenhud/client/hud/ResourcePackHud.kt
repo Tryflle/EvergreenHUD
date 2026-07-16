@@ -6,6 +6,11 @@ import androidx.compose.runtime.mutableStateOf
 //import net.minecraft.resources.ResourceLocation
 //? if >= 1.21.11
 import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.contents.TranslatableContents
+import net.minecraft.server.packs.PackType
+import net.minecraft.server.packs.repository.BuiltInPackSource
+import net.minecraft.server.packs.repository.Pack
 import org.jetbrains.skia.Image
 import org.jetbrains.skia.Paint
 import org.polyfrost.compose.composables.PolyBox
@@ -46,18 +51,54 @@ class ResourcePackHud : Hud(
         private const val DEFAULT_TITLE = "Default"
         private const val DEFAULT_DESCRIPTION = "The classic Minecraft experience."
 
+        private const val FABRIC_SOURCE_KEY = "pack.source.fabricmod"
+
         private val DEFAULT_ICON = ResourceLocation.withDefaultNamespace("textures/misc/unknown_pack.png")
 
         private val iconPaint = Paint()
         private val iconCache = HashMap<String, Image>()
+        private val texturedCache = HashMap<String, Boolean>()
         private var cachedIds: List<String>? = null
         private var defaultIcon: Image? = null
         private var defaultIconLoaded = false
 
-        fun syncIcons(ids: List<String>) {
+        private object FoundTexture : RuntimeException(null, null, false, false)
+
+        fun syncCaches(ids: List<String>) {
             if (ids == cachedIds) return
             cachedIds = ids
             iconCache.clear()
+            texturedCache.clear()
+        }
+
+        fun isModProvided(pack: Pack): Boolean =
+            mentionsKey(pack.packSource.decorate(Component.empty()), FABRIC_SOURCE_KEY)
+
+        private fun mentionsKey(component: Component, key: String): Boolean {
+            val contents = component.contents
+            if (contents is TranslatableContents) {
+                if (contents.key == key) return true
+                if (contents.args.any { it is Component && mentionsKey(it, key) }) return true
+            }
+            return component.siblings.any { mentionsKey(it, key) }
+        }
+
+        fun hasTextures(pack: Pack): Boolean = texturedCache.getOrPut(pack.id) {
+            try {
+                pack.open().use { resources ->
+                    for (namespace in resources.getNamespaces(PackType.CLIENT_RESOURCES)) {
+                        try {
+                            resources.listResources(PackType.CLIENT_RESOURCES, namespace, "textures") { _, _ -> throw FoundTexture }
+                        } catch (_: FoundTexture) {
+                            return@getOrPut true
+                        }
+                    }
+                }
+                false
+            } catch (e: Exception) {
+                LOGGER.warn("Failed to inspect pack {} for textures, assuming it has some", pack.id, e)
+                true
+            }
         }
 
         fun iconFor(id: String?): Image? {
@@ -146,10 +187,14 @@ class ResourcePackHud : Hud(
     }
 
     override fun update(): Boolean {
-        val packs = mc.resourcePackRepository.selectedPacks.filter { !it.isRequired }
-        syncIcons(packs.map { it.id })
+        val selected = mc.resourcePackRepository.selectedPacks
+        syncCaches(selected.map { it.id })
 
-        val pack = if (ignoreOverlay) packs.firstOrNull() else packs.lastOrNull()
+        val candidates = selected.filter {
+            it.id != BuiltInPackSource.VANILLA_ID && !isModProvided(it) && hasTextures(it)
+        }
+        val pack = (if (ignoreOverlay) candidates.firstOrNull() else candidates.lastOrNull())
+            ?: mc.resourcePackRepository.getPack(BuiltInPackSource.VANILLA_ID)
         if (pack?.id == lastPackId && ignoreOverlay == lastIgnoreOverlay) return false
         lastPackId = pack?.id
         lastIgnoreOverlay = ignoreOverlay

@@ -57,20 +57,7 @@ object EvergreenHudClient : ClientModInitializer {
 
         huds.forEach(::register)
 
-        if (Battery.isSupported()) {
-            register(BatteryHud())
-        } else {
-            EventManager.INSTANCE.register(object : EventHandler<InitializationEvent>() {
-                override fun handle(event: InitializationEvent): Boolean {
-                    HudManager.unregister(BatteryHud(), removeActiveInstances = true)
-                    return false
-                }
-
-                override fun getEventClass(): Class<InitializationEvent> = InitializationEvent::class.java
-
-                override fun getPriority(): Int = Int.MIN_VALUE
-            })
-        }
+        registerIfSupported(Battery.isSupported(), ::BatteryHud)
 
         BlockPositionChangedEvent()
         ServerDamageEntityEvent()
@@ -79,6 +66,24 @@ object EvergreenHudClient : ClientModInitializer {
     private fun register(hud: Hud) {
         if (hud is TextHud) hud.staticWidth = false
         HudManager.register(hud, GlobalConfig.id, GlobalConfig.iconPath)
+    }
+
+    private fun registerIfSupported(supported: Boolean, factory: () -> Hud) {
+        if (supported) {
+            register(factory())
+            return
+        }
+
+        EventManager.INSTANCE.register(object : EventHandler<InitializationEvent>() {
+            override fun handle(event: InitializationEvent): Boolean {
+                HudManager.unregister(factory(), removeActiveInstances = true)
+                return false
+            }
+
+            override fun getEventClass(): Class<InitializationEvent> = InitializationEvent::class.java
+
+            override fun getPriority(): Int = Int.MIN_VALUE
+        })
     }
 
     private val recentBlockChanges = ConcurrentLinkedQueue<BlockPos>()
