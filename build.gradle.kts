@@ -125,7 +125,7 @@ tasks {
         filesMatching("fabric.mod.json") { expand(props) }
 
         val mixinJava = "JAVA_${requiredJava.majorVersion}"
-        filesMatching("*.mixins.json") { expand("java" to mixinJava) }
+        filesMatching("mixins.evergreenhud.json") { expand("java" to mixinJava) }
     }
 
     register<Copy>("buildAndCollect") {
@@ -148,11 +148,13 @@ val modrinthToken = listOf("oneconfig.publish.modrinth.token", "publish.modrinth
         it.isNotBlank()
     }
 
+val changelogText = rootProject.file("CHANGELOG.md").takeIf { it.exists() }?.readText() ?: "No changelog provided."
+
 publishMods {
     file = loomx.modJar.get().archiveFile
     changelog = project.rootProject.file("CHANGELOG.md").takeIf { it.exists() }?.readText() ?: "No changelog provided."
 
-    val projectVersion = project.version.toString().lowercase()
+    val projectVersion = "v${project.version.toString().lowercase()}"
     type = when {
         "beta" in projectVersion -> BETA
         "alpha" in projectVersion -> ALPHA
