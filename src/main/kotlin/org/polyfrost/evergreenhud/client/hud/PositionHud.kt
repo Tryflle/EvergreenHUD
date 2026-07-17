@@ -32,7 +32,7 @@ class PositionHud : GenericNumberHud(
     var displayMode = 0
 
     @Switch(title = "Show Axis")
-    var showAxis = false
+    var showAxis = true
 
     @Switch(title = "Show Direction")
     var showDirection = false

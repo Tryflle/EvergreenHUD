@@ -11,10 +11,12 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Dropdown
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import kotlin.math.ceil
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 class ArmorHud : LegacyHud(
     id = "armor.json",
@@ -104,25 +106,34 @@ class ArmorHud : LegacyHud(
     }
 
     private fun currentItems(): List<ItemStack> {
-        val list = ArrayList<ItemStack>(6)
-        if (!isReal) {
-            if (showHelmet) list.add(exampleHelmet)
-            if (showChestplate) list.add(exampleChestplate)
-            if (showLeggings) list.add(exampleLeggings)
-            if (showBoots) list.add(exampleBoots)
-            if (showMainHand) list.add(exampleMainHand)
-            if (showOffhand) list.add(exampleOffhand)
-        } else {
-            val player = mc.player ?: return list
-            fun add(slot: EquipmentSlot) = player.getItemBySlot(slot).let { if (!it.isEmpty) list.add(it) }
-            if (showHelmet) add(EquipmentSlot.HEAD)
-            if (showChestplate) add(EquipmentSlot.CHEST)
-            if (showLeggings) add(EquipmentSlot.LEGS)
-            if (showBoots) add(EquipmentSlot.FEET)
-            if (showMainHand) add(EquipmentSlot.MAINHAND)
-            if (showOffhand) add(EquipmentSlot.OFFHAND)
-        }
+        var list = if (isReal) equippedItems() else exampleItems()
+        // with nothing equipped the hud would be empty, leaving nothing to drag in the editor
+        if (list.isEmpty() && HudManager.isEditing) list = exampleItems()
         if (reversed) list.reverse()
+        return list
+    }
+
+    private fun exampleItems(): ArrayList<ItemStack> {
+        val list = ArrayList<ItemStack>(6)
+        if (showHelmet) list.add(exampleHelmet)
+        if (showChestplate) list.add(exampleChestplate)
+        if (showLeggings) list.add(exampleLeggings)
+        if (showBoots) list.add(exampleBoots)
+        if (showMainHand) list.add(exampleMainHand)
+        if (showOffhand) list.add(exampleOffhand)
+        return list
+    }
+
+    private fun equippedItems(): ArrayList<ItemStack> {
+        val list = ArrayList<ItemStack>(6)
+        val player = mc.player ?: return list
+        fun add(slot: EquipmentSlot) = player.getItemBySlot(slot).let { if (!it.isEmpty) list.add(it) }
+        if (showHelmet) add(EquipmentSlot.HEAD)
+        if (showChestplate) add(EquipmentSlot.CHEST)
+        if (showLeggings) add(EquipmentSlot.LEGS)
+        if (showBoots) add(EquipmentSlot.FEET)
+        if (showMainHand) add(EquipmentSlot.MAINHAND)
+        if (showOffhand) add(EquipmentSlot.OFFHAND)
         return list
     }
 
@@ -153,7 +164,7 @@ class ArmorHud : LegacyHud(
         }
 
         val font = mc.font
-        val textY = ((ICON - font.lineHeight) / 2f).toInt()
+        val textY = ((ICON - font.lineHeight) / 2f).roundToInt()
         val pad = padding.toInt()
         val entries = ArrayList<Entry>(stacks.size)
 
