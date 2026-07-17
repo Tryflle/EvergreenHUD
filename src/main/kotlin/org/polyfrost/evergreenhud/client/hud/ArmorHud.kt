@@ -72,6 +72,9 @@ class ArmorHud : LegacyHud(
     @Switch(title = "Item Decorations", description = "Vanilla durability bar and stack count.")
     var showDecorations = true
 
+    @Switch(title = "Bow Arrow Count", description = "Show the number of arrows you carry on a held bow, where the stack count would be.")
+    var showArrowCount = true
+
     @Dropdown(title = "Extra Info", options = ["None", "Durability", "Durability %", "Item Name"])
     var extraInfo = 0
 
@@ -146,6 +149,18 @@ class ArmorHud : LegacyHud(
 
     private fun durabilityPercent(stack: ItemStack): Int =
         ceil((stack.maxDamage - stack.damageValue).toFloat() / stack.maxDamage.toFloat() * 100f).toInt()
+
+    private fun arrowCount(): Int {
+        if (!isReal) return 64
+        val player = mc.player ?: return 0
+        val inv = player.inventory
+        var count = 0
+        for (i in 0 until inv.containerSize) {
+            val s = inv.getItem(i)
+            if (s.item == Items.ARROW || s.item == Items.SPECTRAL_ARROW || s.item == Items.TIPPED_ARROW) count += s.count
+        }
+        return count
+    }
 
     private fun durabilityColor(percent: Int): Int {
         val p = percent.coerceIn(0, 100) / 100f
@@ -243,6 +258,16 @@ class ArmorHud : LegacyHud(
             graphics.item(e.stack, e.iconX, e.iconY)
             if (showDecorations) graphics.itemDecorations(font, e.stack, e.iconX, e.iconY)
             //?}
+
+            if (showArrowCount && (e.stack.item == Items.BOW || e.stack.item == Items.CROSSBOW)) {
+                val count = arrowCount().toString()
+                val cx = e.iconX + ICON - font.width(count) + 1
+                val cy = e.iconY + ICON - font.lineHeight + 2
+                //? if < 26
+                //graphics.drawString(font, count, cx, cy, 0xFFFFFFFF.toInt())
+                //? if >= 26
+                graphics.text(font, count, cx, cy, 0xFFFFFFFF.toInt())
+            }
 
             if (e.text.isNotEmpty()) {
                 //? if < 26
