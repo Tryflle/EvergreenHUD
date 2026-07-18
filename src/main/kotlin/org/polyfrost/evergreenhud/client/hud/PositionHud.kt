@@ -19,12 +19,15 @@ private const val NO_SIGN = ' '
 
 private const val CELL_SEP = '\u0000'
 
-// TODO pitch/yaw are still not shown; facing is handled by showDirection
 class PositionHud : GenericNumberHud(
     title = "Position",
     category = Category.INFO,
     prefix = ""
 ) {
+    init {
+        textAlign = 0
+    }
+
     @RadioButton(
         title = "Mode",
         options = ["Vertical", "Horizontal"]
@@ -38,7 +41,7 @@ class PositionHud : GenericNumberHud(
     var showDirection = false
 
     @Switch(title = "Align Direction")
-    var alignDirection = false
+    var alignDirection = true
 
     @Checkbox(title = "Show X")
     var showX = true
@@ -49,10 +52,18 @@ class PositionHud : GenericNumberHud(
     @Checkbox(title = "Show Z")
     var showZ = true
 
+    @Checkbox(title = "Show Yaw")
+    var showYaw = false
+
+    @Checkbox(title = "Show Pitch")
+    var showPitch = false
+
     private val facing get() = Facing.parseExact(mc.player?.yRot ?: 0f)
     private var px = 0.0
     private var py = 0.0
     private var pz = 0.0
+    private var yaw = 0.0
+    private var pitch = 0.0
 
     private var linesState: MutableState<List<List<StyledRun>>> = mutableStateOf(emptyList())
     private var alignState: MutableState<Boolean> = mutableStateOf(false)
@@ -64,6 +75,8 @@ class PositionHud : GenericNumberHud(
             this.px = player.x
             this.py = player.y
             this.pz = player.z
+            this.yaw = Facing.wrapDegrees(player.yRot).toDouble()
+            this.pitch = player.xRot.toDouble()
             updateAndRecalculate()
         }
 
@@ -73,6 +86,8 @@ class PositionHud : GenericNumberHud(
             updateWhenChanged("showX")
             updateWhenChanged("showY")
             updateWhenChanged("showZ")
+            updateWhenChanged("showYaw")
+            updateWhenChanged("showPitch")
             updateWhenChanged("showAxis")
             updateWhenChanged("displayMode")
 
@@ -106,9 +121,16 @@ class PositionHud : GenericNumberHud(
         }
     }
 
+    private fun angleEntry(label: String, value: Double): String = buildString {
+        if (showAxis) {
+            append(label).append(": ")
+        }
+        append(format(value))
+    }
+
     private fun createText(): String {
         val facing = this.facing
-        val entries = ArrayList<String>(3)
+        val entries = ArrayList<String>(5)
 
         if (showX) {
             entries.add(entry('X', px, if (facing.isEast) '+' else if (facing.isWest) '-' else NO_SIGN))
@@ -122,6 +144,14 @@ class PositionHud : GenericNumberHud(
             entries.add(entry('Z', pz, if (facing.isSouth) '+' else if (facing.isNorth) '-' else NO_SIGN))
         }
 
+        if (showYaw) {
+            entries.add(angleEntry("Yaw", yaw))
+        }
+
+        if (showPitch) {
+            entries.add(angleEntry("Pitch", pitch))
+        }
+
         return entries.joinToString(if (displayMode == 0) "\n" else ", ")
     }
 
@@ -130,5 +160,5 @@ class PositionHud : GenericNumberHud(
         it.alignState = mutableStateOf(false)
     }
 
-    override fun defaultPosition(): Pair<Float, Float> = 1f to 1f
+    override fun defaultPosition(): Pair<Float, Float> = 10f to 30f
 }
