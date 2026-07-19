@@ -1,5 +1,6 @@
-## 3.0.0
-A full rewrite built for 1.21.1+
-- Now built around OneConfig v1. You can take full advantage of their HUD Designer.
-- Added several new hud modules. (Keystrokes, Direction, Potion Effects, and more)
-- So many new bug fixes and new features. Download it to try it out!
+## 3.2.0
+- NEW: Arrow Counter option on Armor Status
+- NEW: Ping formatting. (ping, avg, high)
+- NEW: FPS Update rate.
+  - Replaces old "#mc" formatting.
+- NEW: Yaw/Pitch for Position.
