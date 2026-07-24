@@ -1,6 +1,2 @@
-## 3.2.0
-- NEW: Arrow Counter option on Armor Status
-- NEW: Ping formatting. (ping, avg, high)
-- NEW: FPS Update rate.
-  - Replaces old "#mc" formatting.
-- NEW: Yaw/Pitch for Position.
+## 3.2.1
+- Fixed Entity Counter always showing 0 entities on 1.21.1
