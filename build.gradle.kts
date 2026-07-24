@@ -79,6 +79,9 @@ dependencies {
 
     modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:1.2.2")
     compileOnly(compose.desktop.currentOs)
+
+    testImplementation("org.junit.jupiter:junit-jupiter:6.1.2")
+    testImplementation("net.fabricmc:fabric-loader-junit:${property("deps.fabric_loader")}")
 }
 
 loom {
@@ -126,6 +129,10 @@ tasks {
 
         val mixinJava = "JAVA_${requiredJava.majorVersion}"
         filesMatching("mixins.evergreenhud.json") { expand("java" to mixinJava) }
+    }
+
+    test {
+        useJUnitPlatform()
     }
 
     register<Copy>("buildAndCollect") {
