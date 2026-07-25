@@ -11,7 +11,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LivingEntityRenderer.class)
 public class Mixin_LivingEntityRenderer_PlayerPreviewNameTag {
 
-    @Inject(method = "shouldShowName(Lnet/minecraft/world/entity/LivingEntity;D)Z", at = @At("HEAD"), cancellable = true)
+    @Inject(
+            //? if >=1.21.4 {
+            method = "shouldShowName(Lnet/minecraft/world/entity/LivingEntity;D)Z",
+            //?} else {
+            /*method = "shouldShowName(Lnet/minecraft/world/entity/LivingEntity;)Z",
+            *///?}
+            at = @At("HEAD"),
+            cancellable = true
+    )
     private void evergreenhud$hideNameTagInPlayerPreview(
             LivingEntity entity,
             //? if >=1.21.4
