@@ -19,18 +19,32 @@ import org.polyfrost.compose.layout.PolyAlign
 import org.polyfrost.compose.mc.McFontQueue
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.evergreenhud.client.utils.copy
+import org.polyfrost.evergreenhud.client.utils.fastRemoveIfReversed
+import org.polyfrost.evergreenhud.client.utils.matchesKeyCode
+import org.polyfrost.evergreenhud.client.utils.matchesMouseButton
 import org.polyfrost.oneconfig.api.config.v1.Property
 import org.polyfrost.oneconfig.api.config.v1.annotations.Color
+import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.event.v1.eventHandler
+import org.polyfrost.oneconfig.api.event.v1.events.KeyInputEvent
+import org.polyfrost.oneconfig.api.event.v1.events.MouseInputEvent
+import org.polyfrost.oneconfig.api.event.v1.invoke.EventHandler
 import org.polyfrost.oneconfig.api.hud.v1.Font
 import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 
 private const val KEY = 16f
+private const val CPS_SCALE = 0.5f
 private const val GAP = 2f
+private const val LINE_GAP = 1f
 private const val SPACE_H = 11f
 private const val FONT = 8f
+
+private const val CPS_NONE = 0
+private const val CPS_SMALL = 1
+private const val CPS_LARGE = 2
 
 private const val UP = "▲"
 private const val DOWN = "▼"
@@ -50,6 +64,13 @@ class KeystrokesHud : Hud(
 
     @Switch(title = "Attack & Use")
     var showClicks = true
+
+    @RadioButton(
+        title = "Click Counter",
+        description = "Show your CPS on the attack and use keys. Small keeps the key name above the count, large replaces it.",
+        options = ["None", "Small", "Large"],
+    )
+    var cpsMode = CPS_NONE
 
     @Switch(title = "Sprint", description = "Show the sprint key.")
     var showSprint = false
@@ -103,6 +124,21 @@ class KeystrokesHud : Hud(
     private var rev = mutableStateOf(0)
 
     @Transient
+    private var attackCps = mutableStateOf(0)
+
+    @Transient
+    private var useCps = mutableStateOf(0)
+
+    @Transient
+    private var attackClicks: ArrayList<Long> = ArrayList(20)
+
+    @Transient
+    private var useClicks: ArrayList<Long> = ArrayList(20)
+
+    @Transient
+    private var handlers: ArrayList<EventHandler<*>> = ArrayList(2)
+
+    @Transient
     private var lastNanos = System.nanoTime()
 
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
@@ -120,6 +156,11 @@ class KeystrokesHud : Hud(
         sprint = mutableStateOf(0f)
         sneak = mutableStateOf(0f)
         rev = mutableStateOf(0)
+        attackCps = mutableStateOf(0)
+        useCps = mutableStateOf(0)
+        attackClicks = ArrayList(20)
+        useClicks = ArrayList(20)
+        handlers = ArrayList(2)
         lastNanos = System.nanoTime()
     }
 
@@ -129,10 +170,40 @@ class KeystrokesHud : Hud(
             addDependency("arrows", null) {
                 if (font != Font.Minecraft) Property.Display.DISABLED else Property.Display.SHOWN
             }
-            for (option in listOf("showMovement", "showJump", "showClicks", "showSprint", "showSneak", "arrows")) {
+            addDependency("cpsMode", "showClicks")
+            for (option in listOf("showMovement", "showJump", "showClicks", "showSprint", "showSneak", "arrows", "cpsMode")) {
                 addCallback(option) { rev.value++ }
             }
+            handlers.add(eventHandler { (btn, state): MouseInputEvent ->
+                if (state == 1) {
+                    val o = mc.options ?: return@eventHandler
+                    if (o.keyAttack.matchesMouseButton(btn)) onAttackClick()
+                    if (o.keyUse.matchesMouseButton(btn)) onUseClick()
+                }
+            })
+            handlers.add(eventHandler { (key, _, state): KeyInputEvent ->
+                if (state == 1 && key != 0) {
+                    val o = mc.options ?: return@eventHandler
+                    if (o.keyAttack.matchesKeyCode(key)) onAttackClick()
+                    if (o.keyUse.matchesKeyCode(key)) onUseClick()
+                }
+            })
         }
+    }
+
+    override fun remove() {
+        for (handler in handlers) handler.unregister()
+        handlers.clear()
+        attackClicks.clear()
+        useClicks.clear()
+    }
+
+    private fun onAttackClick() {
+        if (showClicks && cpsMode != CPS_NONE) attackClicks.add(System.nanoTime())
+    }
+
+    private fun onUseClick() {
+        if (showClicks && cpsMode != CPS_NONE) useClicks.add(System.nanoTime())
     }
 
     override fun update(): Boolean {
@@ -165,6 +236,18 @@ class KeystrokesHud : Hud(
         poll(use, o.keyUse)
         poll(sprint, o.keySprint)
         poll(sneak, o.keyShift)
+        if (showClicks && cpsMode != CPS_NONE) {
+            attackClicks.fastRemoveIfReversed { now - it > 1_000_000_000 }
+            useClicks.fastRemoveIfReversed { now - it > 1_000_000_000 }
+            if (attackCps.value != attackClicks.size) {
+                attackCps.value = attackClicks.size
+                changed = true
+            }
+            if (useCps.value != useClicks.size) {
+                useCps.value = useClicks.size
+                changed = true
+            }
+        }
         return changed
     }
 
@@ -196,8 +279,8 @@ class KeystrokesHud : Hud(
             }
             if (showClicks) {
                 PolyRow(gap = gap) {
-                    Key("LMB", attack.value, clickW, key)
-                    Key("RMB", use.value, clickW, key)
+                    ClickKey("LMB", attack.value, attackCps.value, clickW, key)
+                    ClickKey("RMB", use.value, useCps.value, clickW, key)
                 }
             }
             if (showSprint) {
@@ -222,7 +305,16 @@ class KeystrokesHud : Hud(
         blend(PolyColor(bgColor, bgChroma, bgChromaSpeed), pressedBg, progress)
 
     @Composable
-    private fun Key(label: String, progress: Float, w: Float, h: Float, align: PolyAlign? = null) {
+    private fun ClickKey(label: String, progress: Float, cps: Int, w: Float, h: Float) {
+        when (cpsMode) {
+            CPS_SMALL -> Key(label, progress, w, h, sub = "$cps CPS")
+            CPS_LARGE -> Key(if (cps > 0) cps.toString() else label, progress, w, h)
+            else -> Key(label, progress, w, h)
+        }
+    }
+
+    @Composable
+    private fun Key(label: String, progress: Float, w: Float, h: Float, align: PolyAlign? = null, sub: String? = null) {
         val fg = keyFg(progress)
         var mod = PolyModifier.size(w, h)
         if (showBackground) {
@@ -230,28 +322,47 @@ class KeystrokesHud : Hud(
         }
         if (align != null) mod = mod.align(align)
         PolyBox(modifier = mod) {
+            val subScale = textScale * CPS_SCALE
             if (font == Font.Minecraft) {
-                val visibleW = (McFontQueue.measureTextWidth(label, textScale) - textScale).coerceAtLeast(0f)
-                val visibleH = McFontQueue.measureTextHeight(textScale)
-                val leftPad = ((w - visibleW) / 2f).coerceAtLeast(0f)
-                val topPad = ((h - visibleH) / 2f).coerceAtLeast(0f)
-                PolyMcText(
-                    label,
-                    color = fg,
-                    shadow = showShadow,
-                    scale = textScale,
-                    modifier = PolyModifier.align(PolyAlign.TopLeft).margin(leftPad, topPad, 0f, 0f),
-                )
+                val lineH = McFontQueue.measureTextHeight(textScale)
+                val lineGap = LINE_GAP * textScale
+                val totalH = if (sub == null) lineH else lineH + lineGap + McFontQueue.measureTextHeight(subScale)
+                val topPad = ((h - totalH) / 2f).coerceAtLeast(0f)
+                McLine(label, fg, w, topPad, textScale)
+                if (sub != null) McLine(sub, fg, w, topPad + lineH + lineGap, subScale)
+            } else if (sub == null) {
+                KeyText(label, fg, textScale)
             } else {
-                PolyText(
-                    label,
-                    color = fg,
-                    fontSize = FONT * textScale,
-                    font = getPoppinsFontName(),
-                    modifier = PolyModifier.align(PolyAlign.Center),
-                )
+                PolyColumn(gap = LINE_GAP * textScale, modifier = PolyModifier.align(PolyAlign.Center)) {
+                    KeyText(label, fg, textScale)
+                    KeyText(sub, fg, subScale)
+                }
             }
         }
+    }
+
+    @Composable
+    private fun McLine(text: String, color: PolyColor, w: Float, topPad: Float, scale: Float) {
+        val visibleW = (McFontQueue.measureTextWidth(text, scale) - scale).coerceAtLeast(0f)
+        val leftPad = ((w - visibleW) / 2f).coerceAtLeast(0f)
+        PolyMcText(
+            text,
+            color = color,
+            shadow = showShadow,
+            scale = scale,
+            modifier = PolyModifier.align(PolyAlign.TopLeft).margin(leftPad, topPad, 0f, 0f),
+        )
+    }
+
+    @Composable
+    private fun KeyText(text: String, color: PolyColor, scale: Float) {
+        PolyText(
+            text,
+            color = color,
+            fontSize = FONT * scale,
+            font = getPoppinsFontName(),
+            modifier = PolyModifier.align(PolyAlign.Center),
+        )
     }
 
     @Composable

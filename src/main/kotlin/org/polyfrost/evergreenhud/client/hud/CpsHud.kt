@@ -1,13 +1,9 @@
 package org.polyfrost.evergreenhud.client.hud
 
-//? if >= 1.21.10 {
-import net.minecraft.client.input.KeyEvent
-import net.minecraft.client.input.MouseButtonEvent
-import net.minecraft.client.input.MouseButtonInfo
-//?}
-import net.minecraft.client.KeyMapping
 import org.polyfrost.evergreenhud.client.utils.CachedTextHud
 import org.polyfrost.evergreenhud.client.utils.fastRemoveIfReversed
+import org.polyfrost.evergreenhud.client.utils.matchesKeyCode
+import org.polyfrost.evergreenhud.client.utils.matchesMouseButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Text
@@ -62,7 +58,7 @@ class CpsHud : CachedTextHud(
                 updateAndRecalculate()
             }
             handlers.add(eventHandler { (btn, state): MouseInputEvent ->
-                if (state == 0) {
+                if (state == 1) {
                     val options = mc.options ?: return@eventHandler
                     var counted = false
                     if (options.keyAttack.matchesMouseButton(btn)) { onLeftClick(); counted = true }
@@ -112,22 +108,6 @@ class CpsHud : CachedTextHud(
     private fun registerClick() {
         lastClick = System.nanoTime()
         hidden = false
-    }
-
-    private fun KeyMapping.matchesMouseButton(button: Int): Boolean {
-        //? if >= 1.21.10 {
-        return matchesMouse(MouseButtonEvent(0.0, 0.0, MouseButtonInfo(button, 0)))
-        //?} else {
-        /*return matchesMouse(button)
-        *///?}
-    }
-
-    private fun KeyMapping.matchesKeyCode(keyCode: Int): Boolean {
-        //? if >= 1.21.10 {
-        return matches(KeyEvent(keyCode, 0, 0))
-        //?} else {
-        /*return matches(keyCode, 0)
-        *///?}
     }
 
     override fun getText(): String {

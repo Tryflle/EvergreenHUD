@@ -1,6 +1,12 @@
 package org.polyfrost.evergreenhud.client.utils
 
 import androidx.compose.ui.graphics.Color
+//? if >= 1.21.10 {
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.input.MouseButtonInfo
+//?}
+import net.minecraft.client.KeyMapping
 //? if > 1.21.1
 import net.minecraft.util.profiling.Profiler
 import net.minecraft.world.entity.Entity
@@ -57,6 +63,22 @@ inline fun <L, E> L.fastRemoveIfReversed(predicate: (E) -> Boolean) where L : Mu
             this.removeAt(i.coerceAtMost(size - 1))
         }
     }
+}
+
+fun KeyMapping.matchesMouseButton(button: Int): Boolean {
+    //? if >= 1.21.10 {
+    return matchesMouse(MouseButtonEvent(0.0, 0.0, MouseButtonInfo(button, 0)))
+    //?} else {
+    /*return matchesMouse(button)
+    *///?}
+}
+
+fun KeyMapping.matchesKeyCode(keyCode: Int): Boolean {
+    //? if >= 1.21.10 {
+    return matches(KeyEvent(keyCode, 0, 0))
+    //?} else {
+    /*return matches(keyCode, 0)
+    *///?}
 }
 
 fun PolyColor.copy(): PolyColor = PolyColor(rawArgb, chroma, chromaSpeed)
