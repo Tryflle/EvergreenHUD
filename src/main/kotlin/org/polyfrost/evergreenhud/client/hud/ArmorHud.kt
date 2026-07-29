@@ -7,6 +7,8 @@ import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
+import org.polyfrost.compose.render.PolyColor
+import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.Dropdown
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
@@ -22,7 +24,7 @@ class ArmorHud : LegacyHud(
     id = "armor.json",
     title = "Armor Status",
     category = Category.PLAYER,
-) {
+), HudBackground {
     private companion object {
         private const val ICON = 16
         private const val TEXT_GAP = 2
@@ -84,6 +86,12 @@ class ArmorHud : LegacyHud(
     @Switch(title = "Dynamic Durability Color", description = "Colour durability text from green (full) to red (empty).")
     var dynamicColor = false
 
+    @Switch(title = "Background")
+    override var background = true
+
+    @Color(title = "Background Color")
+    override var backgroundColor = PolyColor(0x80000000.toInt())
+
     private class Entry(
         val stack: ItemStack,
         val text: String,
@@ -102,6 +110,13 @@ class ArmorHud : LegacyHud(
     override val height get() = actualH
 
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
+
+    override fun setup() {
+        super.setup()
+        if (isReal) {
+            hideIf("backgroundColor") { !background }
+        }
+    }
 
     override fun update(): Boolean {
         recompute()
@@ -245,8 +260,8 @@ class ArmorHud : LegacyHud(
         val entries = layout
         if (entries.isEmpty()) return
 
-        if (showBackground) {
-            graphics.fill(0, 0, actualW.toInt(), actualH.toInt(), bgColor)
+        backgroundArgb?.let {
+            graphics.fill(0, 0, actualW.toInt(), actualH.toInt(), it)
         }
 
         val font = mc.font

@@ -6,8 +6,10 @@ package org.polyfrost.evergreenhud.client.hud
 import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics
 import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import net.minecraft.util.Mth
+import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.evergreenhud.client.hooks.playerPreviewPartialTick
 import org.polyfrost.evergreenhud.client.hooks.smuggledHudPartialTick
+import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
@@ -17,7 +19,7 @@ class PlayerPreviewHud : LegacyHud(
     id = "player_preview.json",
     title = "Player Preview",
     category = Category.PLAYER,
-) {
+), HudBackground {
     @Switch(title = "Paper Doll", description = "Mirror the player's own head rotation.")
     var paperDoll = false
 
@@ -26,6 +28,12 @@ class PlayerPreviewHud : LegacyHud(
 
     @Slider(title = "Pitch", min = -90F, max = 90F, step = 1F)
     var pitch = 0f
+
+    @Switch(title = "Background")
+    override var background = true
+
+    @Color(title = "Background Color")
+    override var backgroundColor = PolyColor(0x90000000.toInt())
 
     override val width get() = 80f
     override val height get() = 120f
@@ -38,13 +46,16 @@ class PlayerPreviewHud : LegacyHud(
         if (isReal) {
             hideIf("rotation") { paperDoll }
             hideIf("pitch") { paperDoll }
+            hideIf("backgroundColor") { !background }
         }
     }
 
     override fun update() = false
 
     override fun render(graphics: GuiGraphics) {
-        graphics.fill(0, 0, width.toInt(), height.toInt(), 0x90000000.toInt())
+        backgroundArgb?.let {
+            graphics.fill(0, 0, width.toInt(), height.toInt(), it)
+        }
 
         val player = mc.player ?: return
 

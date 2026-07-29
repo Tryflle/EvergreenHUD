@@ -2,7 +2,9 @@ package org.polyfrost.evergreenhud.client.config
 
 import androidx.compose.runtime.snapshots.Snapshot
 import org.polyfrost.compose.render.PolyColor
+import org.polyfrost.evergreenhud.client.hud.HudBackground
 import org.polyfrost.evergreenhud.client.hud.clock.ClockHud
+import org.polyfrost.evergreenhud.client.utils.copy
 import org.polyfrost.oneconfig.api.config.v1.Config
 import org.polyfrost.oneconfig.api.config.v1.Property
 import org.polyfrost.oneconfig.api.config.v1.annotations.Color
@@ -102,11 +104,15 @@ object GlobalConfig : Config(
         "textBold" to { h -> h.textBold = textBold },
         "textItalic" to { h -> h.textItalic = textItalic },
         "textUnderline" to { h -> h.textUnderline = textUnderline },
-        "showBackground" to { h -> h.showBackground = showBackground },
+        "showBackground" to { h ->
+            h.showBackground = showBackground
+            if (h is HudBackground) h.background = showBackground
+        },
         "bgColor" to { h ->
             h.bgColor = bgColor.rawArgb
             h.bgChroma = bgColor.chroma
             h.bgChromaSpeed = bgColor.chromaSpeed
+            if (h is HudBackground) h.backgroundColor = bgColor.copy()
         },
         "bgRadius" to { h -> h.bgRadius = bgRadius },
         "showShadow" to { h -> h.showShadow = showShadow },

@@ -9,10 +9,12 @@ import net.minecraft.core.component.DataComponents
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.ItemContainerContents
+import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.evergreenhud.client.hooks.EnderChestTracker
 import org.polyfrost.evergreenhud.client.hooks.ShulkerPreview
 import org.polyfrost.evergreenhud.client.hooks.heldShulkerBox
 import org.polyfrost.evergreenhud.client.hooks.shulkerContents
+import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.Keybind
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
@@ -26,7 +28,7 @@ class InventoryHud : LegacyHud(
     id = "inventory.json",
     title = "Inventory",
     category = Category.PLAYER,
-) {
+), HudBackground {
     private companion object {
         private const val PLAYER = 0
         private const val ENDER_CHEST = 1
@@ -73,6 +75,12 @@ class InventoryHud : LegacyHud(
     @Switch(title = "Show Title")
     var showTitle = true
 
+    @Switch(title = "Background")
+    override var background = true
+
+    @Color(title = "Background Color")
+    override var backgroundColor = PolyColor(0x90000000.toInt())
+
     @Keybind(
         title = "Pin Shulker Preview",
         description = "Held Shulker only. Keeps the shulker's contents on screen after you stop holding it. Press again to unpin.",
@@ -97,11 +105,12 @@ class InventoryHud : LegacyHud(
     override fun setup() {
         super.setup()
         staticWidth = true
+        if (isReal) {
+            hideIf("backgroundColor") { !background }
+        }
     }
 
     override fun update() = false
-
-    override fun hasBackground() = false
 
     private fun titleText(): String = when (type) {
         PLAYER -> "Inventory"
@@ -122,7 +131,9 @@ class InventoryHud : LegacyHud(
     override fun render(graphics: GuiGraphics) {
         if (!visible) return
 
-        graphics.fill(0, 0, width.toInt(), height.toInt(), 0x90000000.toInt())
+        backgroundArgb?.let {
+            graphics.fill(0, 0, width.toInt(), height.toInt(), it)
+        }
         if (showTitle) {
             //? if < 26
             //graphics.drawString(mc.font, titleText(), EDGE, 6, 0xFFFFFFFF.toInt())
