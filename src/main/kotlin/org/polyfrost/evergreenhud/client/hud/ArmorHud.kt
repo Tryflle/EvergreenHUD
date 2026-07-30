@@ -83,7 +83,7 @@ class ArmorHud : LegacyHud(
     @RadioButton(title = "Text Position", options = ["Left", "Right"])
     var textPosition = RIGHT
 
-    @Switch(title = "Dynamic Durability Color", description = "Colour durability text from green (full) to red (empty).")
+    @Switch(title = "Dynamic Durability Color", description = "Color durability text from green (full) to red (empty).")
     var dynamicColor = false
 
     @Switch(title = "Background")

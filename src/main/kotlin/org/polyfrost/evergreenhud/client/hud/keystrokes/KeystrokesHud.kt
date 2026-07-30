@@ -81,10 +81,10 @@ class KeystrokesHud : Hud(
     @Switch(title = "Arrows", description = "Replace the movement keys with arrows.")
     var arrows = false
 
-    @Slider(title = "Fade In Duration (ms)", description = "How long a key takes to fade from the unpressed to the pressed colours.", min = 1F, max = 250F, step = 1F)
+    @Slider(title = "Fade In Duration (ms)", description = "How long a key takes to fade from the unpressed to the pressed colors.", min = 1F, max = 250F, step = 1F)
     var fadeInMs = 150f
 
-    @Slider(title = "Fade Out Duration (ms)", description = "How long a key takes to fade from the pressed to the unpressed colours.", min = 1F, max = 250F, step = 1F)
+    @Slider(title = "Fade Out Duration (ms)", description = "How long a key takes to fade from the pressed to the unpressed colors.", min = 1F, max = 250F, step = 1F)
     var fadeOutMs = 150f
 
     @Color(title = "Pressed Background Color")
