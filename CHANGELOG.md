@@ -1,2 +1,3 @@
-## 3.2.2
-- Fixed immediate crash on 1.21.1
+## 3.3.0
+- CPS options for Keystrokes
+- Background options for Armor Status, Inventory, and Player Preview huds
