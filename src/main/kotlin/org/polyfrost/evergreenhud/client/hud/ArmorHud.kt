@@ -83,8 +83,14 @@ class ArmorHud : LegacyHud(
     @RadioButton(title = "Text Position", options = ["Left", "Right"])
     var textPosition = RIGHT
 
-    @Switch(title = "Dynamic Durability Color", description = "Color durability text from green (full) to red (empty).")
+    @Switch(title = "Dynamic Durability Color", description = "Fade the durability text between two colors as the item wears down.")
     var dynamicColor = false
+
+    @Color(title = "Full Durability Color")
+    var fullDurabilityColor = PolyColor(0xFFFFFFFF.toInt())
+
+    @Color(title = "Empty Durability Color")
+    var emptyDurabilityColor = PolyColor(0xFFFF5555.toInt())
 
     @Switch(title = "Background")
     override var background = true
@@ -115,6 +121,8 @@ class ArmorHud : LegacyHud(
         super.setup()
         if (isReal) {
             hideIf("backgroundColor") { !background }
+            hideIf("fullDurabilityColor") { !dynamicColor }
+            hideIf("emptyDurabilityColor") { !dynamicColor }
         }
     }
 
@@ -179,9 +187,14 @@ class ArmorHud : LegacyHud(
 
     private fun durabilityColor(percent: Int): Int {
         val p = percent.coerceIn(0, 100) / 100f
-        val r = (255f - p * 170f).toInt()
-        val g = (85f + p * 170f).toInt()
-        return (0xFF shl 24) or (r shl 16) or (g shl 8) or 85
+        val empty = emptyDurabilityColor.argb
+        val full = fullDurabilityColor.argb
+        fun lerp(shift: Int): Int {
+            val from = (empty shr shift) and 0xFF
+            val to = (full shr shift) and 0xFF
+            return (from + (to - from) * p).roundToInt().coerceIn(0, 255) shl shift
+        }
+        return lerp(24) or lerp(16) or lerp(8) or lerp(0)
     }
 
     private fun recompute() {
