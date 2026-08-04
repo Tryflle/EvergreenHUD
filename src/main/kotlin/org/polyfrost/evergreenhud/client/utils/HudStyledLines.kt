@@ -7,7 +7,6 @@ import org.polyfrost.compose.composables.PolyCanvas
 import org.polyfrost.compose.composables.PolyColumn
 import org.polyfrost.compose.composables.PolyModifier
 import org.polyfrost.compose.composables.align
-import org.polyfrost.compose.composables.background
 import org.polyfrost.compose.composables.padding
 import org.polyfrost.compose.composables.size
 import org.polyfrost.compose.layout.PolyAlign
@@ -34,14 +33,12 @@ fun Hud.HudStyledLines(lines: List<List<StyledRun>>, alignColumns: Boolean = fal
     val padInsets = PolyInsets(padLeft, padTop, padRight, padBottom)
     val isStaticValid = staticWidth && staticW > 0f && staticH > 0f
 
-    val outerModifier = if (showBackground) {
-        val bgModifier = PolyModifier.background(PolyColor(bgColor, bgChroma, bgChromaSpeed), bgRadius)
+    // when merged, HudManager draws this HUD's background as part of the fused neighbour shape,
+    // which hudBackground() accounts for
+    val bgModifier = hudBackground()
+    val outerModifier =
         if (isStaticValid) bgModifier.size(staticW, staticH).padding(padInsets)
         else bgModifier.padding(padInsets)
-    } else {
-        if (isStaticValid) PolyModifier.size(staticW, staticH).padding(padInsets)
-        else PolyModifier.padding(padInsets)
-    }
 
     val lineAlign = if (isStaticValid) alignment else PolyAlign.Left
     val skiaFont = if (font == Font.Poppins) FontManager.getFont(POPPINS_SIZE * textScale, getPoppinsFontName()) else null

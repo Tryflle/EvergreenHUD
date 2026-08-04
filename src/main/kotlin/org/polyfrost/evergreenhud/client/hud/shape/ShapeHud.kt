@@ -1,12 +1,12 @@
 package org.polyfrost.evergreenhud.client.hud.shape
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import org.jetbrains.skia.Path
 import org.polyfrost.compose.composables.PolyBox
 import org.polyfrost.compose.composables.PolyCanvas
 import org.polyfrost.compose.composables.PolyModifier
 import org.polyfrost.compose.composables.PolyText
-import org.polyfrost.compose.composables.background
 import org.polyfrost.compose.composables.size
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.compose.render.RenderContext
@@ -61,6 +61,12 @@ class ShapeHud : Hud(
     @Slider(title = "Outline Width", min = 0.5F, max = 8F, step = 0.5F)
     var outlineWidth = 1f
 
+    private var _staticW = mutableStateOf(DEFAULT_SIDE)
+    override var staticW: Float get() = _staticW.value; set(v) { _staticW.value = v }
+
+    private var _staticH = mutableStateOf(DEFAULT_SIDE)
+    override var staticH: Float get() = _staticH.value; set(v) { _staticH.value = v }
+
     @Transient
     private var cachedPath: Path? = null
 
@@ -74,8 +80,8 @@ class ShapeHud : Hud(
     override fun setup() {
         super.setup()
         staticWidth = true
-        if (staticW < 4f) staticW = 48f
-        if (staticH < 4f) staticH = 48f
+        tree?.getProp("staticW")?.addMetadata("default", DEFAULT_SIDE)
+        tree?.getProp("staticH")?.addMetadata("default", DEFAULT_SIDE)
 
         if (isReal) {
             hideIf("cornerRadius") { shape != RECTANGLE }
@@ -94,6 +100,8 @@ class ShapeHud : Hud(
 
     override fun minimumSize(): Pair<Float, Float> = 2f to 2f
 
+    override fun canMergeBackground(): Boolean = true
+
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
 
     override fun update(): Boolean = false
@@ -105,6 +113,8 @@ class ShapeHud : Hud(
     }
 
     override fun clone(): Hud = (super.clone() as ShapeHud).apply {
+        _staticW = mutableStateOf(this@ShapeHud.staticW)
+        _staticH = mutableStateOf(this@ShapeHud.staticH)
         cachedPath = null
         cachedKey = null
         color = color.copy()
@@ -120,10 +130,9 @@ class ShapeHud : Hud(
 
         val sizeModifier = PolyModifier.size(scaledWidth, scaledHeight)
         if (showBackground) {
-            PolyBox(
-                modifier = sizeModifier
-                    .background(PolyColor(bgColor, bgChroma, bgChromaSpeed), bgRadius)
-            ) {
+            // when merged, HudManager draws this HUD's background as part of the fused neighbour
+            // shape, which hudBackground() accounts for
+            PolyBox(modifier = hudBackground(sizeModifier)) {
                 Shape(sizeModifier)
             }
         } else {
@@ -206,6 +215,8 @@ class ShapeHud : Hud(
 
     companion object {
         private val PREVIEW_TEXT = PolyColor(0xFFB9BFDF.toInt())
+
+        private const val DEFAULT_SIDE = 48f
 
         private const val RECTANGLE = 0
         private const val ELLIPSE = 1

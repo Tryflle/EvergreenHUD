@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameMillis
 import org.polyfrost.compose.composables.PolyBox
@@ -13,7 +14,6 @@ import org.polyfrost.compose.composables.PolyModifier
 import org.polyfrost.compose.composables.PolyText
 import org.polyfrost.compose.composables.absoluteAt
 import org.polyfrost.compose.composables.align
-import org.polyfrost.compose.composables.background
 import org.polyfrost.compose.composables.clip
 import org.polyfrost.compose.composables.size
 import org.polyfrost.compose.layout.PolyAlign
@@ -45,6 +45,10 @@ private const val FADE_START = 0.55f
 
 private const val PREVIEW_BEARING = 22.5f
 
+private const val DEFAULT_WIDTH = 140f
+
+private const val DEFAULT_HEIGHT = 24f
+
 class DirectionHud : Hud(
     id = "direction.json",
     title = "Direction",
@@ -75,24 +79,30 @@ class DirectionHud : Hud(
     @Color(title = "Tick Color")
     var tickColor = PolyColor(0xFFAAAAAA.toInt())
 
+    private var _staticW = mutableStateOf(DEFAULT_WIDTH)
+    override var staticW: Float get() = _staticW.value; set(v) { _staticW.value = v }
+
+    private var _staticH = mutableStateOf(DEFAULT_HEIGHT)
+    override var staticH: Float get() = _staticH.value; set(v) { _staticH.value = v }
+
     override fun setup() {
         super.setup()
         staticWidth = true
-        if (staticW == 200f && staticH == 48f) {
-            staticW = 140f
-            staticH = 24f
-        }
-        if (staticW < 32f) staticW = 140f
-        if (staticH < 12f) staticH = 24f
+        tree?.getProp("staticW")?.addMetadata("default", DEFAULT_WIDTH)
+        tree?.getProp("staticH")?.addMetadata("default", DEFAULT_HEIGHT)
     }
 
     override fun minimumSize(): Pair<Float, Float> = 32f to 12f
 
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
 
+    override fun canMergeBackground(): Boolean = true
+
     override fun update(): Boolean = false
 
     override fun clone(): Hud = (super.clone() as DirectionHud).apply {
+        _staticW = mutableStateOf(this@DirectionHud.staticW)
+        _staticH = mutableStateOf(this@DirectionHud.staticH)
         markerColor = markerColor.copy()
         tickColor = tickColor.copy()
     }
@@ -110,10 +120,7 @@ class DirectionHud : Hud(
         }
         val bearing by bearingState
 
-        var modifier = PolyModifier.size(scaledWidth, scaledHeight)
-        if (showBackground) {
-            modifier = modifier.background(PolyColor(bgColor, bgChroma, bgChromaSpeed), bgRadius)
-        }
+        val modifier = hudBackground(PolyModifier.size(scaledWidth, scaledHeight))
         PolyBox(modifier = modifier.clip(bgRadius)) {
             Compass(bearing)
         }

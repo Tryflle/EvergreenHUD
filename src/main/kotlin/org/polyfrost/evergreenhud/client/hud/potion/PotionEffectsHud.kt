@@ -18,7 +18,6 @@ import org.polyfrost.compose.composables.PolyModifier
 import org.polyfrost.compose.composables.PolyRow
 import org.polyfrost.compose.composables.PolyText
 import org.polyfrost.compose.composables.align
-import org.polyfrost.compose.composables.background
 import org.polyfrost.compose.composables.padding
 import org.polyfrost.compose.composables.size
 import org.polyfrost.compose.layout.PolyAlign
@@ -161,6 +160,8 @@ class PotionEffectsHud : Hud(
 
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
 
+    override fun canMergeBackground(): Boolean = true
+
     override fun update(): Boolean {
         syncIcons(mc.resourcePackRepository.selectedPacks.map { it.id })
         val next = buildRows()
@@ -230,12 +231,7 @@ class PotionEffectsHud : Hud(
         if (list.isEmpty()) return
         val scale = textScale.coerceAtLeast(0.01f)
 
-        var modifier = PolyModifier.padding(padLeft, padTop, padRight, padBottom)
-        if (showBackground) {
-            modifier = PolyModifier
-                .background(PolyColor(bgColor, bgChroma, bgChromaSpeed), bgRadius)
-                .padding(padLeft, padTop, padRight, padBottom)
-        }
+        val modifier = hudBackground().padding(padLeft, padTop, padRight, padBottom)
 
         PolyBox(modifier = modifier) {
             PolyColumn(gap = spacing * scale) {

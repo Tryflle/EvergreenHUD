@@ -13,7 +13,6 @@ import org.jetbrains.skia.PathBuilder
 import org.polyfrost.compose.composables.PolyBox
 import org.polyfrost.compose.composables.PolyCanvas
 import org.polyfrost.compose.composables.PolyModifier
-import org.polyfrost.compose.composables.background
 import org.polyfrost.compose.composables.clip
 import org.polyfrost.compose.composables.size
 import org.polyfrost.compose.render.PolyColor
@@ -43,6 +42,8 @@ private const val FADE_STEPS = 16
 private const val PREVIEW_X = 0.45f
 
 private const val PREVIEW_Y = -0.3f
+
+private const val DEFAULT_SIDE = 48f
 
 class MouseStrokesHud : Hud(
     id = "mousestrokes.json",
@@ -112,15 +113,17 @@ class MouseStrokesHud : Hud(
     @Transient
     private var lastFrameMs = 0L
 
+    private var _staticW = mutableStateOf(DEFAULT_SIDE)
+    override var staticW: Float get() = _staticW.value; set(v) { _staticW.value = v }
+
+    private var _staticH = mutableStateOf(DEFAULT_SIDE)
+    override var staticH: Float get() = _staticH.value; set(v) { _staticH.value = v }
+
     override fun setup() {
         super.setup()
         staticWidth = true
-        if (staticW == 200f && staticH == 48f) {
-            staticW = 48f
-            staticH = 48f
-        }
-        if (staticW < 16f) staticW = 48f
-        if (staticH < 16f) staticH = 48f
+        tree?.getProp("staticW")?.addMetadata("default", DEFAULT_SIDE)
+        tree?.getProp("staticH")?.addMetadata("default", DEFAULT_SIDE)
 
         if (isReal) {
             hideIf("snakeMs") { dotType != SNAKE }
@@ -134,6 +137,8 @@ class MouseStrokesHud : Hud(
 
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
 
+    override fun canMergeBackground(): Boolean = true
+
     override fun update(): Boolean = false
 
     override fun remove() {
@@ -142,6 +147,8 @@ class MouseStrokesHud : Hud(
     }
 
     override fun clone(): Hud = (super.clone() as MouseStrokesHud).apply {
+        _staticW = mutableStateOf(this@MouseStrokesHud.staticW)
+        _staticH = mutableStateOf(this@MouseStrokesHud.staticH)
         dotColor = dotColor.copy()
     }
 
@@ -157,10 +164,7 @@ class MouseStrokesHud : Hud(
         }
         val offset by position
 
-        var modifier = PolyModifier.size(scaledWidth, scaledHeight)
-        if (showBackground) {
-            modifier = modifier.background(PolyColor(bgColor, bgChroma, bgChromaSpeed), bgRadius)
-        }
+        val modifier = hudBackground(PolyModifier.size(scaledWidth, scaledHeight))
         PolyBox(modifier = modifier.clip(bgRadius)) {
             PolyCanvas(PolyModifier.size(scaledWidth, scaledHeight)) { x, y, w, h ->
                 draw(offset, x, y, w, h)

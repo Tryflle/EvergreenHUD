@@ -9,7 +9,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.withFrameMillis
 import org.polyfrost.compose.composables.PolyBox
 import org.polyfrost.compose.composables.PolyModifier
-import org.polyfrost.compose.composables.background
 import org.polyfrost.compose.composables.size
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.evergreenhud.client.utils.copy
@@ -20,6 +19,8 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.Hud
 import java.time.LocalTime
 import java.time.ZoneId
+
+private const val DEFAULT_SIDE = 64f
 
 private const val DETAIL_FIVE_MINUTE_MARKS = 0
 private const val DETAIL_MINUTE_MARKS = 1
@@ -53,6 +54,12 @@ class ClockHud : Hud(
 
     private var rev = mutableStateOf(0)
 
+    private var _staticW = mutableStateOf(DEFAULT_SIDE)
+    override var staticW: Float get() = _staticW.value; set(v) { _staticW.value = v }
+
+    private var _staticH = mutableStateOf(DEFAULT_SIDE)
+    override var staticH: Float get() = _staticH.value; set(v) { _staticH.value = v }
+
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
 
     override fun clone(): Hud = (super.clone() as ClockHud).apply {
@@ -61,6 +68,8 @@ class ClockHud : Hud(
         minuteHandColor = this@ClockHud.minuteHandColor.copy()
         secondHandColor = this@ClockHud.secondHandColor.copy()
         rev = mutableStateOf(0)
+        _staticW = mutableStateOf(this@ClockHud.staticW)
+        _staticH = mutableStateOf(this@ClockHud.staticH)
     }
 
     fun applyGlobalColor(color: PolyColor) {
@@ -78,16 +87,13 @@ class ClockHud : Hud(
             }
         }
         staticWidth = true
-        val side = when {
-            staticW < 16f || staticH < 16f -> 64f
-            staticW == 200f && staticH == 48f -> 64f
-            else -> minOf(staticW, staticH)
-        }
-        staticW = side
-        staticH = side
+        tree?.getProp("staticW")?.addMetadata("default", DEFAULT_SIDE)
+        tree?.getProp("staticH")?.addMetadata("default", DEFAULT_SIDE)
     }
 
     override fun minimumSize(): Pair<Float, Float> = 16f to 16f
+
+    override fun canMergeBackground(): Boolean = true
 
     @Composable
     override fun Content() {
@@ -107,10 +113,9 @@ class ClockHud : Hud(
         val detailColor = PolyColor(textColor, textChroma, textChromaSpeed)
         val fontName = getPoppinsFontName()
         if (showBackground) {
-            PolyBox(
-                modifier = sizeModifier
-                    .background(PolyColor(bgColor, bgChroma, bgChromaSpeed), bgRadius)
-            ) {
+            // when merged, HudManager draws this HUD's background as part of the fused neighbour
+            // shape, which hudBackground() accounts for
+            PolyBox(modifier = hudBackground(sizeModifier)) {
                 Clock(timeMillis, handWidth, ticking, fiveMinuteMarks, minuteMarks, numbers, hourHandColor, minuteHandColor, secondHandColor, detailColor, fontName, bgRadius, sizeModifier)
             }
         } else {

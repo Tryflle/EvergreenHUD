@@ -27,6 +27,7 @@ bloom {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
     gradlePluginPortal()
     google()
