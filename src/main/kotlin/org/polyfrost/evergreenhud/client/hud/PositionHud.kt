@@ -7,6 +7,7 @@ import org.polyfrost.evergreenhud.client.utils.Facing
 import org.polyfrost.evergreenhud.client.utils.GenericNumberHud
 import org.polyfrost.evergreenhud.client.utils.HudStyledLines
 import org.polyfrost.evergreenhud.client.utils.StyledRun
+import org.polyfrost.evergreenhud.client.utils.cameraYaw
 import org.polyfrost.oneconfig.api.config.v1.annotations.Checkbox
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
@@ -58,7 +59,7 @@ class PositionHud : GenericNumberHud(
     @Checkbox(title = "Show Pitch")
     var showPitch = false
 
-    private val facing get() = Facing.parseExact(mc.player?.yRot ?: 0f)
+    private val facing get() = Facing.parseExact(cameraYaw ?: 0f)
     private var px = 0.0
     private var py = 0.0
     private var pz = 0.0
@@ -72,11 +73,12 @@ class PositionHud : GenericNumberHud(
         super.setup()
         eventHandler { _: TickEvent.End ->
             val player = mc.player ?: return@eventHandler
+            val camera = mc.cameraEntity ?: player
             this.px = player.x
             this.py = player.y
             this.pz = player.z
-            this.yaw = Facing.wrapDegrees(player.yRot).toDouble()
-            this.pitch = player.xRot.toDouble()
+            this.yaw = Facing.wrapDegrees(camera.yRot).toDouble()
+            this.pitch = camera.xRot.toDouble()
             updateAndRecalculate()
         }
 

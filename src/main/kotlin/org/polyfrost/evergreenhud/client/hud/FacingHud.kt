@@ -2,9 +2,9 @@ package org.polyfrost.evergreenhud.client.hud
 
 import org.polyfrost.evergreenhud.client.utils.CachedTextHud
 import org.polyfrost.evergreenhud.client.utils.Facing
+import org.polyfrost.evergreenhud.client.utils.cameraYaw
 import org.polyfrost.oneconfig.api.config.v1.annotations.Dropdown
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -39,7 +39,7 @@ class FacingHud : CachedTextHud(
     }
 
     override fun getText(): String {
-        val yaw = mc.player?.yRot ?: return defaultText
+        val yaw = cameraYaw ?: return defaultText
         val bearing = Facing.bearingOf(yaw)
         val facing = if (showIntercardinals) {
             Facing.parse(yaw)

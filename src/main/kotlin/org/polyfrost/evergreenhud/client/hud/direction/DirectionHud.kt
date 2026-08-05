@@ -19,13 +19,13 @@ import org.polyfrost.compose.composables.size
 import org.polyfrost.compose.layout.PolyAlign
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.evergreenhud.client.utils.Facing
+import org.polyfrost.evergreenhud.client.utils.cameraYaw
 import org.polyfrost.evergreenhud.client.utils.copy
 import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.hud.v1.Font
 import org.polyfrost.oneconfig.api.hud.v1.Hud
-import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -113,8 +113,8 @@ class DirectionHud : Hud(
         LaunchedEffect(Unit) {
             while (true) {
                 withFrameMillis {
-                    val player = mc.player ?: return@withFrameMillis
-                    bearingState.floatValue = Facing.bearingOf(player.yRot)
+                    val yaw = cameraYaw ?: return@withFrameMillis
+                    bearingState.floatValue = Facing.bearingOf(yaw)
                 }
             }
         }

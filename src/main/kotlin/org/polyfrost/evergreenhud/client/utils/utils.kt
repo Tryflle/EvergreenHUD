@@ -22,6 +22,14 @@ private val Entity.accurateCollisionBox: AABB
 val Entity.uniqueEntityId: Int
     get() = id
 
+/**
+ * Yaw of whatever the camera is actually attached to. While spectating an entity the local
+ * player's own yaw stops tracking the view, so [net.minecraft.client.Minecraft.cameraEntity]
+ * is the only thing that matches what is on screen.
+ */
+val cameraYaw: Float?
+    get() = (mc.cameraEntity ?: mc.player)?.yRot
+
 fun StringBuilder.replace(string: String, value: String): StringBuilder {
     val index = indexOf(string)
     if (index != -1) {
