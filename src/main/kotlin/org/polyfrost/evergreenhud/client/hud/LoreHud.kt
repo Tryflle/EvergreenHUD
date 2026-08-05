@@ -16,7 +16,7 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Number
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.hud.v1.Hud
-import org.polyfrost.oneconfig.api.hud.v1.TextHud
+import org.polyfrost.evergreenhud.client.utils.AutoHideTextHud
 
 private const val AQUA = 0xFF55FFFF.toInt()
 private const val GRAY = 0xFFAAAAAA.toInt()
@@ -26,7 +26,7 @@ private val PLACEHOLDER_LINES = listOf(
     listOf(StyledRun("Hold an item with lore", GRAY, bold = false, italic = false)),
 )
 
-class LoreHud : TextHud(
+class LoreHud : AutoHideTextHud(
     id = "lore.json",
     title = "Item Lore",
     category = Category.INFO,
@@ -75,7 +75,7 @@ class LoreHud : TextHud(
 
     override fun update(): Boolean {
         val lore = loreLines()
-        hidden = isReal && lore.isEmpty()
+        autoHidden = isReal && lore.isEmpty()
         currentLines = lore.ifEmpty { PLACEHOLDER_LINES }
 
         val result = super.update()

@@ -43,7 +43,7 @@ class ReachHud : GenericNumberHud(
 
                 this.value = reach
                 this.lastTime = System.currentTimeMillis()
-                hidden = false
+                autoHidden = false
                 updateWithNumber(reach)
             }
 
@@ -54,7 +54,7 @@ class ReachHud : GenericNumberHud(
             updateWhenChanged("noHitMessage")
             addCallback("hideAfter") {
                 lastTime = System.currentTimeMillis()
-                hidden = false
+                autoHidden = false
                 updateAndRecalculate()
             }
         }
@@ -76,7 +76,7 @@ class ReachHud : GenericNumberHud(
 
         val hideMillis = hideAfterMillis
         if (hideMillis > 0L && !HudManager.isEditing && elapsed > hideMillis) {
-            hidden = true
+            autoHidden = true
         }
 
         return super.update()

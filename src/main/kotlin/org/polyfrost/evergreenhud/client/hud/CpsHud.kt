@@ -54,7 +54,7 @@ class CpsHud : CachedTextHud(
             updateWhenChanged("divider")
             addCallback("hideAfter") {
                 lastClick = System.nanoTime()
-                hidden = false
+                autoHidden = false
                 updateAndRecalculate()
             }
             handlers.add(eventHandler { (btn, state): MouseInputEvent ->
@@ -107,14 +107,14 @@ class CpsHud : CachedTextHud(
 
     private fun registerClick() {
         lastClick = System.nanoTime()
-        hidden = false
+        autoHidden = false
     }
 
     override fun getText(): String {
         val time = System.nanoTime()
         val nanos = hideAfterNanos
         if (nanos > 0L && !HudManager.isEditing && time - lastClick > nanos) {
-            hidden = true
+            autoHidden = true
         }
         left.fastRemoveIfReversed { time - it > 1_000_000_000 }
         right.fastRemoveIfReversed { time - it > 1_000_000_000 }

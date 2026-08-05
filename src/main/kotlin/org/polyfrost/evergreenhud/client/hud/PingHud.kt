@@ -44,7 +44,7 @@ class PingHud : CachedTextHud(
     override fun setup() {
         super.setup()
         eventHandler { _: WorldEvent.Load ->
-            hidden = mc.hasSingleplayerServer()
+            autoHidden = mc.hasSingleplayerServer()
         }
         eventHandler { _: ServerChangedEvent ->
             resetStats()
