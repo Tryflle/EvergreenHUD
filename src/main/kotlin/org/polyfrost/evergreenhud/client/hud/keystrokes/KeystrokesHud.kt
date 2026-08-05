@@ -24,6 +24,7 @@ import org.polyfrost.evergreenhud.client.utils.matchesKeyCode
 import org.polyfrost.evergreenhud.client.utils.matchesMouseButton
 import org.polyfrost.oneconfig.api.config.v1.Property
 import org.polyfrost.oneconfig.api.config.v1.annotations.Color
+import org.polyfrost.oneconfig.api.config.v1.annotations.DraggableList
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
@@ -37,14 +38,22 @@ import org.polyfrost.oneconfig.utils.v1.dsl.mc
 
 private const val KEY = 16f
 private const val CPS_SCALE = 0.5f
-private const val GAP = 2f
+private const val DEFAULT_GAP = 2f
 private const val LINE_GAP = 1f
-private const val SPACE_H = 11f
+private const val DEFAULT_SPACE_H = 11f
+private const val DEFAULT_SPACE_LINE_W = 11f
+private const val DEFAULT_SPACE_LINE_H = 1f
 private const val FONT = 8f
 
 private const val CPS_NONE = 0
 private const val CPS_SMALL = 1
 private const val CPS_LARGE = 2
+
+private const val ROW_MOVEMENT = "Movement"
+private const val ROW_SPACEBAR = "Spacebar"
+private const val ROW_MOUSE = "Mouse"
+private const val ROW_SPRINT = "Sprint"
+private const val ROW_SNEAK = "Sneak"
 
 private const val UP = "▲"
 private const val DOWN = "▼"
@@ -56,112 +65,74 @@ class KeystrokesHud : Hud(
     title = "Keystrokes",
     category = Category.INFO,
 ) {
-    @Switch(title = "Movement Keys")
-    var showMovement = true
+    @DraggableList(
+        title = "Rows",
+        description = "Which rows to show, and in what order.",
+        checkable = true,
+        options = [ROW_MOVEMENT, ROW_SPACEBAR, ROW_MOUSE, ROW_SPRINT, ROW_SNEAK],
+    )
+    var rows = arrayOf(ROW_MOVEMENT, ROW_SPACEBAR, ROW_MOUSE)
 
-    @Switch(title = "Spacebar")
-    var showJump = true
-
-    @Switch(title = "Attack & Use")
-    var showClicks = true
+    @Switch(title = "Arrows", description = "Use arrows instead of key names.")
+    var arrows = false
 
     @RadioButton(
         title = "Click Counter",
-        description = "Show your CPS on the attack and use keys. Small keeps the key name above the count, large replaces it.",
+        description = "Show CPS on the mouse keys. Small sits under the name, large replaces it.",
         options = ["None", "Small", "Large"],
     )
     var cpsMode = CPS_NONE
 
-    @Switch(title = "Sprint", description = "Show the sprint key.")
-    var showSprint = false
+    @Slider(title = "Key Spacing", description = "Gap between keys.", min = 0F, max = 10F, step = 0.5F)
+    var keyGap = DEFAULT_GAP
 
-    @Switch(title = "Sneak", description = "Show the sneak key.")
-    var showSneak = false
+    @Slider(title = "Spacebar Height", description = "Height of the spacebar.", min = 4F, max = 24F, step = 0.5F)
+    var spaceH = DEFAULT_SPACE_H
 
-    @Switch(title = "Arrows", description = "Replace the movement keys with arrows.")
-    var arrows = false
+    @Slider(title = "Spacebar Line Width", description = "Length of the spacebar line.", min = 1F, max = 48F, step = 0.5F)
+    var spaceLineW = DEFAULT_SPACE_LINE_W
 
-    @Slider(title = "Fade In Duration (ms)", description = "How long a key takes to fade from the unpressed to the pressed colors.", min = 1F, max = 250F, step = 1F)
+    @Slider(title = "Spacebar Line Thickness", description = "Thickness of the spacebar line.", min = 0.5F, max = 6F, step = 0.5F)
+    var spaceLineH = DEFAULT_SPACE_LINE_H
+
+    @Slider(title = "Fade In Duration (ms)", description = "Time to fade to the pressed colors.", min = 1F, max = 250F, step = 1F)
     var fadeInMs = 150f
 
-    @Slider(title = "Fade Out Duration (ms)", description = "How long a key takes to fade from the pressed to the unpressed colors.", min = 1F, max = 250F, step = 1F)
+    @Slider(title = "Fade Out Duration (ms)", description = "Time to fade back to the unpressed colors.", min = 1F, max = 250F, step = 1F)
     var fadeOutMs = 150f
 
-    @Color(title = "Pressed Background Color")
+    @Color(title = "Unpressed Background Color", subcategory = "Colors")
+    var unpressedBg = PolyColor(0x80000000.toInt())
+
+    @Color(title = "Unpressed Text Color", subcategory = "Colors")
+    var unpressedText = PolyColor(0xFFFFFFFF.toInt())
+
+    @Color(title = "Pressed Background Color", subcategory = "Colors")
     var pressedBg = PolyColor(0xFFFFFFFF.toInt())
 
-    @Color(title = "Pressed Text Color")
+    @Color(title = "Pressed Text Color", subcategory = "Colors")
     var pressedText = PolyColor(0xFF000000.toInt())
 
-    @Transient
-    private var forward = mutableStateOf(0f)
+    private val showJump: Boolean get() = ROW_SPACEBAR in rows
+
+    private val showClicks: Boolean get() = ROW_MOUSE in rows
 
     @Transient
-    private var left = mutableStateOf(0f)
-
-    @Transient
-    private var back = mutableStateOf(0f)
-
-    @Transient
-    private var right = mutableStateOf(0f)
-
-    @Transient
-    private var jump = mutableStateOf(0f)
-
-    @Transient
-    private var attack = mutableStateOf(0f)
-
-    @Transient
-    private var use = mutableStateOf(0f)
-
-    @Transient
-    private var sprint = mutableStateOf(0f)
-
-    @Transient
-    private var sneak = mutableStateOf(0f)
-
-    @Transient
-    private var rev = mutableStateOf(0)
-
-    @Transient
-    private var attackCps = mutableStateOf(0)
-
-    @Transient
-    private var useCps = mutableStateOf(0)
-
-    @Transient
-    private var attackClicks: ArrayList<Long> = ArrayList(20)
-
-    @Transient
-    private var useClicks: ArrayList<Long> = ArrayList(20)
+    private var keys = KeyState()
 
     @Transient
     private var handlers: ArrayList<EventHandler<*>> = ArrayList(2)
 
-    @Transient
-    private var lastNanos = System.nanoTime()
-
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
 
     override fun clone(): Hud = (super.clone() as KeystrokesHud).apply {
+        unpressedBg = unpressedBg.copy()
+        unpressedText = unpressedText.copy()
         pressedBg = pressedBg.copy()
         pressedText = pressedText.copy()
-        forward = mutableStateOf(0f)
-        left = mutableStateOf(0f)
-        back = mutableStateOf(0f)
-        right = mutableStateOf(0f)
-        jump = mutableStateOf(0f)
-        attack = mutableStateOf(0f)
-        use = mutableStateOf(0f)
-        sprint = mutableStateOf(0f)
-        sneak = mutableStateOf(0f)
-        rev = mutableStateOf(0)
-        attackCps = mutableStateOf(0)
-        useCps = mutableStateOf(0)
-        attackClicks = ArrayList(20)
-        useClicks = ArrayList(20)
+        rows = rows.copyOf()
+        keys = KeyState()
         handlers = ArrayList(2)
-        lastNanos = System.nanoTime()
     }
 
     override fun setup() {
@@ -170,23 +141,24 @@ class KeystrokesHud : Hud(
             addDependency("arrows", null) {
                 if (font != Font.Minecraft) Property.Display.DISABLED else Property.Display.SHOWN
             }
-            addDependency("cpsMode", "showClicks")
-            for (option in listOf("showMovement", "showJump", "showClicks", "showSprint", "showSneak", "arrows", "cpsMode")) {
-                addCallback(option) { rev.value++ }
+            addDependency("cpsMode", null) {
+                if (showClicks) Property.Display.SHOWN else Property.Display.DISABLED
             }
-            handlers.add(eventHandler { (btn, state): MouseInputEvent ->
-                if (state == 1) {
-                    val o = mc.options ?: return@eventHandler
-                    if (o.keyAttack.matchesMouseButton(btn)) onAttackClick()
-                    if (o.keyUse.matchesMouseButton(btn)) onUseClick()
+            for (option in listOf("spaceH", "spaceLineW", "spaceLineH")) {
+                addDependency(option, null) {
+                    if (showJump) Property.Display.SHOWN else Property.Display.DISABLED
                 }
+            }
+            for (option in listOf("rows", "arrows", "cpsMode", "keyGap", "spaceH", "spaceLineW", "spaceLineH")) {
+                addCallback(option) { keys.rev.value++ }
+            }
+            addCallback("unpressedBg") { pushToDesigner() }
+            pushToDesigner()
+            handlers.add(eventHandler { (btn, state): MouseInputEvent ->
+                if (state == 1) onClick { it.matchesMouseButton(btn) }
             })
             handlers.add(eventHandler { (key, _, state): KeyInputEvent ->
-                if (state == 1 && key != 0) {
-                    val o = mc.options ?: return@eventHandler
-                    if (o.keyAttack.matchesKeyCode(key)) onAttackClick()
-                    if (o.keyUse.matchesKeyCode(key)) onUseClick()
-                }
+                if (state == 1 && key != 0) onClick { it.matchesKeyCode(key) }
             })
         }
     }
@@ -194,26 +166,42 @@ class KeystrokesHud : Hud(
     override fun remove() {
         for (handler in handlers) handler.unregister()
         handlers.clear()
-        attackClicks.clear()
-        useClicks.clear()
+        keys.attackClicks.clear()
+        keys.useClicks.clear()
     }
 
-    private fun onAttackClick() {
-        if (showClicks && cpsMode != CPS_NONE) attackClicks.add(System.nanoTime())
+    private fun pushToDesigner() {
+        bgColor = unpressedBg.rawArgb
+        bgChroma = unpressedBg.chroma
+        bgChromaSpeed = unpressedBg.chromaSpeed
     }
 
-    private fun onUseClick() {
-        if (showClicks && cpsMode != CPS_NONE) useClicks.add(System.nanoTime())
+    private fun pullFromDesigner(): Boolean {
+        var pulled = false
+        if (bgColor != unpressedBg.rawArgb || bgChroma != unpressedBg.chroma || bgChromaSpeed != unpressedBg.chromaSpeed) {
+            unpressedBg = PolyColor(bgColor, bgChroma, bgChromaSpeed)
+            pulled = true
+        }
+        if (pulled) keys.rev.value++
+        return pulled
+    }
+
+    private inline fun onClick(matches: (KeyMapping) -> Boolean) {
+        if (!showClicks || cpsMode == CPS_NONE) return
+        val o = mc.options ?: return
+        val now = System.nanoTime()
+        if (matches(o.keyAttack)) keys.attackClicks.add(now)
+        if (matches(o.keyUse)) keys.useClicks.add(now)
     }
 
     override fun update(): Boolean {
         val o = mc.options ?: return false
         val now = System.nanoTime()
-        val dtMs = (now - lastNanos).coerceAtLeast(0L) / 1_000_000f
-        lastNanos = now
+        val dtMs = (now - keys.lastNanos).coerceAtLeast(0L) / 1_000_000f
+        keys.lastNanos = now
+        var changed = pullFromDesigner()
         val inStep = if (fadeInMs <= 0f) 1f else dtMs / fadeInMs
         val outStep = if (fadeOutMs <= 0f) 1f else dtMs / fadeOutMs
-        var changed = false
         fun poll(state: MutableState<Float>, key: KeyMapping) {
             val target = if (key.isDown) 1f else 0f
             val cur = state.value
@@ -227,67 +215,65 @@ class KeystrokesHud : Hud(
                 changed = true
             }
         }
-        poll(forward, o.keyUp)
-        poll(left, o.keyLeft)
-        poll(back, o.keyDown)
-        poll(right, o.keyRight)
-        poll(jump, o.keyJump)
-        poll(attack, o.keyAttack)
-        poll(use, o.keyUse)
-        poll(sprint, o.keySprint)
-        poll(sneak, o.keyShift)
+        poll(keys.forward, o.keyUp)
+        poll(keys.left, o.keyLeft)
+        poll(keys.back, o.keyDown)
+        poll(keys.right, o.keyRight)
+        poll(keys.jump, o.keyJump)
+        poll(keys.attack, o.keyAttack)
+        poll(keys.use, o.keyUse)
+        poll(keys.sprint, o.keySprint)
+        poll(keys.sneak, o.keyShift)
         if (showClicks && cpsMode != CPS_NONE) {
-            attackClicks.fastRemoveIfReversed { now - it > 1_000_000_000 }
-            useClicks.fastRemoveIfReversed { now - it > 1_000_000_000 }
-            if (attackCps.value != attackClicks.size) {
-                attackCps.value = attackClicks.size
-                changed = true
+            fun pollCps(clicks: ArrayList<Long>, cps: MutableState<Int>) {
+                clicks.fastRemoveIfReversed { now - it > 1_000_000_000 }
+                if (cps.value != clicks.size) {
+                    cps.value = clicks.size
+                    changed = true
+                }
             }
-            if (useCps.value != useClicks.size) {
-                useCps.value = useClicks.size
-                changed = true
-            }
+            pollCps(keys.attackClicks, keys.attackCps)
+            pollCps(keys.useClicks, keys.useCps)
         }
         return changed
     }
 
     @Composable
     override fun Content() {
-        rev.value
+        keys.rev.value
         val o = mc.options ?: return
         val s = textScale.coerceAtLeast(0.01f)
-        val key = KEY * s
-        val gap = GAP * s
-        val rowW = key * 3 + gap * 2
+        val keyW = KEY * s + padLeft + padRight
+        val keyH = KEY * s + padTop + padBottom
+        val gap = keyGap * s
+        val rowW = keyW * 3 + gap * 2
         val clickW = (rowW - gap) / 2f
-        val spaceH = SPACE_H * s
+        val spaceKeyH = spaceH * s + padTop + padBottom
         val useArrows = arrows && font == Font.Minecraft
 
         PolyColumn(gap = gap) {
-            if (showMovement) {
-                PolyBox(modifier = PolyModifier.size(rowW, key)) {
-                    Key(if (useArrows) UP else o.keyUp.label(), forward.value, key, key, PolyAlign.Center)
+            for (row in rows) when (row) {
+                ROW_MOVEMENT -> {
+                    PolyBox(modifier = PolyModifier.size(rowW, keyH)) {
+                        Key(if (useArrows) UP else o.keyUp.label(), keys.forward.value, keyW, keyH, PolyAlign.Center)
+                    }
+                    PolyRow(gap = gap) {
+                        Key(if (useArrows) LEFT else o.keyLeft.label(), keys.left.value, keyW, keyH)
+                        Key(if (useArrows) DOWN else o.keyDown.label(), keys.back.value, keyW, keyH)
+                        Key(if (useArrows) RIGHT else o.keyRight.label(), keys.right.value, keyW, keyH)
+                    }
                 }
-                PolyRow(gap = gap) {
-                    Key(if (useArrows) LEFT else o.keyLeft.label(), left.value, key, key)
-                    Key(if (useArrows) DOWN else o.keyDown.label(), back.value, key, key)
-                    Key(if (useArrows) RIGHT else o.keyRight.label(), right.value, key, key)
+
+                ROW_SPACEBAR -> SpaceKey(keys.jump.value, rowW, spaceKeyH)
+
+                ROW_MOUSE -> PolyRow(gap = gap) {
+                    ClickKey("LMB", keys.attack.value, keys.attackCps.value, clickW, keyH)
+                    ClickKey("RMB", keys.use.value, keys.useCps.value, clickW, keyH)
                 }
-            }
-            if (showJump) {
-                SpaceKey(jump.value, rowW, spaceH)
-            }
-            if (showClicks) {
-                PolyRow(gap = gap) {
-                    ClickKey("LMB", attack.value, attackCps.value, clickW, key)
-                    ClickKey("RMB", use.value, useCps.value, clickW, key)
-                }
-            }
-            if (showSprint) {
-                Key(o.keySprint.label(), sprint.value, rowW, key)
-            }
-            if (showSneak) {
-                Key(o.keyShift.label(), sneak.value, rowW, key)
+
+                ROW_SPRINT -> Key(o.keySprint.label(), keys.sprint.value, rowW, keyH)
+
+                ROW_SNEAK -> Key(o.keyShift.label(), keys.sneak.value, rowW, keyH)
             }
         }
     }
@@ -298,11 +284,16 @@ class KeystrokesHud : Hud(
         else -> unpressed.lerp(pressed, progress)
     }
 
-    private fun keyFg(progress: Float): PolyColor =
-        blend(PolyColor(textColor, textChroma, textChromaSpeed), pressedText, progress)
+    private fun keyFg(progress: Float): PolyColor = blend(unpressedText, pressedText, progress)
 
-    private fun keyBg(progress: Float): PolyColor =
-        blend(PolyColor(bgColor, bgChroma, bgChromaSpeed), pressedBg, progress)
+    private fun keyBg(progress: Float): PolyColor = blend(unpressedBg, pressedBg, progress)
+
+    private fun keyModifier(progress: Float, w: Float, h: Float, align: PolyAlign? = null): PolyModifier {
+        var mod = PolyModifier.size(w, h)
+        if (showBackground) mod = mod.background(keyBg(progress), bgRadius)
+        if (align != null) mod = mod.align(align)
+        return mod
+    }
 
     @Composable
     private fun ClickKey(label: String, progress: Float, cps: Int, w: Float, h: Float) {
@@ -316,12 +307,7 @@ class KeystrokesHud : Hud(
     @Composable
     private fun Key(label: String, progress: Float, w: Float, h: Float, align: PolyAlign? = null, sub: String? = null) {
         val fg = keyFg(progress)
-        var mod = PolyModifier.size(w, h)
-        if (showBackground) {
-            mod = mod.background(keyBg(progress), bgRadius)
-        }
-        if (align != null) mod = mod.align(align)
-        PolyBox(modifier = mod) {
+        PolyBox(modifier = keyModifier(progress, w, h, align)) {
             val subScale = textScale * CPS_SCALE
             if (font == Font.Minecraft) {
                 val lineH = McFontQueue.measureTextHeight(textScale)
@@ -368,22 +354,42 @@ class KeystrokesHud : Hud(
     @Composable
     private fun SpaceKey(progress: Float, w: Float, h: Float) {
         val fg = keyFg(progress)
-        var mod = PolyModifier.size(w, h)
-        if (showBackground) {
-            mod = mod.background(keyBg(progress), bgRadius)
-        }
-        PolyBox(modifier = mod) {
+        PolyBox(modifier = keyModifier(progress, w, h)) {
             PolyCanvas(PolyModifier.size(w, h)) { x, y, cw, ch ->
                 val s = textScale
-                val cx = x + cw / 2f
-                val cy = y + ch / 2f
+                val half = spaceLineW * s / 2f
+                val thickness = spaceLineH * s
+                val cx = x + cw / 2f - 0.5f * s
+                val cy = y + ch / 2f - 0.5f * s
                 if (showShadow && font == Font.Minecraft) {
-                    line(cx - 5f * s, cy + 0.5f * s, cx + 6f * s, cy + 0.5f * s, fg.darken(0.75f), s)
+                    line(cx - half + s, cy + s, cx + half + s, cy + s, fg.darken(0.75f), thickness)
                 }
-                line(cx - 6f * s, cy - 0.5f * s, cx + 5f * s, cy - 0.5f * s, fg, s)
+                line(cx - half, cy, cx + half, cy, fg, thickness)
             }
         }
     }
 
     private fun KeyMapping.label(): String = translatedKeyMessage.string
+}
+
+/** Per-instance render state. Not serialized, and rebuilt from scratch on clone. */
+private class KeyState {
+    val forward = mutableStateOf(0f)
+    val left = mutableStateOf(0f)
+    val back = mutableStateOf(0f)
+    val right = mutableStateOf(0f)
+    val jump = mutableStateOf(0f)
+    val attack = mutableStateOf(0f)
+    val use = mutableStateOf(0f)
+    val sprint = mutableStateOf(0f)
+    val sneak = mutableStateOf(0f)
+    val attackCps = mutableStateOf(0)
+    val useCps = mutableStateOf(0)
+    val attackClicks = ArrayList<Long>(20)
+    val useClicks = ArrayList<Long>(20)
+
+    /** Bumped to force a recompose when an option or the designer changes the layout. */
+    val rev = mutableStateOf(0)
+
+    var lastNanos = System.nanoTime()
 }
