@@ -16,7 +16,7 @@ import org.polyfrost.oneconfig.utils.v1.dsl.mc
 class BlockAboveHud : CachedTextHud(
     title = "Block Above",
     category = Category.PLAYER,
-    suffix = "remaining",
+    suffix = " remaining",
     defaultText = "0",
 ) {
 

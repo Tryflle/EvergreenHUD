@@ -10,7 +10,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class SpeedHud : GenericNumberHud(
     title = "Speed",
     category = Category.INFO,
-    suffix = "m/s"
+    suffix = " m/s"
 ) {
     @Switch(title = "Use X")
     var useX = true
@@ -33,10 +33,10 @@ class SpeedHud : GenericNumberHud(
         if (isReal) {
             addCallback("speedUnit") { value: Int ->
                 suffix = when (value) {
-                    1 -> "m/s"
-                    2 -> "kph"
-                    3 -> "mph"
-                    else -> "m/t"
+                    1 -> " m/s"
+                    2 -> " kph"
+                    3 -> " mph"
+                    else -> " m/t"
                 }
 
                 updateAndRecalculate()

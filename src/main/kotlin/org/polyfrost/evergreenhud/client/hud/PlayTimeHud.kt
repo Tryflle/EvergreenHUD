@@ -7,7 +7,7 @@ import kotlin.time.Duration.Companion.seconds
 class PlayTimeHud : CachedTextHud(
     title = "Play Time",
     category = Category.INFO,
-    prefix = "Time Played:",
+    prefix = "Time Played: ",
 ) {
     private var time: Long = 0L
 

@@ -10,7 +10,7 @@ private const val DEFAULT_TRAILING_ZEROS = true
 open class GenericNumberHud(
     title: String,
     category: Category,
-    prefix: String = "$title:",
+    prefix: String = "$title: ",
     suffix: String = "",
     id: String = "${title.replace(' ', '_').lowercase()}.json",
     defaultValue: Float = 0f,

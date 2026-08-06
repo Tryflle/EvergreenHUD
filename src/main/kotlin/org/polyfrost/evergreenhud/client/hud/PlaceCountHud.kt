@@ -12,7 +12,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class PlaceCountHud : CachedTextHud(
     title = "Block Place Count",
     category = Category.COMBAT,
-    prefix = "Blocks:",
+    prefix = "Blocks: ",
 ) {
 
     @Slider(title = "Interval (ms)", min = 500F, max = 3000F)

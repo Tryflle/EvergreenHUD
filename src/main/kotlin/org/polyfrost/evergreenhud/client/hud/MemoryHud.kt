@@ -11,7 +11,7 @@ import kotlin.time.Duration.Companion.seconds
 class MemoryHud : CachedTextHud(
     title = "Memory",
     category = Category.INFO,
-    suffix = "GB"
+    suffix = " GB"
 ) {
     @RadioButton(
         title = "Display Type",

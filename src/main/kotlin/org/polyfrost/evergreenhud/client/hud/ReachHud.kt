@@ -13,7 +13,7 @@ import kotlin.time.Duration.Companion.seconds
 class ReachHud : GenericNumberHud(
     title = "Reach",
     category = Category.COMBAT,
-    suffix = "blocks"
+    suffix = " blocks"
 ) {
     @Slider(title = "Discard Time", min = 1000F, max = 10000F)
     var discardTime = 3000

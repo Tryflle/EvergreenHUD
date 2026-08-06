@@ -11,7 +11,7 @@ class ServerAddressHud : CachedTextHud(
     id = "server_ip.json",
     title = "Server Address",
     category = Category.INFO,
-    prefix = "IP:",
+    prefix = "IP: ",
 ) {
     @Switch(title = "Show in Single Player")
     var showInSinglePlayer = true

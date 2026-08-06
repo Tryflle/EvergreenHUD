@@ -3,7 +3,7 @@ package org.polyfrost.evergreenhud.client.utils
 abstract class CachedTextHud(
     title: String,
     category: Category,
-    prefix: String = "$title:",
+    prefix: String = "$title: ",
     suffix: String = "",
     id: String = "${title.replace(' ', '_').lowercase()}.json",
     protected open val defaultText: String = "",

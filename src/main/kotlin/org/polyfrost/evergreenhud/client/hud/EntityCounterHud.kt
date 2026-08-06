@@ -8,7 +8,7 @@ import org.polyfrost.oneconfig.api.event.v1.eventHandler
 class EntityCounterHud : CachedTextHud(
     title = "Entity Counter",
     category = Category.INFO,
-    prefix = "Entities:",
+    prefix = "Entities: ",
     defaultText = "0"
 ) {
     @Switch(title = "Show total entities")

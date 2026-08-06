@@ -1,3 +1,4 @@
-## 3.4.0
-- Facing hud, a text alternative to the Direction compass
-- Background merging for the Resource Pack, Item Lore, Clock, Mouse Strokes, Shapes, Potion Effects, Direction, and Position huds
+## 3.5.0
+- Customizable row order and spacing for the Keystrokes hud
+- Rotation huds (Facing, Direction, Position) now follow the camera entity, so they read correctly while spectating
+- Auto-hide no longer re-shows huds you hid yourself
