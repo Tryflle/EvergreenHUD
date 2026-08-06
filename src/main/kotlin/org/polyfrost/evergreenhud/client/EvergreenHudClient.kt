@@ -52,7 +52,7 @@ object EvergreenHudClient : ClientModInitializer {
             PingHud(), PlaceCountHud(), PlayerPreviewHud(),
             PlayTimeHud(), PositionHud(), PotionEffectsHud(), ReachHud(),
             ResourcePackHud(), SaturationHud(), ServerAddressHud(),
-            ShapeHud(), SpeedHud(), TpsHud(),
+            ShapeHud(), SpeedHud(), TpsHud(), WeatherHud(),
         )
 
         huds.forEach(::register)
