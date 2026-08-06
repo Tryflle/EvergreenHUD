@@ -27,6 +27,13 @@ class SpeedHud : GenericNumberHud(
     )
     var speedUnit = 1
 
+    override val legacySuffixes = mapOf(
+        "m/s" to " m/s",
+        "kph" to " kph",
+        "mph" to " mph",
+        "m/t" to " m/t",
+    )
+
     override fun setup() {
         super.setup()
 

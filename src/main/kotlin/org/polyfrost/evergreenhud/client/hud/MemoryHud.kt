@@ -27,6 +27,8 @@ class MemoryHud : CachedTextHud(
 
     private val df: DecimalFormat get() = decimalFormat(1, trailingZeros, displayType == 1)
 
+    override val legacySuffixes = mapOf("GB" to " GB")
+
     override fun setup() {
         super.setup()
         if (isReal) {

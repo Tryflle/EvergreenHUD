@@ -20,7 +20,7 @@ abstract class AutoHideTextHud(
     category: Category,
     prefix: String,
     suffix: String = "",
-) : TextHud(id, title, category, prefix, suffix) {
+) : SpacedTextHud(id, title, category, prefix, suffix) {
 
     /** The user's hide toggle. This is the value that gets serialized. */
     var manuallyHidden = false

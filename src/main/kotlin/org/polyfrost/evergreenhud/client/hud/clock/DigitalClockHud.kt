@@ -1,13 +1,13 @@
 package org.polyfrost.evergreenhud.client.hud.clock
 
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
-import org.polyfrost.oneconfig.api.hud.v1.TextHud
+import org.polyfrost.evergreenhud.client.utils.SpacedTextHud
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-class DigitalClockHud : TextHud(
+class DigitalClockHud : SpacedTextHud(
     id = "digital_clock.json",
     title = "Digital Clock",
     category = Category.INFO,
