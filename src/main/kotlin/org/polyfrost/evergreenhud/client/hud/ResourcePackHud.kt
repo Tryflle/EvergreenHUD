@@ -134,7 +134,6 @@ class ResourcePackHud : Hud(
             }
         }
 
-        /** Greedy word wrap, measured with whichever font the HUD is currently set to. */
         fun wrap(text: String, maxWidth: Float, measure: (String) -> Float): List<String> {
             val lines = ArrayList<String>()
             for (paragraph in text.split('\n')) {

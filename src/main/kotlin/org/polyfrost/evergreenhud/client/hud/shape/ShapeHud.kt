@@ -6,7 +6,6 @@ import org.jetbrains.skia.Path
 import org.polyfrost.compose.composables.PolyBox
 import org.polyfrost.compose.composables.PolyCanvas
 import org.polyfrost.compose.composables.PolyModifier
-import org.polyfrost.compose.composables.PolyText
 import org.polyfrost.compose.composables.size
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.compose.render.RenderContext
@@ -123,15 +122,9 @@ class ShapeHud : Hud(
 
     @Composable
     override fun Content() {
-        if (!isReal) {
-            PolyText(text = "Shapes", color = PREVIEW_TEXT, fontSize = 6f)
-            return
-        }
-
         val sizeModifier = PolyModifier.size(scaledWidth, scaledHeight)
         if (showBackground) {
-            // when merged, HudManager draws this HUD's background as part of the fused neighbour
-            // shape, which hudBackground() accounts for
+            // when merged HudManager draws this background as part of the fused neighbour shape
             PolyBox(modifier = hudBackground(sizeModifier)) {
                 Shape(sizeModifier)
             }
@@ -214,8 +207,6 @@ class ShapeHud : Hud(
     )
 
     companion object {
-        private val PREVIEW_TEXT = PolyColor(0xFFB9BFDF.toInt())
-
         private const val DEFAULT_SIDE = 48f
 
         private const val RECTANGLE = 0

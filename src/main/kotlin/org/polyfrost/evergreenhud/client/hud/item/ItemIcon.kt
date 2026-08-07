@@ -1,0 +1,114 @@
+package org.polyfrost.evergreenhud.client.hud.item
+
+import androidx.compose.runtime.Composable
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.world.item.ItemStack
+import org.jetbrains.skia.Paint
+import org.polyfrost.compose.composables.PolyBox
+import org.polyfrost.compose.composables.PolyCanvas
+import org.polyfrost.compose.composables.PolyMcText
+import org.polyfrost.compose.composables.PolyModifier
+import org.polyfrost.compose.composables.align
+import org.polyfrost.compose.composables.size
+import org.polyfrost.compose.layout.PolyAlign
+import org.polyfrost.compose.render.PolyColor
+import org.polyfrost.oneconfig.internal.ui.components.item.ItemCatalog
+import org.polyfrost.oneconfig.internal.ui.components.item.itemImage
+import java.util.Collections
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.math.roundToInt
+
+/** Size vanilla draws items at and the basis for the offsets below */
+const val ITEM_SIZE = 16f
+
+private const val BAR_X = 2f
+private const val BAR_Y = 13f
+private const val BAR_WIDTH = 13f
+
+private val BAR_BACKGROUND = PolyColor(0xFF000000.toInt())
+
+private val itemPaint = Paint()
+
+private val requestedIcons: MutableSet<String> = Collections.newSetFromMap(ConcurrentHashMap())
+
+/** The OneConfig item renderer draws a registry entry not a stack so bar and count are drawn here */
+@Composable
+fun ItemIcon(
+    stack: ItemStack,
+    size: Float = ITEM_SIZE,
+    decorations: Boolean = true,
+    countOverride: String? = null,
+    modifier: PolyModifier = PolyModifier,
+) {
+    val scale = size / ITEM_SIZE
+    PolyBox(modifier = modifier.size(size, size)) {
+        ItemImage(itemId(stack), size)
+        if (!decorations) return@PolyBox
+
+        if (stack.isDamageableItem && stack.damageValue > 0) DurabilityBar(stack, scale)
+
+        val count = countOverride ?: stack.count.takeIf { it > 1 }?.toString()
+        if (count != null) {
+            PolyMcText(
+                count,
+                scale = scale,
+                modifier = PolyModifier.align(PolyAlign.BottomRight),
+            )
+        }
+    }
+}
+
+/** The picker composes a preview once so the icon cache is read in the draw pass instead of state */
+@Composable
+private fun ItemImage(id: String, size: Float) {
+    PolyCanvas(PolyModifier.size(size, size)) { x, y, w, h ->
+        val icon = itemImage(id)
+        if (icon != null) image(icon, x, y, w, h, itemPaint) else requestIcon(id)
+    }
+}
+
+private fun requestIcon(id: String) {
+    if (!requestedIcons.add(id)) return
+    // the callback also fires when the render fails so a later reload can ask again
+    ItemCatalog.loadIcon(id) { requestedIcons.remove(id) }
+}
+
+/** Compose warms HUDs up before item data components exist and building a stack then throws */
+inline fun <T> whenItemsReady(fallback: T, block: () -> T): T = try {
+    block()
+} catch (throwable: Throwable) {
+    fallback
+}
+
+/** Registry id which is the key the OneConfig item renderer caches icons under */
+fun itemId(stack: ItemStack): String = BuiltInRegistries.ITEM.getKey(stack.item).toString()
+
+@Composable
+private fun DurabilityBar(stack: ItemStack, scale: Float) {
+    val remaining = ((stack.maxDamage - stack.damageValue).toFloat() / stack.maxDamage).coerceIn(0f, 1f)
+    val filled = (remaining * BAR_WIDTH).roundToInt().toFloat()
+    val color = PolyColor(barColor(remaining))
+
+    PolyCanvas(PolyModifier.size(ITEM_SIZE * scale, ITEM_SIZE * scale)) { x, y, _, _ ->
+        rect(x + BAR_X * scale, y + BAR_Y * scale, BAR_WIDTH * scale, scale, BAR_BACKGROUND)
+        if (filled > 0f) rect(x + BAR_X * scale, y + BAR_Y * scale, filled * scale, scale, color)
+    }
+}
+
+/** Vanilla fades the bar from red to green over the first third of the hue circle */
+private fun barColor(remaining: Float): Int {
+    val hue = remaining / 3f
+    val sector = (hue * 6f).toInt() % 6
+    val f = hue * 6f - (hue * 6f).toInt()
+    val q = (255 * (1f - f)).roundToInt().coerceIn(0, 255)
+    val t = (255 * f).roundToInt().coerceIn(0, 255)
+    val (r, g, b) = when (sector) {
+        0 -> Triple(255, t, 0)
+        1 -> Triple(q, 255, 0)
+        2 -> Triple(0, 255, t)
+        3 -> Triple(0, q, 255)
+        4 -> Triple(t, 0, 255)
+        else -> Triple(255, 0, q)
+    }
+    return 0xFF000000.toInt() or (r shl 16) or (g shl 8) or b
+}

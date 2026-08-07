@@ -23,7 +23,11 @@ private const val LINE_GAP = 2f
 private const val POPPINS_SIZE = 8f
 
 @Composable
-fun Hud.HudStyledLines(lines: List<List<StyledRun>>, alignColumns: Boolean = false) {
+fun Hud.HudStyledLines(lines: List<List<StyledRun>>, alignColumns: Boolean = false) =
+    HudStyledCells(lines.map { line -> line.map { it.asCell() } }, alignColumns)
+
+@Composable
+fun Hud.HudStyledCells(lines: List<List<StyledCell>>, alignColumns: Boolean = false) {
     val cased = when (caseType) {
         1 -> lines.mapRunText(String::uppercase)
         2 -> lines.mapRunText(String::lowercase)
@@ -33,8 +37,7 @@ fun Hud.HudStyledLines(lines: List<List<StyledRun>>, alignColumns: Boolean = fal
     val padInsets = PolyInsets(padLeft, padTop, padRight, padBottom)
     val isStaticValid = staticWidth && staticW > 0f && staticH > 0f
 
-    // when merged, HudManager draws this HUD's background as part of the fused neighbour shape,
-    // which hudBackground() accounts for
+    // when merged HudManager draws this background as part of the fused neighbour shape
     val bgModifier = hudBackground()
     val outerModifier =
         if (isStaticValid) bgModifier.size(staticW, staticH).padding(padInsets)
@@ -54,8 +57,8 @@ fun Hud.HudStyledLines(lines: List<List<StyledRun>>, alignColumns: Boolean = fal
     }
 }
 
-private fun List<List<StyledRun>>.mapRunText(transform: (String) -> String): List<List<StyledRun>> =
-    map { line -> line.map { it.copy(text = transform(it.text)) } }
+private fun List<List<StyledCell>>.mapRunText(transform: (String) -> String): List<List<StyledCell>> =
+    map { line -> line.map { cell -> StyledCell(cell.runs.map { it.copy(text = transform(it.text)) }) } }
 
 private fun Hud.mcRunText(run: StyledRun): String = buildString {
     if (run.bold || textBold) append("§l")
@@ -63,15 +66,18 @@ private fun Hud.mcRunText(run: StyledRun): String = buildString {
     append(run.text)
 }
 
-private fun Hud.runWidths(runs: List<StyledRun>, skiaFont: SkiaFont?): List<Float> =
-    if (skiaFont != null) runs.map { skiaFont.measureTextWidth(it.text) }
-    else runs.map { McFontQueue.measureTextWidth(mcRunText(it), textScale) }
+private fun Hud.runWidth(run: StyledRun, skiaFont: SkiaFont?): Float =
+    if (skiaFont != null) skiaFont.measureTextWidth(run.text)
+    else McFontQueue.measureTextWidth(mcRunText(run), textScale)
 
-private fun Hud.columnOffsets(lines: List<List<StyledRun>>, skiaFont: SkiaFont?): List<Float> {
+private fun Hud.cellWidths(cells: List<StyledCell>, skiaFont: SkiaFont?): List<Float> =
+    cells.map { cell -> cell.runs.sumOf { runWidth(it, skiaFont).toDouble() }.toFloat() }
+
+private fun Hud.columnOffsets(lines: List<List<StyledCell>>, skiaFont: SkiaFont?): List<Float> {
     val columns = lines.maxOfOrNull { it.size } ?: return emptyList()
     val widths = FloatArray(columns)
     for (line in lines) {
-        val lineWidths = runWidths(line, skiaFont)
+        val lineWidths = cellWidths(line, skiaFont)
         for (i in lineWidths.indices) widths[i] = max(widths[i], lineWidths[i])
     }
 
@@ -84,11 +90,20 @@ private fun Hud.columnOffsets(lines: List<List<StyledRun>>, skiaFont: SkiaFont?)
 }
 
 @Composable
-private fun Hud.StyledLine(runs: List<StyledRun>, alignment: PolyAlign, skiaFont: SkiaFont?, columnOffsets: List<Float>?) {
+private fun Hud.StyledLine(cells: List<StyledCell>, alignment: PolyAlign, skiaFont: SkiaFont?, columnOffsets: List<Float>?) {
     val fg = PolyColor(textColor, textChroma, textChromaSpeed)
-    val widths = runWidths(runs, skiaFont)
-    val offsets = columnOffsets ?: widths.runningFold(0f) { acc, w -> acc + w }
-    val width = (runs.indices.maxOfOrNull { offsets[it] + widths[it] } ?: 0f).coerceAtLeast(1f)
+    val widths = cellWidths(cells, skiaFont)
+    val cellOffsets = columnOffsets ?: widths.runningFold(0f) { acc, w -> acc + w }
+    val width = (cells.indices.maxOfOrNull { cellOffsets[it] + widths[it] } ?: 0f).coerceAtLeast(1f)
+
+    val placed = ArrayList<Pair<StyledRun, Float>>()
+    for ((i, cell) in cells.withIndex()) {
+        var offset = cellOffsets[i]
+        for (run in cell.runs) {
+            placed.add(run to offset)
+            offset += runWidth(run, skiaFont)
+        }
+    }
 
     if (skiaFont != null) {
         val metrics = skiaFont.metrics
@@ -98,24 +113,25 @@ private fun Hud.StyledLine(runs: List<StyledRun>, alignment: PolyAlign, skiaFont
             val baseline = y - metrics.ascent
             if (showShadow) {
                 val shadowCol = PolyColor(shadowColor, shadowChroma, shadowChromaSpeed)
-                for ((i, run) in runs.withIndex()) {
-                    text(run.text, x + offsets[i] + shadowOffsetX, baseline + shadowOffsetY, shadowCol, skiaFont)
+                for ((run, offset) in placed) {
+                    text(run.text, x + offset + shadowOffsetX, baseline + shadowOffsetY, shadowCol, skiaFont)
                 }
             }
-            for ((i, run) in runs.withIndex()) {
-                val color = run.argb?.let { PolyColor(it) } ?: fg
-                text(run.text, x + offsets[i], baseline, color, skiaFont)
+            for ((run, offset) in placed) {
+                val color = run.color ?: fg
+                text(run.text, x + offset, baseline, color, skiaFont)
             }
         }
     } else {
-        val texts = runs.map { mcRunText(it) }
+        val texts = placed.map { (run, _) -> mcRunText(run) }
         val height = McFontQueue.measureTextHeight(textScale)
 
         PolyCanvas(PolyModifier.size(width, height).align(alignment)) { x, y, _, _ ->
             val renderer = McFontQueue.renderer ?: return@PolyCanvas
-            for ((i, run) in runs.withIndex()) {
-                val color = run.argb ?: fg.argb
-                renderer(canvas, texts[i], x + offsets[i], y, color, showShadow, textScale)
+            for ((i, entry) in placed.withIndex()) {
+                val (run, offset) = entry
+                val color = run.color?.argb ?: fg.argb
+                renderer(canvas, texts[i], x + offset, y, color, showShadow, textScale)
             }
         }
     }

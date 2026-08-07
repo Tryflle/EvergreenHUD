@@ -9,6 +9,7 @@ import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket
 import net.minecraft.world.entity.Entity
 import org.polyfrost.evergreenhud.client.config.GlobalConfig
 import org.polyfrost.evergreenhud.client.hooks.EnderChestTracker
+import org.polyfrost.evergreenhud.client.hooks.HudOffscreen
 import org.polyfrost.evergreenhud.client.hud.*
 import org.polyfrost.evergreenhud.client.hud.battery.BatteryHud
 import org.polyfrost.evergreenhud.client.utils.battery.Battery
@@ -20,6 +21,7 @@ import org.polyfrost.evergreenhud.client.hud.mouse.MouseStrokesHud
 import org.polyfrost.evergreenhud.client.hud.potion.PotionEffectsHud
 import org.polyfrost.evergreenhud.client.hud.shape.ShapeHud
 import org.polyfrost.evergreenhud.client.utils.FrameTimeHelper
+import org.polyfrost.evergreenhud.client.utils.shaders.ShaderMod
 import org.polyfrost.evergreenhud.client.utils.SaturationTracker
 import org.polyfrost.evergreenhud.client.utils.uniqueEntityId
 import org.polyfrost.oneconfig.api.event.v1.EventManager
@@ -37,6 +39,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 object EvergreenHudClient : ClientModInitializer {
     override fun onInitializeClient() {
         FrameTimeHelper.initialize()
+        HudOffscreen.initialize()
         EnderChestTracker.initialize()
         SaturationTracker.initialize()
         GlobalConfig.preload()
@@ -46,10 +49,10 @@ object EvergreenHudClient : ClientModInitializer {
             BiomeHud(), BlockAboveHud(),
             ClockHud(), DigitalClockHud(), ComboHud(), CpsHud(),
             DayHud(), DirectionHud(), EntityCounterHud(), FacingHud(), FpsHud(),
-            InGameTimeHud(), InventoryHud(),
+            InGameTimeHud(), InventoryHud(), ItemCounterHud(),
             KeystrokesHud(),
             LoreHud(), MemoryHud(), MouseStrokesHud(),
-            PingHud(), PlaceCountHud(), PlayerPreviewHud(),
+            PingHud(), PlaceCountHud(), PlayerHeadHud(), PlayerPreviewHud(),
             PlayTimeHud(), PositionHud(), PotionEffectsHud(), ReachHud(),
             ResourcePackHud(), SaturationHud(), ServerAddressHud(),
             ShapeHud(), SpeedHud(), TpsHud(), WeatherHud(),
@@ -58,6 +61,7 @@ object EvergreenHudClient : ClientModInitializer {
         huds.forEach(::register)
 
         registerIfSupported(Battery.isSupported(), ::BatteryHud)
+        registerIfSupported(ShaderMod.isSupported(), ::ShaderHud)
 
         BlockChangeEvent()
         BlockPositionChangedEvent()

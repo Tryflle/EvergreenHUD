@@ -7,12 +7,8 @@ import org.polyfrost.oneconfig.api.hud.v1.TextHud
 import java.util.function.Supplier
 
 /**
- * A [TextHud] which keeps the user's own hide toggle separate from hiding the HUD does to itself, such as
- * hiding after a period of inactivity. HUDs should never write to [hidden] for that, as it would turn the
- * user's toggle back on the next time their condition clears - use [autoHidden] instead.
- *
- * Only the user's toggle is persisted, so a HUD which happens to be auto-hidden when the config is saved does
- * not come back hidden.
+ * Keeps the user hide toggle separate from automatic hiding so a cleared auto condition cannot
+ * re-enable the toggle HUDs must write [autoHidden] rather than [hidden]
  */
 abstract class AutoHideTextHud(
     id: String,
@@ -22,14 +18,14 @@ abstract class AutoHideTextHud(
     suffix: String = "",
 ) : SpacedTextHud(id, title, category, prefix, suffix) {
 
-    /** The user's hide toggle. This is the value that gets serialized. */
+    /** The user toggle and the only serialized value */
     var manuallyHidden = false
         set(value) {
             field = value
             syncHidden()
         }
 
-    /** Set by the HUD itself when its own hide condition triggers. Never serialized. */
+    /** Set by the HUD when its own hide condition triggers and never serialized */
     protected var autoHidden = false
         set(value) {
             if (field == value) return
@@ -57,7 +53,7 @@ abstract class AutoHideTextHud(
 
     override fun addToSerialized(tree: Tree) {
         super.addToSerialized(tree)
-        // rebind the persisted property away from the combined hidden state onto the user's toggle
+        // rebind the persisted property onto the user toggle instead of the combined hidden state
         tree.set(
             "hidden",
             ktProperty(this::manuallyHidden)

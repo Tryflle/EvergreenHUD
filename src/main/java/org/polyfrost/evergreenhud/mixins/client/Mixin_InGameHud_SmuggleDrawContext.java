@@ -9,6 +9,7 @@ import net.minecraft.client.gui.Hud;
 //import net.minecraft.client.gui.GuiGraphics;
 //? if >= 26
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import org.polyfrost.evergreenhud.client.hooks.HudOffscreen;
 import org.polyfrost.evergreenhud.client.hooks.SmuggledHudDrawContext;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -36,8 +37,9 @@ public class Mixin_InGameHud_SmuggleDrawContext {
             DeltaTracker deltaTracker,
             CallbackInfo ci
     ) {
-        SmuggledHudDrawContext.setSmuggledHudDrawContext(graphics);
         SmuggledHudDrawContext.setSmuggledHudPartialTick(deltaTracker.getGameTimeDeltaPartialTick(false));
+        // offscreen pass must run inside the vanilla HUD render the only phase where a nested GUI render is valid
+        HudOffscreen.render();
     }
 
 }

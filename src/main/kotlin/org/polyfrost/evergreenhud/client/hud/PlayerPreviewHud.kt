@@ -1,25 +1,36 @@
 package org.polyfrost.evergreenhud.client.hud
 
-//? if < 26
-//import net.minecraft.client.gui.GuiGraphics
-//? if >= 26
-import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics
-import net.minecraft.client.gui.screens.inventory.InventoryScreen
+import androidx.compose.runtime.Composable
 import net.minecraft.util.Mth
-import org.polyfrost.compose.render.PolyColor
+import org.polyfrost.compose.composables.PolyBox
+import org.polyfrost.compose.composables.PolyCanvas
+import org.polyfrost.compose.composables.PolyModifier
+import org.polyfrost.compose.composables.size
+//? if >= 1.21.10 {
+import org.polyfrost.evergreenhud.client.hooks.PlayerPreviewOffscreen
+//? } else {
+/*import net.minecraft.client.gui.screens.inventory.InventoryScreen
+import org.polyfrost.evergreenhud.client.hooks.HudOffscreen
 import org.polyfrost.evergreenhud.client.hooks.playerPreviewPartialTick
+*///? }
 import org.polyfrost.evergreenhud.client.hooks.smuggledHudPartialTick
-import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
-import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
+import org.polyfrost.oneconfig.api.hud.v1.Hud
+import org.polyfrost.oneconfig.api.platform.v1.Platform
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 
-class PlayerPreviewHud : LegacyHud(
+private const val WIDTH = 80f
+private const val HEIGHT = 120f
+
+/** Entity size the vanilla inventory preview uses in gui units */
+private const val DEFAULT_ENTITY_SCALE = 40f
+
+class PlayerPreviewHud : Hud(
     id = "player_preview.json",
     title = "Player Preview",
     category = Category.PLAYER,
-), HudBackground {
+) {
     @Switch(title = "Paper Doll", description = "Mirror the player's own head rotation.")
     var paperDoll = false
 
@@ -29,82 +40,132 @@ class PlayerPreviewHud : LegacyHud(
     @Slider(title = "Pitch", min = -90F, max = 90F, step = 1F)
     var pitch = 0f
 
-    @Switch(title = "Background")
-    override var background = true
+    @Slider(title = "Model Scale", description = "Size of the player inside the HUD.", min = 10F, max = 80F, step = 1F)
+    var modelScale = DEFAULT_ENTITY_SCALE
 
-    @Color(title = "Background Color")
-    override var backgroundColor = PolyColor(0x90000000.toInt())
-
-    override val width get() = 80f
-    override val height get() = 120f
+    @Slider(title = "Vertical Anchor", description = "Where the player sits inside the HUD, top to bottom.", min = 0F, max = 1F, step = 0.05F)
+    var verticalAnchor = 0.5f
 
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
 
+    override fun canMergeBackground(): Boolean = true
+
+    override fun minimumSize(): Pair<Float, Float> = WIDTH to HEIGHT
+
+    override val alwaysRedraw: Boolean get() = true
+
     override fun setup() {
-        super.setup()
         staticWidth = true
+        staticW = WIDTH
+        staticH = HEIGHT
         if (isReal) {
             hideIf("rotation") { paperDoll }
             hideIf("pitch") { paperDoll }
-            hideIf("backgroundColor") { !background }
         }
     }
 
-    override fun update() = false
+    /** Queues the offscreen pass since the player cannot be drawn while the HUD canvas composes */
+    override fun update(): Boolean {
+        // the preview card is composed once so it queues from its own draw pass
+        if (!isReal) return false
+        return queue(effectiveScale)
+    }
 
-    override fun render(graphics: GuiGraphics) {
-        backgroundArgb?.let {
-            graphics.fill(0, 0, width.toInt(), height.toInt(), it)
-        }
-
-        val player = mc.player ?: return
-
-        val scale = effectiveScale
-        val x1 = x.toInt()
-        val y1 = y.toInt()
-        val x2 = (x + width * scale).toInt()
-        val y2 = (y + height * scale).toInt()
-        val entityScale = (40f * scale).toInt()
-
-        val centerX = (x1 + x2) / 2f
-        val centerY = (y1 + y2) / 2f
-
+    private fun queue(scale: Float): Boolean {
+        val player = mc.player ?: return false
         val partialTick = smuggledHudPartialTick
 
-        val yawOffset: Float
-        val pitchOffset: Float
-        if (paperDoll) {
-            val bodyYaw = Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot)
-            yawOffset = Mth.wrapDegrees(player.yRot - bodyYaw)
-            pitchOffset = player.xRot
+        // how far the body trails the look direction
+        val bodyLag = if (paperDoll) {
+            Mth.wrapDegrees(Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot) - player.yRot)
         } else {
-            yawOffset = rotation - 180f
-            pitchOffset = pitch
+            0f
         }
 
-        playerPreviewPartialTick = partialTick
-        try {
-            //? if < 1.21.8 {
+        val bodyRot: Float
+        val headRot: Float?
+        val headPitch: Float?
+        val modelTilt: Float
+        if (paperDoll) {
+            // the look direction holds still against the camera so the body turns off it and settles back
+            bodyRot = 180f + bodyLag
+            headRot = null
+            headPitch = null
+            modelTilt = 0f
+        } else {
+            bodyRot = rotation
+            // model leans with vanilla mouse tilt and the head counters it
+            headRot = 0f
+            headPitch = -pitch
+            modelTilt = pitch
+        }
 
-            /*graphics.pose().pushPose()
-            graphics.pose().last().pose().identity()
-            *///?}
-            //? if < 26
-            //InventoryScreen.renderEntityInInventoryFollowsMouse(
-            //? if >= 26
-            InventoryScreen.extractEntityInInventoryFollowsMouse(
-                graphics,
-                x1, y1, x2, y2,
-                entityScale,
-                0.0625f,
-                centerX - yawOffset,
-                centerY + pitchOffset,
-                player,
-            )
-            //? if < 1.21.8
-            //graphics.pose().popPose()
-        } finally {
-            playerPreviewPartialTick = -1f
+        //? if >= 1.21.10 {
+        // pixels per gui unit so the target matches the HUD size on screen
+        val pixelsPerGuiUnit = Platform.screen().let {
+            if (it.guiWidth() > 0) it.viewportWidth().toFloat() / it.guiWidth() else 1f
+        }
+        val pixelScale = (scale * pixelsPerGuiUnit).coerceAtLeast(0.0001f)
+        PlayerPreviewOffscreen.submit(
+            this,
+            PlayerPreviewOffscreen.Request(
+                widthPx = (WIDTH * pixelScale).toInt().coerceAtLeast(1),
+                heightPx = (HEIGHT * pixelScale).toInt().coerceAtLeast(1),
+                sizePx = modelScale * pixelScale,
+                bodyRot = bodyRot,
+                headRot = headRot,
+                headPitch = headPitch,
+                modelTilt = modelTilt,
+                partialTick = partialTick,
+                verticalAnchor = verticalAnchor,
+            ),
+        )
+        //? } else {
+        /*// older versions have no submit-node entity pipeline, so the vanilla GUI helper is used
+        val x1 = x.toInt()
+        val y1 = y.toInt()
+        val x2 = (x + WIDTH * scale).toInt()
+        val y2 = (y + HEIGHT * scale).toInt()
+        val centerX = (x1 + x2) / 2f
+        val centerY = (y1 + y2) / 2f
+        val entityScale = (modelScale * scale).toInt()
+        // the vanilla helper takes a mouse offset, so the facing base is subtracted back out
+        // the vanilla helper turns the whole model, so the body lag is all it can show
+        val yawOffset = if (paperDoll) bodyLag else rotation - 180f
+
+        HudOffscreen.submit { graphics ->
+            playerPreviewPartialTick = partialTick
+            try {
+                InventoryScreen.renderEntityInInventoryFollowsMouse(
+                    graphics,
+                    x1, y1, x2, y2,
+                    entityScale,
+                    0.0625f,
+                    centerX - yawOffset,
+                    centerY + pitch,
+                    player,
+                )
+            } finally {
+                playerPreviewPartialTick = -1f
+            }
+        }
+        *///? }
+        return false
+    }
+
+    @Composable
+    override fun Content() {
+        PolyBox(modifier = hudBackground().size(WIDTH, HEIGHT)) {
+            PolyCanvas(PolyModifier.size(WIDTH, HEIGHT)) { _, _, w, h ->
+                //? if >= 1.21.10 {
+                // the preview card never runs update so its pass is queued from here
+                if (!isReal) queue(1f)
+                PlayerPreviewOffscreen.drawInto(this@PlayerPreviewHud, canvas, w, h)
+                //? } else {
+                /*// read the position inside the draw pass: dragging the HUD does not recompose it
+                HudOffscreen.drawInto(canvas, x, y, effectiveScale, w, h)
+                *///? }
+            }
         }
     }
 }

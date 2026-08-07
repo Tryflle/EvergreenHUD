@@ -98,8 +98,21 @@ class MouseStrokesHud : Hud(
     )
     var snakeThickness = 5f
 
+    @Switch(title = "Draw Snake Head", description = "Draws a dot at the head of the snake so it's easier to follow.")
+    var drawSnakeHead = true
+
+    @Slider(
+        title = "Snake Head Radius",
+        description = "Radius of the snake's head, as a percentage of the hud's smallest side.",
+        min = 1F, max = 30F, step = 0.5F,
+    )
+    var snakeHeadRadius = 4.5f
+
     @Color(title = "Dot Color", description = "Center dot color.")
     var dotColor = PolyColor(0xFFFF5555.toInt())
+
+    @Color(title = "Snake Head Color", description = "Colour of the dot at the head of the snake.")
+    var snakeHeadColor = PolyColor(0xFF55FFFF.toInt())
 
     @Transient
     private val trail = ArrayDeque<TrailPoint>()
@@ -130,6 +143,9 @@ class MouseStrokesHud : Hud(
             hideIf("snakeThickness") { dotType != SNAKE }
             hideIf("dotRadius") { dotType != DOT }
             hideIf("middleDotRadius") { !drawMiddleDot }
+            hideIf("drawSnakeHead") { dotType != SNAKE }
+            hideIf("snakeHeadRadius") { dotType != SNAKE || !drawSnakeHead }
+            hideIf("snakeHeadColor") { dotType != SNAKE || !drawSnakeHead }
         }
     }
 
@@ -150,6 +166,7 @@ class MouseStrokesHud : Hud(
         _staticW = mutableStateOf(this@MouseStrokesHud.staticW)
         _staticH = mutableStateOf(this@MouseStrokesHud.staticH)
         dotColor = dotColor.copy()
+        snakeHeadColor = snakeHeadColor.copy()
     }
 
     @Composable
@@ -217,6 +234,15 @@ class MouseStrokesHud : Hud(
 
         if (snake) {
             snake(centreX, centreY, usableX, usableY, radius * 2f, fg)
+            if (drawSnakeHead) {
+                val head = trail.lastOrNull()
+                dot(
+                    centreX + (head?.x ?: offset.x) * usableX,
+                    centreY + (head?.y ?: offset.y) * usableY,
+                    side * snakeHeadRadius / 100f,
+                    snakeHeadColor,
+                )
+            }
         } else {
             dot(centreX + offset.x * usableX, centreY + offset.y * usableY, radius, fg)
         }

@@ -1,41 +1,52 @@
 package org.polyfrost.evergreenhud.client.hud
 
-//? if < 26
-//import net.minecraft.client.gui.GuiGraphics
-//? if >= 26
-import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
+import org.polyfrost.compose.composables.PolyBox
+import org.polyfrost.compose.composables.PolyColumn
+import org.polyfrost.compose.composables.PolyMcText
+import org.polyfrost.compose.composables.PolyModifier
+import org.polyfrost.compose.composables.PolyRow
+import org.polyfrost.compose.composables.PolyText
+import org.polyfrost.compose.composables.align
+import org.polyfrost.compose.composables.padding
+import org.polyfrost.compose.layout.PolyAlign
 import org.polyfrost.compose.render.PolyColor
+import org.polyfrost.evergreenhud.client.hud.item.ITEM_SIZE
+import org.polyfrost.evergreenhud.client.hud.item.ItemIcon
+import org.polyfrost.evergreenhud.client.hud.item.whenItemsReady
 import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.Dropdown
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.hud.v1.Font
+import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
-import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import kotlin.math.ceil
-import kotlin.math.max
 import kotlin.math.roundToInt
 
-class ArmorHud : LegacyHud(
+private const val TEXT_GAP = 2f
+private const val FONT_SIZE = 8f
+
+private const val HORIZONTAL = 0
+
+private const val DURABILITY = 1
+private const val DURABILITY_PERCENT = 2
+private const val NAME = 3
+
+private const val RIGHT = 1
+
+class ArmorHud : Hud(
     id = "armor.json",
     title = "Armor Status",
     category = Category.PLAYER,
-), HudBackground {
+) {
     private companion object {
-        private const val ICON = 16
-        private const val TEXT_GAP = 2
-
-        private const val HORIZONTAL = 0
-        private const val RIGHT = 1
-
-        private const val DURABILITY = 1
-        private const val DURABILITY_PERCENT = 2
-        private const val NAME = 3
-
         private val exampleHelmet by lazy { ItemStack(Items.DIAMOND_HELMET) }
         private val exampleChestplate by lazy { ItemStack(Items.DIAMOND_CHESTPLATE) }
         private val exampleLeggings by lazy { ItemStack(Items.DIAMOND_LEGGINGS) }
@@ -92,48 +103,52 @@ class ArmorHud : LegacyHud(
     @Color(title = "Empty Durability Color")
     var emptyDurabilityColor = PolyColor(0xFFFF5555.toInt())
 
-    @Switch(title = "Background")
-    override var background = true
+    private class Entry(val stack: ItemStack, val text: String, val textColor: Int, val count: String?)
 
-    @Color(title = "Background Color")
-    override var backgroundColor = PolyColor(0x80000000.toInt())
-
-    private class Entry(
-        val stack: ItemStack,
-        val text: String,
-        val textColor: Int,
-        val iconX: Int,
-        val iconY: Int,
-        val textX: Int,
-        val textY: Int,
-    )
-
-    private var layout: List<Entry> = emptyList()
-    private var actualW = ICON.toFloat()
-    private var actualH = ICON.toFloat()
-
-    override val width get() = actualW
-    override val height get() = actualH
+    private var entries = mutableStateOf<List<Entry>>(emptyList())
 
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
 
+    override fun canMergeBackground(): Boolean = true
+
     override fun setup() {
-        super.setup()
         if (isReal) {
-            hideIf("backgroundColor") { !background }
             hideIf("fullDurabilityColor") { !dynamicColor }
             hideIf("emptyDurabilityColor") { !dynamicColor }
         }
     }
 
     override fun update(): Boolean {
-        recompute()
-        return false
+        val next = buildEntries()
+        if (next.size == entries.value.size && next.zip(entries.value).all { (a, b) -> a.sameAs(b) }) return false
+        entries.value = next
+        return true
+    }
+
+    private fun Entry.sameAs(other: Entry): Boolean =
+        text == other.text && textColor == other.textColor && count == other.count &&
+            ItemStack.matches(stack, other.stack)
+
+    private fun buildEntries(): List<Entry> = whenItemsReady(emptyList()) { currentItems() }.map { stack ->
+        val text = infoText(stack)
+        val color = if (dynamicColor && stack.isDamageableItem &&
+            (extraInfo == DURABILITY || extraInfo == DURABILITY_PERCENT)
+        ) {
+            durabilityColor(durabilityPercent(stack))
+        } else {
+            textColor
+        }
+        val count = if (showArrowCount && (stack.item == Items.BOW || stack.item == Items.CROSSBOW)) {
+            arrowCount().toString()
+        } else {
+            null
+        }
+        Entry(stack, text, color, count)
     }
 
     private fun currentItems(): List<ItemStack> {
         var list = if (isReal) equippedItems() else exampleItems()
-        // with nothing equipped the hud would be empty, leaving nothing to drag in the editor
+        // nothing equipped means an empty hud with nothing to drag in the editor
         if (list.isEmpty() && HudManager.isEditing) list = exampleItems()
         if (reversed) list.reverse()
         return list
@@ -197,112 +212,64 @@ class ArmorHud : LegacyHud(
         return lerp(24) or lerp(16) or lerp(8) or lerp(0)
     }
 
-    private fun recompute() {
-        val stacks = currentItems()
-        if (stacks.isEmpty()) {
-            layout = emptyList()
-            actualW = 0f
-            actualH = 0f
-            return
-        }
+    @Composable
+    override fun Content() {
+        val list = entries.value
+        if (list.isEmpty()) return
+        val scale = textScale.coerceAtLeast(0.01f)
+        val modifier = hudBackground().padding(padLeft, padTop, padRight, padBottom)
 
-        val font = mc.font
-        val textY = ((ICON - font.lineHeight) / 2f).roundToInt()
-        val pad = padding.toInt()
-        val entries = ArrayList<Entry>(stacks.size)
-
-        var cursorX = 0
-        var cursorY = 0
-        var maxCell = 0
-
-        for (stack in stacks) {
-            val text = infoText(stack)
-            val textW = if (text.isEmpty()) 0 else font.width(text)
-            val textPart = if (textW > 0) TEXT_GAP + textW else 0
-            val cellW = ICON + textPart
-
-            val color = if (dynamicColor && stack.isDamageableItem &&
-                (extraInfo == DURABILITY || extraInfo == DURABILITY_PERCENT)
-            ) {
-                durabilityColor(durabilityPercent(stack))
-            } else {
-                textColor
-            }
-
-            val originX: Int
-            val originY: Int
+        PolyBox(modifier = modifier) {
             if (direction == HORIZONTAL) {
-                originX = cursorX
-                originY = 0
+                PolyRow(gap = padding * scale) {
+                    for (entry in list) Entry(entry, scale, PolyAlign.Center)
+                }
             } else {
-                originX = 0
-                originY = cursorY
+                // rows hang off their right edge so the icon column stays flush whatever the text measures
+                val rowAlign = if (textPosition == RIGHT) PolyAlign.Left else PolyAlign.Right
+                PolyColumn(gap = padding * scale) {
+                    for (entry in list) Entry(entry, scale, rowAlign)
+                }
             }
-
-            val iconX: Int
-            val textX: Int
-            if (textPosition == RIGHT) {
-                iconX = originX
-                textX = originX + ICON + TEXT_GAP
-            } else {
-                textX = originX
-                iconX = originX + textPart
-            }
-
-            entries.add(Entry(stack, text, color, iconX, originY, textX, originY + textY))
-
-            maxCell = max(maxCell, cellW)
-            if (direction == HORIZONTAL) {
-                cursorX += cellW + pad
-            } else {
-                cursorY += ICON + pad
-            }
-        }
-
-        layout = entries
-        if (direction == HORIZONTAL) {
-            actualW = (cursorX - pad).toFloat()
-            actualH = ICON.toFloat()
-        } else {
-            actualW = maxCell.toFloat()
-            actualH = (cursorY - pad).toFloat()
         }
     }
 
-    override fun render(graphics: GuiGraphics) {
-        val entries = layout
-        if (entries.isEmpty()) return
-
-        backgroundArgb?.let {
-            graphics.fill(0, 0, actualW.toInt(), actualH.toInt(), it)
+    @Composable
+    private fun Entry(entry: Entry, scale: Float, align: PolyAlign) {
+        PolyRow(gap = if (entry.text.isEmpty()) 0f else TEXT_GAP * scale, modifier = PolyModifier.align(align)) {
+            if (textPosition != RIGHT && entry.text.isNotEmpty()) Info(entry, scale)
+            ItemIcon(
+                entry.stack,
+                size = ITEM_SIZE * scale,
+                decorations = showDecorations,
+                countOverride = entry.count,
+                modifier = PolyModifier.align(PolyAlign.Center),
+            )
+            if (textPosition == RIGHT && entry.text.isNotEmpty()) Info(entry, scale)
         }
+    }
 
-        val font = mc.font
-        for (e in entries) {
-            //? if < 26 {
-            /*graphics.renderItem(e.stack, e.iconX, e.iconY)
-            if (showDecorations) graphics.renderItemDecorations(font, e.stack, e.iconX, e.iconY)
-            *///?} else {
-            graphics.item(e.stack, e.iconX, e.iconY)
-            if (showDecorations) graphics.itemDecorations(font, e.stack, e.iconX, e.iconY)
-            //?}
-
-            if (showArrowCount && (e.stack.item == Items.BOW || e.stack.item == Items.CROSSBOW)) {
-                val count = arrowCount().toString()
-                val cx = e.iconX + ICON - font.width(count) + 1
-                val cy = e.iconY + ICON - font.lineHeight + 2
-                //? if < 26
-                //graphics.drawString(font, count, cx, cy, 0xFFFFFFFF.toInt())
-                //? if >= 26
-                graphics.text(font, count, cx, cy, 0xFFFFFFFF.toInt())
-            }
-
-            if (e.text.isNotEmpty()) {
-                //? if < 26
-                //graphics.drawString(font, e.text, e.textX, e.textY, e.textColor)
-                //? if >= 26
-                graphics.text(font, e.text, e.textX, e.textY, e.textColor)
-            }
+    @Composable
+    private fun Info(entry: Entry, scale: Float) {
+        val color = PolyColor(entry.textColor, textChroma, textChromaSpeed)
+        val modifier = PolyModifier.align(PolyAlign.Center)
+        if (font == Font.Minecraft) {
+            PolyMcText(entry.text, color = color, shadow = showShadow, scale = scale, modifier = modifier)
+        } else {
+            PolyText(
+                entry.text,
+                color = color,
+                fontSize = FONT_SIZE * scale,
+                shadow = showShadow,
+                shadowColor = PolyColor(shadowColor, shadowChroma, shadowChromaSpeed),
+                shadowOffset = shadowOffsetX,
+                font = getPoppinsFontName(),
+                modifier = modifier,
+            )
         }
+    }
+
+    override fun clone(): Hud = (super.clone() as ArmorHud).also {
+        it.entries = mutableStateOf(emptyList())
     }
 }

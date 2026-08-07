@@ -23,20 +23,30 @@ class ServerAddressHud : CachedTextHud(
 
     override fun setup() {
         super.setup()
+        // the preview has no server to read and the loopback fallback says nothing
+        if (!isReal) {
+            updateWithText(EXAMPLE_ADDRESS)
+            return
+        }
+
         eventHandler { (ip, _, _): ServerChangedEvent ->
             applyServer(ip)
         }
 
         applyServer(mc.currentServer?.ip)
 
-        if (isReal) {
-            updateWhenChanged("showInSinglePlayer")
-            updateWhenChanged("noServerText")
-        }
+        updateWhenChanged("showInSinglePlayer")
+        updateWhenChanged("noServerText")
     }
 
     private fun applyServer(ip: String?) {
         autoHidden = !showInSinglePlayer && mc.hasSingleplayerServer()
         updateWithText(ip)
+    }
+
+    override fun getText(): String? = if (isReal) super.getText() else EXAMPLE_ADDRESS
+
+    private companion object {
+        private const val EXAMPLE_ADDRESS = "polyfrost.org"
     }
 }

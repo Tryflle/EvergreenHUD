@@ -1,45 +1,67 @@
 package org.polyfrost.evergreenhud.client.hud
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import com.mojang.blaze3d.platform.InputConstants
-//? if < 26
-//import net.minecraft.client.gui.GuiGraphics
-//? if >= 26
-import net.minecraft.client.gui.GuiGraphicsExtractor as GuiGraphics
 import net.minecraft.core.component.DataComponents
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.ItemContainerContents
+import org.polyfrost.compose.composables.PolyBox
+import org.polyfrost.compose.composables.PolyMcText
+import org.polyfrost.compose.composables.PolyModifier
+import org.polyfrost.compose.composables.PolyText
+import org.polyfrost.compose.composables.absoluteAt
+import org.polyfrost.compose.composables.background
+import org.polyfrost.compose.composables.size
 import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.evergreenhud.client.hooks.EnderChestTracker
 import org.polyfrost.evergreenhud.client.hooks.ShulkerPreview
 import org.polyfrost.evergreenhud.client.hooks.heldShulkerBox
 import org.polyfrost.evergreenhud.client.hooks.shulkerContents
+import org.polyfrost.evergreenhud.client.hud.item.ITEM_SIZE
+import org.polyfrost.evergreenhud.client.hud.item.ItemIcon
+import org.polyfrost.evergreenhud.client.hud.item.whenItemsReady
 import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.Keybind
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
+import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.hud.v1.Font
+import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
-import org.polyfrost.oneconfig.api.hud.v1.LegacyHud
 import org.polyfrost.oneconfig.api.ui.v1.keybind.KeybindHelper
 import org.polyfrost.oneconfig.api.ui.v1.keybind.OneConfigKeybind
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 
-class InventoryHud : LegacyHud(
+private const val PLAYER = 0
+private const val ENDER_CHEST = 1
+private const val HELD_SHULKER = 2
+
+private const val COLS = 9
+private const val ROWS = 3
+private const val SLOT = 18f
+private const val SLOT_BOUND_GAP = 2f
+private const val SLOT_BOUND_SIZE = SLOT - SLOT_BOUND_GAP
+private const val EDGE = 8f
+private const val TITLE_Y = 6f
+private const val FONT_SIZE = 8f
+
+/** vanilla inventory panel metrics so the grid keeps its proportions */
+private const val WIDTH = 176f
+private const val GRID_HEIGHT = ROWS * SLOT
+private const val GRID_TOP = 6f
+private const val GRID_TOP_TITLED = 20f
+
+/** mirrors [GRID_TOP] because the extra vanilla room was the hotbar row we do not draw */
+private const val GRID_BOTTOM = GRID_TOP
+
+class InventoryHud : Hud(
     id = "inventory.json",
     title = "Inventory",
     category = Category.PLAYER,
-), HudBackground {
+) {
     private companion object {
-        private const val PLAYER = 0
-        private const val ENDER_CHEST = 1
-        private const val HELD_SHULKER = 2
-
-        private const val COLS = 9
-        private const val ROWS = 3
-        private const val SLOT = 18
-        private const val ITEM = 16
-        private const val EDGE = 8
-
         private val exampleShulker by lazy {
             ItemStack(Items.SHULKER_BOX).apply {
                 set(
@@ -75,11 +97,14 @@ class InventoryHud : LegacyHud(
     @Switch(title = "Show Title")
     var showTitle = true
 
-    @Switch(title = "Background")
-    override var background = true
+    @Switch(title = "Slot Bounds", description = "Draw a background behind every slot in the grid.")
+    var slotBounds = false
 
-    @Color(title = "Background Color")
-    override var backgroundColor = PolyColor(0x90000000.toInt())
+    @Color(title = "Slot Bounds Color")
+    var slotBoundsColor = PolyColor(0x60000000)
+
+    @Slider(title = "Slot Bounds Radius", min = 0F, max = 8F, step = 1F)
+    var slotBoundsRadius = 0f
 
     @Keybind(
         title = "Pin Shulker Preview",
@@ -91,26 +116,74 @@ class InventoryHud : LegacyHud(
         .action { pressed: Boolean -> if (pressed) ShulkerPreview.togglePin(); true }
         .register()
 
+    private class Grid(val title: String?, val items: List<ItemStack>)
+
+    private var grid = mutableStateOf<Grid?>(null)
+
     private fun shulker(): ItemStack? =
         if (!isReal) exampleShulker else ShulkerPreview.pinnedStack ?: mc.player?.heldShulkerBox()
 
     private val visible: Boolean
         get() = type != HELD_SHULKER || HudManager.isEditing || shulker() != null
 
-    override val width get() = if (visible) 176f else 0f
-    override val height get() = if (!visible) 0f else if (showTitle) 92f else 78f
-
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
 
+    override fun canMergeBackground(): Boolean = true
+
+    override fun minimumSize(): Pair<Float, Float> = WIDTH to gridTop() + GRID_HEIGHT + GRID_BOTTOM
+
     override fun setup() {
-        super.setup()
         staticWidth = true
+        staticW = WIDTH
+        staticH = gridTop() + GRID_HEIGHT + GRID_BOTTOM
         if (isReal) {
-            hideIf("backgroundColor") { !background }
+            hideIf("slotBoundsColor") { !slotBounds }
+            hideIf("slotBoundsRadius") { !slotBounds }
+            updateWhenChanged("type")
+            updateWhenChanged("showTitle")
         }
     }
 
-    override fun update() = false
+    override fun update(): Boolean {
+        val next = whenItemsReady(null) {
+            if (visible) Grid(if (showTitle) titleText() else null, contents().orEmpty()) else null
+        }
+        publishSlots(next)
+        staticH = gridTop() + GRID_HEIGHT + GRID_BOTTOM
+
+        val current = grid.value
+        if (next == null && current == null) return false
+        if (next != null && current != null && next.sameAs(current)) return false
+        grid.value = next
+        return true
+    }
+
+    private fun Grid.sameAs(other: Grid): Boolean =
+        title == other.title && items.size == other.items.size &&
+            items.indices.all { ItemStack.matches(items[it], other.items[it]) }
+
+    /** the tooltip hook hit tests these screen positions */
+    private fun publishSlots(next: Grid?) {
+        if (next == null || type != HELD_SHULKER || !isReal || HudManager.isEditing) return
+        val scale = effectiveScale
+        val top = gridTop()
+        val slots = ArrayList<ShulkerPreview.Slot>(next.items.size)
+        for (i in next.items.indices) {
+            val item = next.items[i]
+            if (item.isEmpty) continue
+            slots.add(
+                ShulkerPreview.Slot(
+                    x + (EDGE + i % COLS * SLOT) * scale,
+                    y + (top + i / COLS * SLOT) * scale,
+                    ITEM_SIZE * scale,
+                    item,
+                ),
+            )
+        }
+        ShulkerPreview.publishSlots(slots)
+    }
+
+    private fun gridTop(): Float = if (showTitle) GRID_TOP_TITLED else GRID_TOP
 
     private fun titleText(): String = when (type) {
         PLAYER -> "Inventory"
@@ -121,46 +194,70 @@ class InventoryHud : LegacyHud(
     private fun contents(): List<ItemStack>? = when (type) {
         HELD_SHULKER -> shulker()?.shulkerContents()
         ENDER_CHEST -> if (!isReal) exampleContents else EnderChestTracker.contents()
-        else -> {
+        else -> if (!isReal) {
+            exampleContents
+        } else {
             val inv = mc.player?.inventory
-            // slot 0..8 is the hotbar, which the main inventory grid does not show
-            inv?.let { List(ROWS * COLS) { i -> if (COLS + i < it.containerSize) it.getItem(COLS + i) else ItemStack.EMPTY } }
+            // slots 0 to 8 are the hotbar which the main grid does not show
+            // copied because the inventory mutates its stacks in place
+            inv?.let { List(ROWS * COLS) { i -> if (COLS + i < it.containerSize) it.getItem(COLS + i).copy() else ItemStack.EMPTY } }
         }
     }
 
-    override fun render(graphics: GuiGraphics) {
-        if (!visible) return
+    @Composable
+    override fun Content() {
+        val current = grid.value ?: return
+        val top = gridTop()
+        val height = top + GRID_HEIGHT + GRID_BOTTOM
 
-        backgroundArgb?.let {
-            graphics.fill(0, 0, width.toInt(), height.toInt(), it)
+        PolyBox(modifier = hudBackground().size(WIDTH, height)) {
+            current.title?.let { Title(it) }
+
+            // centres the bounds box on the item whatever the gap
+            val boundInset = (SLOT_BOUND_SIZE - ITEM_SIZE) / 2f
+
+            for (row in 0 until ROWS) {
+                for (col in 0 until COLS) {
+                    val itemX = EDGE + col * SLOT
+                    val itemY = top + row * SLOT
+                    if (slotBounds) {
+                        PolyBox(
+                            modifier = PolyModifier
+                                .absoluteAt(itemX - boundInset, itemY - boundInset)
+                                .size(SLOT_BOUND_SIZE, SLOT_BOUND_SIZE)
+                                .background(slotBoundsColor, slotBoundsRadius),
+                        )
+                    }
+
+                    val item = current.items.getOrNull(row * COLS + col) ?: continue
+                    if (item.isEmpty) continue
+                    ItemIcon(item, modifier = PolyModifier.absoluteAt(itemX, itemY))
+                }
+            }
         }
-        if (showTitle) {
-            //? if < 26
-            //graphics.drawString(mc.font, titleText(), EDGE, 6, 0xFFFFFFFF.toInt())
-            //? if >= 26
-            graphics.text(mc.font, titleText(), EDGE, 6, 0xFFFFFFFF.toInt())
+    }
+
+    @Composable
+    private fun Title(title: String) {
+        val color = PolyColor(textColor, textChroma, textChromaSpeed)
+        val modifier = PolyModifier.absoluteAt(EDGE, TITLE_Y)
+        if (font == Font.Minecraft) {
+            PolyMcText(title, color = color, shadow = showShadow, modifier = modifier)
+        } else {
+            PolyText(
+                title,
+                color = color,
+                fontSize = FONT_SIZE,
+                shadow = showShadow,
+                shadowColor = PolyColor(shadowColor, shadowChroma, shadowChromaSpeed),
+                shadowOffset = shadowOffsetX,
+                font = getPoppinsFontName(),
+                modifier = modifier,
+            )
         }
+    }
 
-        val items = contents() ?: return
-        val font = mc.font
-        val top = if (showTitle) 20 else 6
-        val slots = if (type == HELD_SHULKER && isReal && !HudManager.isEditing) ArrayList<ShulkerPreview.Slot>(items.size) else null
-
-        for (i in items.indices) {
-            val item = items[i]
-            if (item.isEmpty) continue
-            val itemX = EDGE + (i % COLS) * SLOT
-            val itemY = top + (i / COLS) * SLOT
-            //? if < 26 {
-            /*graphics.renderItem(item, itemX, itemY)
-            graphics.renderItemDecorations(font, item, itemX, itemY)
-            *///?} else {
-            graphics.item(item, itemX, itemY)
-            graphics.itemDecorations(font, item, itemX, itemY)
-            //?}
-            slots?.add(ShulkerPreview.Slot(x + itemX * effectiveScale, y + itemY * effectiveScale, ITEM * effectiveScale, item))
-        }
-
-        slots?.let { ShulkerPreview.publishSlots(it) }
+    override fun clone(): Hud = (super.clone() as InventoryHud).also {
+        it.grid = mutableStateOf(null)
     }
 }

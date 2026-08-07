@@ -22,11 +22,7 @@ private val Entity.accurateCollisionBox: AABB
 val Entity.uniqueEntityId: Int
     get() = id
 
-/**
- * Yaw of whatever the camera is actually attached to. While spectating an entity the local
- * player's own yaw stops tracking the view, so [net.minecraft.client.Minecraft.cameraEntity]
- * is the only thing that matches what is on screen.
- */
+/** Camera entity yaw because the local player yaw stops tracking the view while spectating */
 val cameraYaw: Float?
     get() = (mc.cameraEntity ?: mc.player)?.yRot
 
@@ -64,7 +60,6 @@ fun calculateReachDistanceToEntity(entity: Entity): Float {
 inline fun <L, E> L.fastRemoveIfReversed(predicate: (E) -> Boolean) where L : MutableList<E>, L : RandomAccess {
     for (i in indices.reversed()) {
         if (i > this.size - 1) {
-            //PolyUI.LOGGER.error("FAST_WARN_CONCURRENT_MODIFICATION_RM_REV")
             continue
         }
         if (predicate(this[i])) {

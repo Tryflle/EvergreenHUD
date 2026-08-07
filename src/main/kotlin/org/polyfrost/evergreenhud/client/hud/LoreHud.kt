@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
+import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.evergreenhud.client.SelectedItemChangedEvent
 import org.polyfrost.evergreenhud.client.utils.HudStyledLines
 import org.polyfrost.evergreenhud.client.utils.StyledRun
@@ -18,8 +19,8 @@ import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.evergreenhud.client.utils.AutoHideTextHud
 
-private const val AQUA = 0xFF55FFFF.toInt()
-private const val GRAY = 0xFFAAAAAA.toInt()
+private val AQUA = PolyColor(0xFF55FFFF.toInt())
+private val GRAY = PolyColor(0xFFAAAAAA.toInt())
 
 private val PLACEHOLDER_LINES = listOf(
     listOf(StyledRun("Item Lore HUD", AQUA, bold = false, italic = false)),

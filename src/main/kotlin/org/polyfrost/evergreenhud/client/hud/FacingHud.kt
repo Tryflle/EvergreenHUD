@@ -15,6 +15,9 @@ class FacingHud : CachedTextHud(
     category = Category.INFO,
     defaultText = "North"
 ) {
+    @Switch(title = "Show Direction", description = "Show the cardinal direction you are facing, such as North.")
+    var showDirection = true
+
     @Dropdown(title = "Style", options = ["Full", "Abbreviated"])
     var style = 0
 
@@ -31,6 +34,7 @@ class FacingHud : CachedTextHud(
         super.setup()
 
         if (isReal) {
+            updateWhenChanged("showDirection")
             updateWhenChanged("style")
             updateWhenChanged("showIntercardinals")
             updateWhenChanged("showBearing")
@@ -45,6 +49,16 @@ class FacingHud : CachedTextHud(
             Facing.parse(yaw)
         } else {
             CARDINALS[(bearing / 90f).roundToInt() % 4]
+        }
+
+        if (!showDirection) {
+            return buildString {
+                append(bearing.roundToInt() % 360).append('°')
+
+                if (showAxis) {
+                    append(' ').append(axisOf(facing))
+                }
+            }
         }
 
         return buildString {

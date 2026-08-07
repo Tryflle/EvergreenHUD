@@ -92,6 +92,11 @@ class DirectionHud : Hud(
         tree?.getProp("staticH")?.addMetadata("default", DEFAULT_HEIGHT)
     }
 
+    /** OneConfig measures natural size with [staticWidth] off so report the unscaled default or resetting would grow the compass by its scale factor each time */
+    private val compassWidth: Float get() = if (staticWidth) scaledWidth else DEFAULT_WIDTH
+
+    private val compassHeight: Float get() = if (staticWidth) scaledHeight else DEFAULT_HEIGHT
+
     override fun minimumSize(): Pair<Float, Float> = 32f to 12f
 
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
@@ -120,7 +125,7 @@ class DirectionHud : Hud(
         }
         val bearing by bearingState
 
-        val modifier = hudBackground(PolyModifier.size(scaledWidth, scaledHeight))
+        val modifier = hudBackground(PolyModifier.size(compassWidth, compassHeight))
         PolyBox(modifier = modifier.clip(bgRadius)) {
             Compass(bearing)
         }
@@ -128,11 +133,11 @@ class DirectionHud : Hud(
 
     @Composable
     private fun Compass(bearing: Float) {
-        val width = scaledWidth
+        val width = compassWidth
         val fg = PolyColor(textColor, textChroma, textChromaSpeed)
 
         val headingHeight = if (showHeading) LINE * textScale else 0f
-        val ribbonHeight = scaledHeight - headingHeight
+        val ribbonHeight = compassHeight - headingHeight
         val tickStrip = if (showTicks) ribbonHeight * TICK_STRIP else 0f
 
         if (showHeading) {

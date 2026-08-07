@@ -2,7 +2,6 @@ package org.polyfrost.evergreenhud.client.config
 
 import androidx.compose.runtime.snapshots.Snapshot
 import org.polyfrost.compose.render.PolyColor
-import org.polyfrost.evergreenhud.client.hud.HudBackground
 import org.polyfrost.evergreenhud.client.hud.clock.ClockHud
 import org.polyfrost.evergreenhud.client.utils.copy
 import org.polyfrost.oneconfig.api.config.v1.Config
@@ -104,17 +103,20 @@ object GlobalConfig : Config(
         "textBold" to { h -> h.textBold = textBold },
         "textItalic" to { h -> h.textItalic = textItalic },
         "textUnderline" to { h -> h.textUnderline = textUnderline },
+        // HUDs without a background of their own control their own colors
         "showBackground" to { h ->
-            h.showBackground = showBackground
-            if (h is HudBackground) h.background = showBackground
+            if (h.hasBackground()) {
+                h.showBackground = showBackground
+            }
         },
         "bgColor" to { h ->
-            h.bgColor = bgColor.rawArgb
-            h.bgChroma = bgColor.chroma
-            h.bgChromaSpeed = bgColor.chromaSpeed
-            if (h is HudBackground) h.backgroundColor = bgColor.copy()
+            if (h.hasBackground()) {
+                h.bgColor = bgColor.rawArgb
+                h.bgChroma = bgColor.chroma
+                h.bgChromaSpeed = bgColor.chromaSpeed
+            }
         },
-        "bgRadius" to { h -> h.bgRadius = bgRadius },
+        "bgRadius" to { h -> if (h.hasBackground()) h.bgRadius = bgRadius },
         "showShadow" to { h -> h.showShadow = showShadow },
         "shadowColor" to { h ->
             h.shadowColor = shadowColor.rawArgb

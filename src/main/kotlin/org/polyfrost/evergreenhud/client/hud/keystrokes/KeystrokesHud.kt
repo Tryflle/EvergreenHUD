@@ -1,6 +1,7 @@
 package org.polyfrost.evergreenhud.client.hud.keystrokes
 
 import androidx.compose.runtime.Composable
+import com.mojang.blaze3d.platform.InputConstants
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import net.minecraft.client.KeyMapping
@@ -25,16 +26,23 @@ import org.polyfrost.evergreenhud.client.utils.matchesMouseButton
 import org.polyfrost.oneconfig.api.config.v1.Property
 import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.DraggableList
+import org.polyfrost.oneconfig.api.config.v1.annotations.Keybind
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.config.v1.annotations.Text
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.KeyInputEvent
 import org.polyfrost.oneconfig.api.event.v1.events.MouseInputEvent
 import org.polyfrost.oneconfig.api.event.v1.invoke.EventHandler
 import org.polyfrost.oneconfig.api.hud.v1.Font
 import org.polyfrost.oneconfig.api.hud.v1.Hud
+import org.polyfrost.oneconfig.api.platform.v1.Platform
+import org.polyfrost.oneconfig.api.ui.v1.keybind.KeyModifiers
+import org.polyfrost.oneconfig.api.ui.v1.keybind.KeybindHelper
+import org.polyfrost.oneconfig.api.ui.v1.keybind.OneConfigKeybind
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
+import kotlin.experimental.or
 
 private const val KEY = 16f
 private const val CPS_SCALE = 0.5f
@@ -55,30 +63,63 @@ private const val ROW_MOUSE = "Mouse"
 private const val ROW_SPRINT = "Sprint"
 private const val ROW_SNEAK = "Sneak"
 
+private const val MODE_NORMAL = 0
+private const val MODE_CUSTOM = 1
+
+/** Drawn when the custom key is unbound so the HUD is never invisible */
+private const val UNKNOWN_KEY = "?"
+
 private const val UP = "▲"
 private const val DOWN = "▼"
 private const val LEFT = "◀"
 private const val RIGHT = "▶"
+
+private val ARROW_CODES = intArrayOf(InputConstants.KEY_UP, InputConstants.KEY_DOWN, InputConstants.KEY_LEFT, InputConstants.KEY_RIGHT)
+
+/** Fallbacks for fonts without the triangle glyphs */
+private const val UP_SHORT = "Up"
+private const val DOWN_SHORT = "Down"
+private const val LEFT_SHORT = "Left"
+private const val RIGHT_SHORT = "Right"
 
 class KeystrokesHud : Hud(
     id = "keystrokes.json",
     title = "Keystrokes",
     category = Category.INFO,
 ) {
+    @RadioButton(
+        title = "Mode",
+        description = "Normal draws the movement layout. Custom draws one key of your choice.",
+        options = ["Normal", "Custom"],
+    )
+    var mode = MODE_NORMAL
+
     @DraggableList(
         title = "Rows",
-        description = "Which rows to show, and in what order.",
+        description = "Rows to show, and their order.",
         checkable = true,
         options = [ROW_MOVEMENT, ROW_SPACEBAR, ROW_MOUSE, ROW_SPRINT, ROW_SNEAK],
     )
     var rows = arrayOf(ROW_MOVEMENT, ROW_SPACEBAR, ROW_MOUSE)
+
+    @Keybind(title = "Key", description = "Key this HUD watches.")
+    var customBind: OneConfigKeybind = KeybindHelper.builder().key(InputConstants.KEY_G).build()
+
+    @Text(title = "Key Label", description = "Text on the key. Empty uses the key's name.")
+    var customLabel = ""
+
+    @Slider(title = "Key Width", description = "Width of the key.", min = 8F, max = 96F, step = 1F)
+    var customWidth = KEY
+
+    @Slider(title = "Key Height", description = "Height of the key.", min = 8F, max = 96F, step = 1F)
+    var customHeight = KEY
 
     @Switch(title = "Arrows", description = "Use arrows instead of key names.")
     var arrows = false
 
     @RadioButton(
         title = "Click Counter",
-        description = "Show CPS on the mouse keys. Small sits under the name, large replaces it.",
+        description = "Show CPS on the mouse keys.",
         options = ["None", "Small", "Large"],
     )
     var cpsMode = CPS_NONE
@@ -95,33 +136,45 @@ class KeystrokesHud : Hud(
     @Slider(title = "Spacebar Line Thickness", description = "Thickness of the spacebar line.", min = 0.5F, max = 6F, step = 0.5F)
     var spaceLineH = DEFAULT_SPACE_LINE_H
 
-    @Slider(title = "Fade In Duration (ms)", description = "Time to fade to the pressed colors.", min = 1F, max = 250F, step = 1F)
+    @Slider(title = "Fade In Duration (ms)", description = "Fade time when pressed.", min = 1F, max = 250F, step = 1F)
     var fadeInMs = 150f
 
-    @Slider(title = "Fade Out Duration (ms)", description = "Time to fade back to the unpressed colors.", min = 1F, max = 250F, step = 1F)
+    @Slider(title = "Fade Out Duration (ms)", description = "Fade time when released.", min = 1F, max = 250F, step = 1F)
     var fadeOutMs = 150f
 
-    @Color(title = "Unpressed Background Color", subcategory = "Colors")
+    @Slider(title = "Key Corner Radius", description = "Corner radius of each key.", min = 0F, max = 16F, step = 0.5F, subcategory = "Colors")
+    var keyRadius = 4f
+
+    @Color(title = "Unpressed Key Color", description = "Key fill while not held.", subcategory = "Colors")
     var unpressedBg = PolyColor(0x80000000.toInt())
 
     @Color(title = "Unpressed Text Color", subcategory = "Colors")
     var unpressedText = PolyColor(0xFFFFFFFF.toInt())
 
-    @Color(title = "Pressed Background Color", subcategory = "Colors")
+    @Color(title = "Pressed Key Color", description = "Key fill while held.", subcategory = "Colors")
     var pressedBg = PolyColor(0xFFFFFFFF.toInt())
 
     @Color(title = "Pressed Text Color", subcategory = "Colors")
     var pressedText = PolyColor(0xFF000000.toInt())
 
-    private val showJump: Boolean get() = ROW_SPACEBAR in rows
+    private val isCustom: Boolean get() = mode == MODE_CUSTOM
 
-    private val showClicks: Boolean get() = ROW_MOUSE in rows
+    private val showJump: Boolean get() = !isCustom && ROW_SPACEBAR in rows
+
+    private val showClicks: Boolean get() = !isCustom && ROW_MOUSE in rows
 
     @Transient
     private var keys = KeyState()
 
     @Transient
     private var handlers: ArrayList<EventHandler<*>> = ArrayList(2)
+
+    init {
+        showBackground = false
+    }
+
+    /** Only the keys are filled and the HUD itself has no background */
+    override fun hasBackground(): Boolean = false
 
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
 
@@ -131,6 +184,8 @@ class KeystrokesHud : Hud(
         pressedBg = pressedBg.copy()
         pressedText = pressedText.copy()
         rows = rows.copyOf()
+        // each HUD binds its own key so the clone must not share the keybind instance
+        customBind = customBind.copyWith(customBind.keyCodes?.copyOf(), customBind.mouseBtns?.copyOf(), customBind.mods)
         keys = KeyState()
         handlers = ArrayList(2)
     }
@@ -139,7 +194,7 @@ class KeystrokesHud : Hud(
         super.setup()
         if (isReal) {
             addDependency("arrows", null) {
-                if (font != Font.Minecraft) Property.Display.DISABLED else Property.Display.SHOWN
+                if (isCustom || font != Font.Minecraft) Property.Display.DISABLED else Property.Display.SHOWN
             }
             addDependency("cpsMode", null) {
                 if (showClicks) Property.Display.SHOWN else Property.Display.DISABLED
@@ -149,17 +204,44 @@ class KeystrokesHud : Hud(
                     if (showJump) Property.Display.SHOWN else Property.Display.DISABLED
                 }
             }
-            for (option in listOf("rows", "arrows", "cpsMode", "keyGap", "spaceH", "spaceLineW", "spaceLineH")) {
+            addDependency("rows", null) {
+                if (isCustom) Property.Display.HIDDEN else Property.Display.SHOWN
+            }
+            addDependency("keyGap", null) {
+                if (isCustom) Property.Display.DISABLED else Property.Display.SHOWN
+            }
+            for (option in listOf("customBind", "customLabel", "customWidth", "customHeight")) {
+                addDependency(option, null) {
+                    if (isCustom) Property.Display.SHOWN else Property.Display.DISABLED
+                }
+            }
+            for (option in listOf(
+                "mode", "rows", "arrows", "cpsMode", "keyGap", "spaceH", "spaceLineW", "spaceLineH", "keyRadius",
+                "customBind", "customLabel", "customWidth", "customHeight",
+            )) {
                 addCallback(option) { keys.rev.value++ }
             }
-            addCallback("unpressedBg") { pushToDesigner() }
-            addCallback("unpressedText") { pushToDesigner() }
-            pushToDesigner()
+            addCallback("unpressedText") { pushTextToDesigner() }
+            pushTextToDesigner()
             handlers.add(eventHandler { (btn, state): MouseInputEvent ->
-                if (state == 1) onClick { it.matchesMouseButton(btn) }
+                when (state) {
+                    1 -> {
+                        keys.downMouse.add(btn)
+                        onClick { it.matchesMouseButton(btn) }
+                    }
+
+                    0 -> keys.downMouse.remove(btn)
+                }
             })
             handlers.add(eventHandler { (key, _, state): KeyInputEvent ->
-                if (state == 1 && key != 0) onClick { it.matchesKeyCode(key) }
+                when (state) {
+                    1 -> {
+                        keys.downKeys.add(key)
+                        if (key != 0) onClick { it.matchesKeyCode(key) }
+                    }
+
+                    0 -> keys.downKeys.remove(key)
+                }
             })
         }
     }
@@ -171,27 +253,18 @@ class KeystrokesHud : Hud(
         keys.useClicks.clear()
     }
 
-    private fun pushToDesigner() {
-        bgColor = unpressedBg.rawArgb
-        bgChroma = unpressedBg.chroma
-        bgChromaSpeed = unpressedBg.chromaSpeed
+    /** Keeps the designer text color showing the unpressed text color */
+    private fun pushTextToDesigner() {
         textColor = unpressedText.rawArgb
         textChroma = unpressedText.chroma
         textChromaSpeed = unpressedText.chromaSpeed
     }
 
-    private fun pullFromDesigner(): Boolean {
-        var pulled = false
-        if (bgColor != unpressedBg.rawArgb || bgChroma != unpressedBg.chroma || bgChromaSpeed != unpressedBg.chromaSpeed) {
-            unpressedBg = PolyColor(bgColor, bgChroma, bgChromaSpeed)
-            pulled = true
-        }
-            if (textColor != unpressedText.rawArgb || textChroma != unpressedText.chroma || textChromaSpeed != unpressedText.chromaSpeed) {
+    private fun pullTextFromDesigner(): Boolean {
+        if (textColor == unpressedText.rawArgb && textChroma == unpressedText.chroma && textChromaSpeed == unpressedText.chromaSpeed) return false
         unpressedText = PolyColor(textColor, textChroma, textChromaSpeed)
-        pulled = true
-        }
-        if (pulled) keys.rev.value++
-        return pulled
+        keys.rev.value++
+        return true
     }
 
     private inline fun onClick(matches: (KeyMapping) -> Boolean) {
@@ -207,11 +280,10 @@ class KeystrokesHud : Hud(
         val now = System.nanoTime()
         val dtMs = (now - keys.lastNanos).coerceAtLeast(0L) / 1_000_000f
         keys.lastNanos = now
-        var changed = pullFromDesigner()
+        var changed = pullTextFromDesigner()
         val inStep = if (fadeInMs <= 0f) 1f else dtMs / fadeInMs
         val outStep = if (fadeOutMs <= 0f) 1f else dtMs / fadeOutMs
-        fun poll(state: MutableState<Float>, key: KeyMapping) {
-            val target = if (key.isDown) 1f else 0f
+        fun pollTo(state: MutableState<Float>, target: Float) {
             val cur = state.value
             val next = when {
                 cur < target -> (cur + inStep).coerceAtMost(target)
@@ -223,6 +295,18 @@ class KeystrokesHud : Hud(
                 changed = true
             }
         }
+
+        if (isCustom) {
+            // a screen swallows the release so a key held while one opens would stay lit
+            if (screenOpen()) {
+                keys.downKeys.clear()
+                keys.downMouse.clear()
+            }
+            pollTo(keys.custom, if (customBind.test(keys.downKeys, keys.downMouse, heldMods())) 1f else 0f)
+            return changed
+        }
+
+        fun poll(state: MutableState<Float>, key: KeyMapping) = pollTo(state, if (key.isDown) 1f else 0f)
         poll(keys.forward, o.keyUp)
         poll(keys.left, o.keyLeft)
         poll(keys.back, o.keyDown)
@@ -246,6 +330,31 @@ class KeystrokesHud : Hud(
         return changed
     }
 
+    private fun screenOpen(): Boolean = Platform.screen().current<Any?>() != null
+
+    /** Modifiers rebuilt from tracked keys since the bind is polled manually */
+    private fun heldMods(): Byte {
+        val k = Platform.compatibility().keys()
+        var mods = KeyModifiers.NONE
+        fun add(a: Int, b: Int, flag: Byte) {
+            if (a in keys.downKeys || b in keys.downKeys) mods = (mods or flag)
+        }
+        add(k.keyLeftShift, k.keyRightShift, KeyModifiers.SHIFT)
+        add(k.keyLeftControl, k.keyRightControl, KeyModifiers.CTRL)
+        add(k.keyLeftAlt, k.keyRightAlt, KeyModifiers.ALT)
+        add(k.keyLeftSuper, k.keyRightSuper, KeyModifiers.META)
+        return mods
+    }
+
+    private fun customBindLabel(): String {
+        if (!customBind.isBound) return UNKNOWN_KEY
+        val single = customBind.mods == KeyModifiers.NONE &&
+            customBind.mouseBtns?.isNotEmpty() != true &&
+            customBind.keyCodes?.size == 1
+        if (single) arrowLabel(customBind.keyCodes!![0])?.let { return it }
+        return customBind.displayName()
+    }
+
     @Composable
     override fun Content() {
         keys.rev.value
@@ -258,6 +367,16 @@ class KeystrokesHud : Hud(
         val clickW = (rowW - gap) / 2f
         val spaceKeyH = spaceH * s + padTop + padBottom
         val useArrows = arrows && font == Font.Minecraft
+
+        if (isCustom) {
+            Key(
+                customLabel.ifBlank { customBindLabel() },
+                keys.custom.value,
+                customWidth * s + padLeft + padRight,
+                customHeight * s + padTop + padBottom,
+            )
+            return
+        }
 
         PolyColumn(gap = gap) {
             for (row in rows) when (row) {
@@ -297,8 +416,8 @@ class KeystrokesHud : Hud(
     private fun keyBg(progress: Float): PolyColor = blend(unpressedBg, pressedBg, progress)
 
     private fun keyModifier(progress: Float, w: Float, h: Float, align: PolyAlign? = null): PolyModifier {
-        var mod = PolyModifier.size(w, h)
-        if (showBackground) mod = mod.background(keyBg(progress), bgRadius)
+        // only keys have a background so the designer background settings are ignored
+        var mod = PolyModifier.size(w, h).background(keyBg(progress), keyRadius)
         if (align != null) mod = mod.align(align)
         return mod
     }
@@ -377,10 +496,27 @@ class KeystrokesHud : Hud(
         }
     }
 
-    private fun KeyMapping.label(): String = translatedKeyMessage.string
+    /** Vanilla arrow key names are far too wide for a key so an arrow is drawn instead */
+    private fun KeyMapping.label(): String {
+        for (code in ARROW_CODES) {
+            if (matchesKeyCode(code)) return arrowLabel(code) ?: break
+        }
+        return translatedKeyMessage.string
+    }
+
+    private fun arrowLabel(code: Int): String? {
+        val glyphs = font == Font.Minecraft
+        return when (code) {
+            InputConstants.KEY_UP -> if (glyphs) UP else UP_SHORT
+            InputConstants.KEY_DOWN -> if (glyphs) DOWN else DOWN_SHORT
+            InputConstants.KEY_LEFT -> if (glyphs) LEFT else LEFT_SHORT
+            InputConstants.KEY_RIGHT -> if (glyphs) RIGHT else RIGHT_SHORT
+            else -> null
+        }
+    }
 }
 
-/** Per-instance render state. Not serialized, and rebuilt from scratch on clone. */
+/** Per instance render state not serialized and rebuilt on clone */
 private class KeyState {
     val forward = mutableStateOf(0f)
     val left = mutableStateOf(0f)
@@ -396,7 +532,13 @@ private class KeyState {
     val attackClicks = ArrayList<Long>(20)
     val useClicks = ArrayList<Long>(20)
 
-    /** Bumped to force a recompose when an option or the designer changes the layout. */
+    /** Held keys and buttons tracked by event since custom keys have no KeyMapping */
+    val downKeys = HashSet<Int>()
+    val downMouse = HashSet<Int>()
+
+    val custom = mutableStateOf(0f)
+
+    /** Bumped to force a recompose when an option changes the layout */
     val rev = mutableStateOf(0)
 
     var lastNanos = System.nanoTime()

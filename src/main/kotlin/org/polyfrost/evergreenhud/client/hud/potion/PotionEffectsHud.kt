@@ -23,10 +23,13 @@ import org.polyfrost.compose.composables.size
 import org.polyfrost.compose.layout.PolyAlign
 import org.polyfrost.compose.render.ImageLoader
 import org.polyfrost.compose.render.PolyColor
+import org.polyfrost.evergreenhud.client.hooks.VanillaHudCompat
 import org.polyfrost.oneconfig.api.config.v1.annotations.DraggableList
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
+import org.polyfrost.oneconfig.api.event.v1.eventHandler
+import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 import org.polyfrost.oneconfig.api.hud.v1.Font
 import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.api.hud.v1.HudManager
@@ -159,6 +162,12 @@ class PotionEffectsHud : Hud(
     @Slider(title = "Spacing", min = 0F, max = 10F, step = 1F)
     var spacing = 2f
 
+    @Switch(
+        title = "Hide Vanilla Status Effects",
+        description = "Turns off VanillaHUD's own status effects element, so it does not draw on top of this one.",
+    )
+    var hideVanillaEffects = false
+
     @Slider(
         title = "Blink Threshold (s)",
         description = "Fade an effect in and out once its remaining duration drops below this. 0 disables it.",
@@ -171,6 +180,19 @@ class PotionEffectsHud : Hud(
     private var rows = mutableStateOf<List<Row>>(emptyList())
 
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
+
+    override fun setup() {
+        super.setup()
+        if (isReal) {
+            // the option is meaningless without VanillaHUD which cannot be installed mid session
+            hideIf("hideVanillaEffects") { !VanillaHudCompat.isPresent }
+            if (VanillaHudCompat.isPresent) {
+                eventHandler { _: TickEvent ->
+                    VanillaHudCompat.hideStatusEffects(hideVanillaEffects && !hidden)
+                }
+            }
+        }
+    }
 
     override fun canMergeBackground(): Boolean = true
 
@@ -196,7 +218,7 @@ class PotionEffectsHud : Hud(
     private fun sortEffects(effects: List<MobEffectInstance>, sortingStack: Array<String>, reversed: Boolean): List<MobEffectInstance> {
         var sorted = effects
 
-        // Sorting is reversed because the last rule in the list is the highest priority.
+        // reversed because the last rule has the highest priority
         for (rule in sortingStack.reversed()) {
             sorted = sortByRule(sorted, rule)
         }
