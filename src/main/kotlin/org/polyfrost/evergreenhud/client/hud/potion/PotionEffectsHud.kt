@@ -184,7 +184,6 @@ class PotionEffectsHud : Hud(
     override fun setup() {
         super.setup()
         if (isReal) {
-            // the option is meaningless without VanillaHUD which cannot be installed mid session
             hideIf("hideVanillaEffects") { !VanillaHudCompat.isPresent }
             if (VanillaHudCompat.isPresent) {
                 eventHandler { _: TickEvent ->
@@ -218,7 +217,6 @@ class PotionEffectsHud : Hud(
     private fun sortEffects(effects: List<MobEffectInstance>, sortingStack: Array<String>, reversed: Boolean): List<MobEffectInstance> {
         var sorted = effects
 
-        // reversed because the last rule has the highest priority
         for (rule in sortingStack.reversed()) {
             sorted = sortByRule(sorted, rule)
         }

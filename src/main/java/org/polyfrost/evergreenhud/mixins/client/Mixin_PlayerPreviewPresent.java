@@ -11,8 +11,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-// the offscreen player pass must be recorded while the frame command encoder is still open so the
-// hook sits at the last point of the frame each version offers
 //? if >= 26.2 {
 @Mixin(value = net.minecraft.client.Minecraft.class, priority = 1500)
 //? } else if >= 26.1 {

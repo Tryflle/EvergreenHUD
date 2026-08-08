@@ -38,7 +38,6 @@ public class Mixin_InGameHud_SmuggleDrawContext {
             CallbackInfo ci
     ) {
         SmuggledHudDrawContext.setSmuggledHudPartialTick(deltaTracker.getGameTimeDeltaPartialTick(false));
-        // offscreen pass must run inside the vanilla HUD render the only phase where a nested GUI render is valid
         HudOffscreen.render();
     }
 

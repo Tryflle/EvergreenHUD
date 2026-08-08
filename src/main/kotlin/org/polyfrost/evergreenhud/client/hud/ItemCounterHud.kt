@@ -39,10 +39,8 @@ import org.polyfrost.oneconfig.utils.v1.dsl.mc
 private const val TEXT_GAP = 2f
 private const val FONT_SIZE = 8f
 
-/** rows of the vanilla 9 row line box that glyphs actually draw in */
 private const val MC_INK_HEIGHT = 7f
 
-/** room kept around the content before user padding so the background is never flush */
 private const val BASE_PADDING = 1f
 
 class ItemCounterHud : Hud(
@@ -80,7 +78,6 @@ class ItemCounterHud : Hud(
     @Switch(title = "Hide When Empty", description = "Hide the HUD while you carry none of the item.")
     var hideWhenEmpty = false
 
-    /** cached because [update] runs every frame */
     private var resolvedQuery: String? = null
     private var resolved: Item? = null
 
@@ -156,7 +153,6 @@ class ItemCounterHud : Hud(
 
     private fun recompute(): Display? {
         val editing = !isReal || HudManager.isEditing
-        // no resolved item means an empty hud with nothing to drag in the editor
         val target = currentItem() ?: Items.DIAMOND.takeIf { editing } ?: return null
 
         val count = count(target)
@@ -174,7 +170,6 @@ class ItemCounterHud : Hud(
     override fun Content() {
         val current = display.value ?: return
         val scale = textScale.coerceAtLeast(0.01f)
-        // the count ends on the same gap it started on
         val basePaddingRight = if (showIcon) TEXT_GAP else BASE_PADDING
         val modifier = hudBackground().padding(
             padLeft + BASE_PADDING * scale,
@@ -203,7 +198,6 @@ class ItemCounterHud : Hud(
     private fun Label(text: String, scale: Float, iconSize: Float) {
         val color = PolyColor(textColor, textChroma, textChromaSpeed)
         if (font == Font.Minecraft) {
-            // vanilla glyphs sit in the top rows of the line box
             val modifier = topAlign(inkOffset(iconSize, 0f, MC_INK_HEIGHT * scale))
             PolyMcText(text, color = color, shadow = showShadow, scale = scale, modifier = modifier)
         } else {
@@ -226,7 +220,6 @@ class ItemCounterHud : Hud(
     private fun topAlign(offset: Float): PolyModifier =
         PolyModifier.align(PolyAlign.Top).margin(top = offset)
 
-    /** centres the drawn ink in a row [rowHeight] tall because the line box reserves ascender and descender room that rides the glyphs high */
     private fun inkOffset(rowHeight: Float, inkTop: Float, inkHeight: Float): Float =
         ((rowHeight - inkHeight) / 2f - inkTop).coerceAtLeast(0f)
 

@@ -113,7 +113,6 @@ class ClockHud : Hud(
         val detailColor = PolyColor(textColor, textChroma, textChromaSpeed)
         val fontName = getPoppinsFontName()
         if (showBackground) {
-            // when merged HudManager draws this background as part of the fused neighbour shape which hudBackground handles
             PolyBox(modifier = hudBackground(sizeModifier)) {
                 Clock(timeMillis, handWidth, ticking, fiveMinuteMarks, minuteMarks, numbers, hourHandColor, minuteHandColor, secondHandColor, detailColor, fontName, bgRadius, sizeModifier)
             }

@@ -18,13 +18,9 @@ import net.minecraft.client.renderer.state.gui.GuiRenderState
 *///? }
 import org.jetbrains.skia.BackendRenderTarget
 import org.jetbrains.skia.Canvas
-import org.jetbrains.skia.ColorSpace
 import org.jetbrains.skia.ContentChangeMode
-import org.jetbrains.skia.FramebufferFormat
 import org.jetbrains.skia.Paint
 import org.jetbrains.skia.Surface
-import org.jetbrains.skia.SurfaceColorFormat
-import org.jetbrains.skia.SurfaceOrigin
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.ResizeEvent
 import org.polyfrost.oneconfig.api.platform.v1.Platform
@@ -38,10 +34,6 @@ import org.slf4j.LoggerFactory
 //? if >= 1.21.4 && < 1.21.8
 //import com.mojang.blaze3d.ProjectionType
 
-/**
- * Draws Minecraft native HUD content into an offscreen target once per frame because those
- * renderers need a real render pass which no longer runs while a HUD is drawn
- */
 object HudOffscreen {
     private val LOGGER = LoggerFactory.getLogger("EvergreenHUD/Hud Offscreen")
 
@@ -57,8 +49,8 @@ object HudOffscreen {
     private val pending = ArrayList<(GuiGraphics) -> Unit>()
     private var hasContent = false
     private var failed = false
+    private var layoutIsGeneral = false
 
-    /** Pixels per gui unit */
     var surfaceRatio = 1f
         private set
 
@@ -69,12 +61,10 @@ object HudOffscreen {
         eventHandler { _: ResizeEvent -> invalidate() }
     }
 
-    /** Queues [draw] for this frame offscreen pass in gui coordinates */
     fun submit(draw: (GuiGraphics) -> Unit) {
         pending.add(draw)
     }
 
-    /** Must run inside the vanilla HUD render pass or there is no frame to hang off and nothing draws */
     @JvmStatic
     fun render() {
         val requests = if (pending.isEmpty()) emptyList() else ArrayList(pending)
@@ -94,16 +84,17 @@ object HudOffscreen {
         val guiWidth = Platform.screen().guiWidth()
         val guiHeight = Platform.screen().guiHeight()
         if (width <= 0 || height <= 0 || guiWidth <= 0 || guiHeight <= 0) return
-        // the same ratio OneConfig blits its own offscreen targets with so the two line up
         surfaceRatio = Platform.screen().surfaceRatio().coerceAtLeast(0.0001f)
 
         try {
             if (!resolveTarget(width, height)) return
             val rt = target ?: return
+            if (layoutIsGeneral) SkiaOffscreen.beginRender(rt)
             clearTarget(rt)
             drawAll(rt, requests, guiWidth, guiHeight)
-            // Minecraft just drew through raw GL so skia cached state no longer matches the driver
-            SkiaCtx.directContext.resetGLAll()
+            SkiaOffscreen.endRender(rt)
+            layoutIsGeneral = true
+            SkiaOffscreen.resetContext()
             hasContent = true
             if (!loggedFirstFrame) {
                 loggedFirstFrame = true
@@ -117,7 +108,6 @@ object HudOffscreen {
         }
     }
 
-    /** Blits the last rendered frame into [canvas] which is already placed at the HUD origin */
     fun drawInto(canvas: Canvas, hudX: Float, hudY: Float, hudScale: Float, width: Float, height: Float) {
         if (!hasContent) return
         val s = surface ?: return
@@ -126,7 +116,6 @@ object HudOffscreen {
             s.notifyContentWillChange(ContentChangeMode.RETAIN)
             canvas.save()
             canvas.clipRect(org.jetbrains.skia.Rect.makeXYWH(0f, 0f, width, height))
-            // the target holds the whole screen so shift the HUD own patch onto the origin
             canvas.translate(-hudX / hudScale, -hudY / hudScale)
             canvas.scale(scale, scale)
             s.draw(canvas, 0, 0, blitPaint)
@@ -137,38 +126,31 @@ object HudOffscreen {
     }
 
     private fun resolveTarget(width: Int, height: Int): Boolean {
-        if (target != null && surface != null && lastWidth == width && lastHeight == height) return true
-        invalidate()
-
-        val rt = createTarget(width, height)
-        target = rt
-        val fboId = fboId(rt)
-        if (fboId <= 0) {
-            // a Vulkan backend has no GL framebuffer to wrap and OneConfig keeps the wrapper internal
-            LOGGER.warn("Player preview needs an OpenGL render target; disabling")
-            failed = true
+        if (target == null || lastWidth != width || lastHeight != height) {
             invalidate()
-            return false
+
+            val rt = createTarget(width, height)
+            target = rt
+            if (!SkiaOffscreen.isVulkan) {
+                val fboId = fboId(rt)
+                if (fboId <= 0) {
+                    LOGGER.warn("Offscreen HUDs need an OpenGL render target; disabling")
+                    failed = true
+                    invalidate()
+                    return false
+                }
+            }
+            lastWidth = width
+            lastHeight = height
         }
 
-        val backend = BackendRenderTarget.makeGL(width, height, 0, 8, fboId, FramebufferFormat.GR_GL_RGBA8)
-        brt = backend
-        val origin = if (SkiaCtx.isDeferredComposeBackend) SurfaceOrigin.TOP_LEFT else SurfaceOrigin.BOTTOM_LEFT
-        val made = Surface.makeFromBackendRenderTarget(
-            SkiaCtx.directContext,
-            backend,
-            origin,
-            SurfaceColorFormat.RGBA_8888,
-            ColorSpace.sRGB,
-            null,
-        )
-        if (made == null) {
-            invalidate()
-            return false
+        val rt = target ?: return false
+        if (surface == null || SkiaOffscreen.needsPerFrameRewrap) {
+            releaseSurface()
+            val (backend, made) = SkiaOffscreen.makeSurface(rt, width, height) ?: return false
+            brt = backend
+            surface = made
         }
-        surface = made
-        lastWidth = width
-        lastHeight = height
         return true
     }
 
@@ -222,8 +204,6 @@ object HudOffscreen {
         //val graphics = GuiGraphics(client, state)
         requests.forEach { it(graphics) }
 
-        // must be the game own renderer as only it holds the picture in picture renderers
-        // a private renderer silently skips entity and player face states
         val guiRenderer = (client.gameRenderer as GameRendererAccessor).`oneconfig$getGuiRenderer`()
         val accessor = guiRenderer as GuiRendererAccessor
         val previousState = accessor.`oneconfig$getRenderState`()
@@ -241,7 +221,6 @@ object HudOffscreen {
             *///? }
         } finally {
             GuiTargetRedirect.target = previousTarget
-            // shared renderer so restore its state and never close it
             accessor.`oneconfig$setRenderState`(previousState)
         }
         //? } else if >= 1.21.5 {
@@ -333,11 +312,16 @@ object HudOffscreen {
         *///? }
     }
 
-    private fun invalidate() {
+    private fun releaseSurface() {
         surface?.close()
         surface = null
         brt?.close()
         brt = null
+        layoutIsGeneral = false
+    }
+
+    private fun invalidate() {
+        releaseSurface()
         target?.destroyBuffers()
         target = null
         lastWidth = -1

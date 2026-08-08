@@ -23,7 +23,6 @@ class ServerAddressHud : CachedTextHud(
 
     override fun setup() {
         super.setup()
-        // the preview has no server to read and the loopback fallback says nothing
         if (!isReal) {
             updateWithText(EXAMPLE_ADDRESS)
             return

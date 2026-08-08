@@ -22,7 +22,6 @@ private val Entity.accurateCollisionBox: AABB
 val Entity.uniqueEntityId: Int
     get() = id
 
-/** Camera entity yaw because the local player yaw stops tracking the view while spectating */
 val cameraYaw: Float?
     get() = (mc.cameraEntity ?: mc.player)?.yRot
 

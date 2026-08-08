@@ -22,14 +22,10 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.phys.Vec3
 import org.jetbrains.skia.BackendRenderTarget
 import org.jetbrains.skia.Canvas
-import org.jetbrains.skia.ColorSpace
 import org.jetbrains.skia.ContentChangeMode
-import org.jetbrains.skia.FramebufferFormat
 import org.jetbrains.skia.Paint
 import org.jetbrains.skia.Rect
 import org.jetbrains.skia.Surface
-import org.jetbrains.skia.SurfaceColorFormat
-import org.jetbrains.skia.SurfaceOrigin
 import org.joml.Matrix4f
 import org.joml.Quaternionf
 import org.polyfrost.oneconfig.internal.ui.RenderTargetFbo
@@ -40,19 +36,12 @@ import org.slf4j.LoggerFactory
 private const val MAX_DIM = 1024
 private const val FULL_BRIGHT = 0xF000F0
 
-/** The offset vanilla lifts the model by inside its own inventory preview */
 private const val OFFSET_Y = 0.0625f
 
-/** Fraction of the remaining gap the anchor height closes each second */
 private const val HEIGHT_CATCHUP = 12f
 
-/** How long a render target outlives the last frame that drew into it */
 private const val STALE_NANOS = 1_000_000_000L
 
-/**
- * The dispatcher submits straight into the target rather than through a GUI render pass which
- * drops entity draws when it is not the frame own renderer
- */
 object PlayerPreviewOffscreen {
     private val LOGGER = LoggerFactory.getLogger("EvergreenHUD/Player Preview")
 
@@ -67,26 +56,18 @@ object PlayerPreviewOffscreen {
     }
     *///? }
 
-    /** What the HUD wants drawn in target pixels and degrees */
     class Request(
         val widthPx: Int,
         val heightPx: Int,
-        /** Model size in target pixels the same quantity vanilla calls the entity size */
         val sizePx: Float,
         val bodyRot: Float,
-        /** Head yaw relative to the body or null to keep the player own */
         val headRot: Float?,
-        /** Head pitch or null to keep the player own */
         val headPitch: Float?,
         val modelTilt: Float,
         val partialTick: Float,
         val verticalAnchor: Float,
     )
 
-    /**
-     * One render target per owner because callers ask for different sizes on the same frame and a
-     * shared target would resize its surface every frame
-     */
     private class Slot {
         var target: TextureTarget? = null
         var brt: BackendRenderTarget? = null
@@ -99,12 +80,18 @@ object PlayerPreviewOffscreen {
 
         var hasContent = false
         var lastUsedNanos = 0L
+        var layoutIsGeneral = false
 
-        fun invalidate() {
+        fun releaseSurface() {
             surface?.close()
             surface = null
             brt?.close()
             brt = null
+            layoutIsGeneral = false
+        }
+
+        fun invalidate() {
+            releaseSurface()
             target?.destroyBuffers()
             target = null
             lastWidth = -1
@@ -122,10 +109,6 @@ object PlayerPreviewOffscreen {
         pending[owner] = request
     }
 
-    /**
-     * Called from the frame present hook because the entity pass must be recorded while the frame
-     * command encoder is still open or it never executes
-     */
     @JvmStatic
     fun render() {
         val requests = if (pending.isEmpty()) emptyList() else pending.entries.map { it.key to it.value }
@@ -151,9 +134,11 @@ object PlayerPreviewOffscreen {
         try {
             if (!resolveTarget(slot, width, height)) return
             val rt = slot.target ?: return
+            if (slot.layoutIsGeneral) SkiaOffscreen.beginRender(rt)
             renderInto(slot, rt, request, player, width, height)
-            // the entity was drawn through raw GPU calls so skia cached state is stale
-            SkiaCtx.directContext.resetGLAll()
+            SkiaOffscreen.endRender(rt)
+            slot.layoutIsGeneral = true
+            SkiaOffscreen.resetContext()
             slot.hasContent = true
             if (!loggedFirstFrame) {
                 loggedFirstFrame = true
@@ -166,7 +151,6 @@ object PlayerPreviewOffscreen {
         }
     }
 
-    /** Drops targets nobody has asked to draw for a while */
     private fun evictStale(now: Long) {
         val iterator = slots.entries.iterator()
         while (iterator.hasNext()) {
@@ -177,7 +161,6 @@ object PlayerPreviewOffscreen {
         }
     }
 
-    /** Blits the last rendered frame of [owner] across [width] x [height] of [canvas] at its origin */
     fun drawInto(owner: Any, canvas: Canvas, width: Float, height: Float) {
         val slot = slots[owner] ?: return
         if (!slot.hasContent) return
@@ -267,16 +250,13 @@ object PlayerPreviewOffscreen {
 
         state.lightCoords = FULL_BRIGHT
         state.bodyRot = request.bodyRot
-        // yRot is the head turn off the body and xRot its pitch left alone they stay the player own
         request.headRot?.let { state.yRot = it }
         request.headPitch?.let { state.xRot = it }
-        // the render state carries the entity own scale which the pose below applies instead
         val boxHeight = state.boundingBoxHeight / state.scale
         state.boundingBoxWidth /= state.scale
         state.boundingBoxHeight = boxHeight
         state.scale = 1f
 
-        // crouching swaps the bounding box in one step so easing the anchor avoids a jerk
         val anchor = smoothAnchorHeight(slot, boxHeight)
 
         val size = request.sizePx
@@ -297,7 +277,6 @@ object PlayerPreviewOffscreen {
         *///? }
 
         val camera = CameraRenderState().apply {
-            // vanilla hands the model tilt to the entity as its camera orientation
             orientation = Quaternionf().rotateY(Math.PI.toFloat()).apply { if (tilt != 0f) mul(Quaternionf().rotateX(tilt)) }
             pos = Vec3.ZERO
             //? if < 26.1 {
@@ -342,45 +321,36 @@ object PlayerPreviewOffscreen {
     *///? }
 
     private fun resolveTarget(slot: Slot, width: Int, height: Int): Boolean {
-        if (slot.target != null && slot.surface != null && slot.lastWidth == width && slot.lastHeight == height) {
-            return true
-        }
-        slot.invalidate()
-
-        //? if >= 26.2 {
-        val rt = TextureTarget("evergreenhud_player_preview", width, height, true, com.mojang.blaze3d.GpuFormat.RGBA8_UNORM)
-        //? } else {
-        /*val rt = TextureTarget("evergreenhud_player_preview", width, height, true)
-        *///? }
-        slot.target = rt
-
-        val fboId = RenderTargetFbo.getFboId(rt)
-        if (fboId <= 0) {
-            // a Vulkan backend has no GL framebuffer to wrap and OneConfig keeps its wrapper internal
-            LOGGER.warn("Player preview needs an OpenGL render target; disabling")
-            failed = true
-            invalidate()
-            return false
-        }
-
-        val backend = BackendRenderTarget.makeGL(width, height, 0, 8, fboId, FramebufferFormat.GR_GL_RGBA8)
-        slot.brt = backend
-        val origin = if (SkiaCtx.isDeferredComposeBackend) SurfaceOrigin.TOP_LEFT else SurfaceOrigin.BOTTOM_LEFT
-        val made = Surface.makeFromBackendRenderTarget(
-            SkiaCtx.directContext,
-            backend,
-            origin,
-            SurfaceColorFormat.RGBA_8888,
-            ColorSpace.sRGB,
-            null,
-        )
-        if (made == null) {
+        if (slot.target == null || slot.lastWidth != width || slot.lastHeight != height) {
             slot.invalidate()
-            return false
+
+            //? if >= 26.2 {
+            val rt = TextureTarget("evergreenhud_player_preview", width, height, true, com.mojang.blaze3d.GpuFormat.RGBA8_UNORM)
+            //? } else {
+            /*val rt = TextureTarget("evergreenhud_player_preview", width, height, true)
+            *///? }
+            slot.target = rt
+
+            if (!SkiaOffscreen.isVulkan) {
+                val fboId = RenderTargetFbo.getFboId(rt)
+                if (fboId <= 0) {
+                    LOGGER.warn("Player preview needs an OpenGL render target; disabling")
+                    failed = true
+                    invalidate()
+                    return false
+                }
+            }
+            slot.lastWidth = width
+            slot.lastHeight = height
         }
-        slot.surface = made
-        slot.lastWidth = width
-        slot.lastHeight = height
+
+        val rt = slot.target ?: return false
+        if (slot.surface == null || SkiaOffscreen.needsPerFrameRewrap) {
+            slot.releaseSurface()
+            val (backend, made) = SkiaOffscreen.makeSurface(rt, width, height) ?: return false
+            slot.brt = backend
+            slot.surface = made
+        }
         return true
     }
 

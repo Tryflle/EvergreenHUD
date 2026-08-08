@@ -18,7 +18,6 @@ import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.roundToInt
 
-/** Size vanilla draws items at and the basis for the offsets below */
 const val ITEM_SIZE = 16f
 
 private const val BAR_X = 2f
@@ -31,7 +30,6 @@ private val itemPaint = Paint()
 
 private val requestedIcons: MutableSet<String> = Collections.newSetFromMap(ConcurrentHashMap())
 
-/** The OneConfig item renderer draws a registry entry not a stack so bar and count are drawn here */
 @Composable
 fun ItemIcon(
     stack: ItemStack,
@@ -58,7 +56,6 @@ fun ItemIcon(
     }
 }
 
-/** The picker composes a preview once so the icon cache is read in the draw pass instead of state */
 @Composable
 private fun ItemImage(id: String, size: Float) {
     PolyCanvas(PolyModifier.size(size, size)) { x, y, w, h ->
@@ -69,18 +66,15 @@ private fun ItemImage(id: String, size: Float) {
 
 private fun requestIcon(id: String) {
     if (!requestedIcons.add(id)) return
-    // the callback also fires when the render fails so a later reload can ask again
     ItemCatalog.loadIcon(id) { requestedIcons.remove(id) }
 }
 
-/** Compose warms HUDs up before item data components exist and building a stack then throws */
 inline fun <T> whenItemsReady(fallback: T, block: () -> T): T = try {
     block()
 } catch (throwable: Throwable) {
     fallback
 }
 
-/** Registry id which is the key the OneConfig item renderer caches icons under */
 fun itemId(stack: ItemStack): String = BuiltInRegistries.ITEM.getKey(stack.item).toString()
 
 @Composable
@@ -95,7 +89,6 @@ private fun DurabilityBar(stack: ItemStack, scale: Float) {
     }
 }
 
-/** Vanilla fades the bar from red to green over the first third of the hue circle */
 private fun barColor(remaining: Float): Int {
     val hue = remaining / 3f
     val sector = (hue * 6f).toInt() % 6

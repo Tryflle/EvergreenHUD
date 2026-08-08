@@ -103,7 +103,6 @@ object GlobalConfig : Config(
         "textBold" to { h -> h.textBold = textBold },
         "textItalic" to { h -> h.textItalic = textItalic },
         "textUnderline" to { h -> h.textUnderline = textUnderline },
-        // HUDs without a background of their own control their own colors
         "showBackground" to { h ->
             if (h.hasBackground()) {
                 h.showBackground = showBackground

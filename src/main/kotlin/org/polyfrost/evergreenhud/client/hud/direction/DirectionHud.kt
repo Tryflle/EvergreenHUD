@@ -92,7 +92,6 @@ class DirectionHud : Hud(
         tree?.getProp("staticH")?.addMetadata("default", DEFAULT_HEIGHT)
     }
 
-    /** OneConfig measures natural size with [staticWidth] off so report the unscaled default or resetting would grow the compass by its scale factor each time */
     private val compassWidth: Float get() = if (staticWidth) scaledWidth else DEFAULT_WIDTH
 
     private val compassHeight: Float get() = if (staticWidth) scaledHeight else DEFAULT_HEIGHT

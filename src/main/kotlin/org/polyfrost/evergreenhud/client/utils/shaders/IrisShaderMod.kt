@@ -3,17 +3,11 @@ package org.polyfrost.evergreenhud.client.utils.shaders
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Method
 
-/**
- * Reflects into the Iris entrypoint class because the public IrisApi cannot name the loaded pack
- * a missing method falls back to reporting no pack
- */
 data object IrisShaderMod : ShaderMod {
     private val LOGGER = LoggerFactory.getLogger("EvergreenHUD/Shaders")
 
-    /** Newest package first as net.coderbot is where Iris lived before 1.20 */
     private val CLASS_NAMES = listOf("net.irisshaders.iris.Iris", "net.coderbot.iris.Iris")
 
-    /** Iris own name for the built in pack which is not a real shader pack */
     private const val INTERNAL_PACK = "(internal)"
 
     override val modIds = listOf("iris", "oculus")
@@ -46,7 +40,6 @@ data object IrisShaderMod : ShaderMod {
 
     override fun packName(): String? {
         if (!shadersEnabled()) return null
-        // a fallback pack means the selected one failed to compile so vanilla rendering is on screen
         if (invoke<Boolean>(fallback) == true) return null
 
         val name = invoke<String>(currentPackName)?.takeIf { it.isNotBlank() } ?: return null

@@ -12,7 +12,6 @@ data class StyledRun(
     val italic: Boolean,
 )
 
-/** Runs treated as one unit when columns align so a cell can hold several colours without extra columns */
 @JvmInline
 value class StyledCell(val runs: List<StyledRun>)
 

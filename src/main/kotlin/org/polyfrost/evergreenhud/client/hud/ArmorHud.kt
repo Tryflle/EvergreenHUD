@@ -148,7 +148,6 @@ class ArmorHud : Hud(
 
     private fun currentItems(): List<ItemStack> {
         var list = if (isReal) equippedItems() else exampleItems()
-        // nothing equipped means an empty hud with nothing to drag in the editor
         if (list.isEmpty() && HudManager.isEditing) list = exampleItems()
         if (reversed) list.reverse()
         return list
@@ -225,7 +224,6 @@ class ArmorHud : Hud(
                     for (entry in list) Entry(entry, scale, PolyAlign.Center)
                 }
             } else {
-                // rows hang off their right edge so the icon column stays flush whatever the text measures
                 val rowAlign = if (textPosition == RIGHT) PolyAlign.Left else PolyAlign.Right
                 PolyColumn(gap = padding * scale) {
                     for (entry in list) Entry(entry, scale, rowAlign)

@@ -47,13 +47,11 @@ private const val EDGE = 8f
 private const val TITLE_Y = 6f
 private const val FONT_SIZE = 8f
 
-/** vanilla inventory panel metrics so the grid keeps its proportions */
 private const val WIDTH = 176f
 private const val GRID_HEIGHT = ROWS * SLOT
 private const val GRID_TOP = 6f
 private const val GRID_TOP_TITLED = 20f
 
-/** mirrors [GRID_TOP] because the extra vanilla room was the hotbar row we do not draw */
 private const val GRID_BOTTOM = GRID_TOP
 
 class InventoryHud : Hud(
@@ -162,7 +160,6 @@ class InventoryHud : Hud(
         title == other.title && items.size == other.items.size &&
             items.indices.all { ItemStack.matches(items[it], other.items[it]) }
 
-    /** the tooltip hook hit tests these screen positions */
     private fun publishSlots(next: Grid?) {
         if (next == null || type != HELD_SHULKER || !isReal || HudManager.isEditing) return
         val scale = effectiveScale
@@ -198,8 +195,6 @@ class InventoryHud : Hud(
             exampleContents
         } else {
             val inv = mc.player?.inventory
-            // slots 0 to 8 are the hotbar which the main grid does not show
-            // copied because the inventory mutates its stacks in place
             inv?.let { List(ROWS * COLS) { i -> if (COLS + i < it.containerSize) it.getItem(COLS + i).copy() else ItemStack.EMPTY } }
         }
     }
@@ -213,7 +208,6 @@ class InventoryHud : Hud(
         PolyBox(modifier = hudBackground().size(WIDTH, height)) {
             current.title?.let { Title(it) }
 
-            // centres the bounds box on the item whatever the gap
             val boundInset = (SLOT_BOUND_SIZE - ITEM_SIZE) / 2f
 
             for (row in 0 until ROWS) {

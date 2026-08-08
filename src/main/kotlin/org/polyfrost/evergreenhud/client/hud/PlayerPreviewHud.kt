@@ -23,7 +23,6 @@ import org.polyfrost.oneconfig.utils.v1.dsl.mc
 private const val WIDTH = 80f
 private const val HEIGHT = 120f
 
-/** Entity size the vanilla inventory preview uses in gui units */
 private const val DEFAULT_ENTITY_SCALE = 40f
 
 class PlayerPreviewHud : Hud(
@@ -64,9 +63,7 @@ class PlayerPreviewHud : Hud(
         }
     }
 
-    /** Queues the offscreen pass since the player cannot be drawn while the HUD canvas composes */
     override fun update(): Boolean {
-        // the preview card is composed once so it queues from its own draw pass
         if (!isReal) return false
         return queue(effectiveScale)
     }
@@ -75,7 +72,6 @@ class PlayerPreviewHud : Hud(
         val player = mc.player ?: return false
         val partialTick = smuggledHudPartialTick
 
-        // how far the body trails the look direction
         val bodyLag = if (paperDoll) {
             Mth.wrapDegrees(Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot) - player.yRot)
         } else {
@@ -87,21 +83,18 @@ class PlayerPreviewHud : Hud(
         val headPitch: Float?
         val modelTilt: Float
         if (paperDoll) {
-            // the look direction holds still against the camera so the body turns off it and settles back
             bodyRot = 180f + bodyLag
             headRot = null
             headPitch = null
             modelTilt = 0f
         } else {
             bodyRot = rotation
-            // model leans with vanilla mouse tilt and the head counters it
             headRot = 0f
             headPitch = -pitch
             modelTilt = pitch
         }
 
         //? if >= 1.21.10 {
-        // pixels per gui unit so the target matches the HUD size on screen
         val pixelsPerGuiUnit = Platform.screen().let {
             if (it.guiWidth() > 0) it.viewportWidth().toFloat() / it.guiWidth() else 1f
         }
@@ -121,16 +114,13 @@ class PlayerPreviewHud : Hud(
             ),
         )
         //? } else {
-        /*// older versions have no submit-node entity pipeline, so the vanilla GUI helper is used
-        val x1 = x.toInt()
+        /*val x1 = x.toInt()
         val y1 = y.toInt()
         val x2 = (x + WIDTH * scale).toInt()
         val y2 = (y + HEIGHT * scale).toInt()
         val centerX = (x1 + x2) / 2f
         val centerY = (y1 + y2) / 2f
         val entityScale = (modelScale * scale).toInt()
-        // the vanilla helper takes a mouse offset, so the facing base is subtracted back out
-        // the vanilla helper turns the whole model, so the body lag is all it can show
         val yawOffset = if (paperDoll) bodyLag else rotation - 180f
 
         HudOffscreen.submit { graphics ->
@@ -158,12 +148,10 @@ class PlayerPreviewHud : Hud(
         PolyBox(modifier = hudBackground().size(WIDTH, HEIGHT)) {
             PolyCanvas(PolyModifier.size(WIDTH, HEIGHT)) { _, _, w, h ->
                 //? if >= 1.21.10 {
-                // the preview card never runs update so its pass is queued from here
                 if (!isReal) queue(1f)
                 PlayerPreviewOffscreen.drawInto(this@PlayerPreviewHud, canvas, w, h)
                 //? } else {
-                /*// read the position inside the draw pass: dragging the HUD does not recompose it
-                HudOffscreen.drawInto(canvas, x, y, effectiveScale, w, h)
+                /*HudOffscreen.drawInto(canvas, x, y, effectiveScale, w, h)
                 *///? }
             }
         }

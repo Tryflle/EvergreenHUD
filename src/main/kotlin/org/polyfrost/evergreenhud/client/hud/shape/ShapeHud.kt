@@ -124,7 +124,6 @@ class ShapeHud : Hud(
     override fun Content() {
         val sizeModifier = PolyModifier.size(scaledWidth, scaledHeight)
         if (showBackground) {
-            // when merged HudManager draws this background as part of the fused neighbour shape
             PolyBox(modifier = hudBackground(sizeModifier)) {
                 Shape(sizeModifier)
             }

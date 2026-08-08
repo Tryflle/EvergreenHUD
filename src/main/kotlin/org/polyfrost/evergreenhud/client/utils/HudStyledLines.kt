@@ -37,7 +37,6 @@ fun Hud.HudStyledCells(lines: List<List<StyledCell>>, alignColumns: Boolean = fa
     val padInsets = PolyInsets(padLeft, padTop, padRight, padBottom)
     val isStaticValid = staticWidth && staticW > 0f && staticH > 0f
 
-    // when merged HudManager draws this background as part of the fused neighbour shape
     val bgModifier = hudBackground()
     val outerModifier =
         if (isStaticValid) bgModifier.size(staticW, staticH).padding(padInsets)

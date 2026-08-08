@@ -138,7 +138,6 @@ class PositionHud : GenericNumberHud(
 
     private val separator get() = if (displayMode == 0) "\n" else ", "
 
-    /** Only the label carries the per axis colour */
     private class Entry(val label: String, val value: String, val direction: String?, val color: PolyColor?) {
         val plain get() = label + value + (direction ?: "")
     }
@@ -170,11 +169,9 @@ class PositionHud : GenericNumberHud(
             }
         }
 
-        // affixes join a neighbouring cell so column alignment counts one column per cell
         if (prefix.isNotEmpty()) lines.first().first().add(0, run("$prefix$concatString"))
         if (suffix.isNotEmpty()) lines.last().last().add(run("$concatString$suffix"))
 
-        // the base HUD brackets displayText which this HUD never renders so lines are bracketed here
         if (brackets) {
             for (line in lines) {
                 if (line.all { cell -> cell.all { it.text.isEmpty() } }) continue

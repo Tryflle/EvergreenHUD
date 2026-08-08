@@ -66,7 +66,6 @@ private const val ROW_SNEAK = "Sneak"
 private const val MODE_NORMAL = 0
 private const val MODE_CUSTOM = 1
 
-/** Drawn when the custom key is unbound so the HUD is never invisible */
 private const val UNKNOWN_KEY = "?"
 
 private const val UP = "▲"
@@ -76,7 +75,6 @@ private const val RIGHT = "▶"
 
 private val ARROW_CODES = intArrayOf(InputConstants.KEY_UP, InputConstants.KEY_DOWN, InputConstants.KEY_LEFT, InputConstants.KEY_RIGHT)
 
-/** Fallbacks for fonts without the triangle glyphs */
 private const val UP_SHORT = "Up"
 private const val DOWN_SHORT = "Down"
 private const val LEFT_SHORT = "Left"
@@ -173,7 +171,6 @@ class KeystrokesHud : Hud(
         showBackground = false
     }
 
-    /** Only the keys are filled and the HUD itself has no background */
     override fun hasBackground(): Boolean = false
 
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
@@ -184,7 +181,6 @@ class KeystrokesHud : Hud(
         pressedBg = pressedBg.copy()
         pressedText = pressedText.copy()
         rows = rows.copyOf()
-        // each HUD binds its own key so the clone must not share the keybind instance
         customBind = customBind.copyWith(customBind.keyCodes?.copyOf(), customBind.mouseBtns?.copyOf(), customBind.mods)
         keys = KeyState()
         handlers = ArrayList(2)
@@ -253,7 +249,6 @@ class KeystrokesHud : Hud(
         keys.useClicks.clear()
     }
 
-    /** Keeps the designer text color showing the unpressed text color */
     private fun pushTextToDesigner() {
         textColor = unpressedText.rawArgb
         textChroma = unpressedText.chroma
@@ -297,7 +292,6 @@ class KeystrokesHud : Hud(
         }
 
         if (isCustom) {
-            // a screen swallows the release so a key held while one opens would stay lit
             if (screenOpen()) {
                 keys.downKeys.clear()
                 keys.downMouse.clear()
@@ -332,7 +326,6 @@ class KeystrokesHud : Hud(
 
     private fun screenOpen(): Boolean = Platform.screen().current<Any?>() != null
 
-    /** Modifiers rebuilt from tracked keys since the bind is polled manually */
     private fun heldMods(): Byte {
         val k = Platform.compatibility().keys()
         var mods = KeyModifiers.NONE
@@ -416,7 +409,6 @@ class KeystrokesHud : Hud(
     private fun keyBg(progress: Float): PolyColor = blend(unpressedBg, pressedBg, progress)
 
     private fun keyModifier(progress: Float, w: Float, h: Float, align: PolyAlign? = null): PolyModifier {
-        // only keys have a background so the designer background settings are ignored
         var mod = PolyModifier.size(w, h).background(keyBg(progress), keyRadius)
         if (align != null) mod = mod.align(align)
         return mod
@@ -496,7 +488,6 @@ class KeystrokesHud : Hud(
         }
     }
 
-    /** Vanilla arrow key names are far too wide for a key so an arrow is drawn instead */
     private fun KeyMapping.label(): String {
         for (code in ARROW_CODES) {
             if (matchesKeyCode(code)) return arrowLabel(code) ?: break
@@ -516,7 +507,6 @@ class KeystrokesHud : Hud(
     }
 }
 
-/** Per instance render state not serialized and rebuilt on clone */
 private class KeyState {
     val forward = mutableStateOf(0f)
     val left = mutableStateOf(0f)
@@ -532,13 +522,11 @@ private class KeyState {
     val attackClicks = ArrayList<Long>(20)
     val useClicks = ArrayList<Long>(20)
 
-    /** Held keys and buttons tracked by event since custom keys have no KeyMapping */
     val downKeys = HashSet<Int>()
     val downMouse = HashSet<Int>()
 
     val custom = mutableStateOf(0f)
 
-    /** Bumped to force a recompose when an option changes the layout */
     val rev = mutableStateOf(0)
 
     var lastNanos = System.nanoTime()

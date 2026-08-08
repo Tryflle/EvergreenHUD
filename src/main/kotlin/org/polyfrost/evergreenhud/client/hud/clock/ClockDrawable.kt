@@ -20,12 +20,10 @@ private val MINUTE_HAND = PolyColor.rgba(255, 255, 255, 255)
 private val HOUR_HAND = PolyColor.rgba(120, 180, 255, 255)
 private val DETAIL = PolyColor.rgba(255, 255, 255, 255)
 
-/** ring the details are laid on where a null [cornerRadius] means they sit on a circle */
 private class Outline(val hw: Float, val hh: Float, val cornerRadius: Float?) {
     private val inscribed = minOf(hw, hh)
     private val corner = cornerRadius?.coerceIn(0f, inscribed) ?: inscribed
 
-    /** distance from the centre to the outline along the unit vector [dx] [dy] */
     fun distance(dx: Float, dy: Float): Float {
         val tx = if (abs(dx) < 1e-5f) Float.MAX_VALUE else hw / abs(dx)
         val ty = if (abs(dy) < 1e-5f) Float.MAX_VALUE else hh / abs(dy)
@@ -40,7 +38,6 @@ private class Outline(val hw: Float, val hh: Float, val cornerRadius: Float?) {
     }
 }
 
-/** [millisOfDay] is local time since midnight as the hour hand reads straight off it */
 @Composable
 fun Clock(
     millisOfDay: Long,

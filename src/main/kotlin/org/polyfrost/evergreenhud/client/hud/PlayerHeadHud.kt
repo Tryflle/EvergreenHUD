@@ -26,7 +26,6 @@ import org.polyfrost.oneconfig.utils.v1.dsl.mc
 import java.util.UUID
 import kotlin.math.min
 
-/** Size vanilla draws heads at in the tab list */
 private const val DEFAULT_SIDE = 8f
 
 class PlayerHeadHud : Hud(
@@ -74,7 +73,6 @@ class PlayerHeadHud : Hud(
                 val side = min(w, h)
                 val left = x + (w - side) / 2f
                 val top = y + (h - side) / 2f
-                // default nearest sampling keeps the 8x8 face crisp at any size
                 canvas.drawImageRect(head, Rect.makeXYWH(left, top, side, side), HEAD_PAINT)
             }
         }
@@ -101,7 +99,6 @@ private object PlayerHeadTexture {
         if (texture == cachedTexture) return image
 
         image?.close()
-        // unreadable or still downloading skins fall back to the default skin
         image = build(skin) ?: build(DefaultPlayerSkin.get(FALLBACK_UUID))
         cachedTexture = texture
         return image
@@ -120,13 +117,10 @@ private object PlayerHeadTexture {
         //? if < 1.21.10
         //val texture = skin.texture
 
-        // resource pack skins are not readable as pixels once uploaded so decode from the pack
         val packed = mc.resourceManager.getResource(texture).orElse(null)
         if (packed != null) return@runCatching packed.open().use { NativeImage.read(it) }.use { headImage(it) }
 
-        // downloaded skins live in a DynamicTexture whose pixel buffer is readable
         val pixels = PlayerHeadTextureAccess.readPixels(mc.textureManager.getTexture(texture))
-        // owned by the texture so never closed here
         pixels?.let { headImage(it) }
     }.getOrNull()
 
@@ -154,7 +148,6 @@ private object PlayerHeadTexture {
         )
     }
 
-    /** NativeImage packs pixels as ABGR so red and blue are swapped back here */
     private fun pixel(image: NativeImage, x: Int, y: Int): Int {
         //? if >= 1.21.4
         val abgr = image.getPixel(x, y)
@@ -163,7 +156,6 @@ private object PlayerHeadTexture {
         return (abgr and 0xFF00FF00.toInt()) or ((abgr shr 16) and 0xFF) or ((abgr and 0xFF) shl 16)
     }
 
-    /** Source over of two straight alpha ARGB pixels */
     private fun composite(src: Int, dst: Int): Int {
         val srcAlpha = src ushr 24
         if (srcAlpha == 0) return dst
