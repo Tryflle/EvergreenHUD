@@ -1,8 +1,8 @@
 {
     "schemaVersion": 1,
-    "id": "${id}",
-    "version": "${version}",
-    "name": "${name}",
+    "id": "${mod_id}",
+    "version": "${mod_version}",
+    "name": "${mod_name}",
     "description": "",
     "authors": [
         "Polyfrost"
@@ -20,8 +20,8 @@
         "mixins.evergreenhud.json"
     ],
     "depends": {
-        "minecraft": "${minecraft}",
-        "fabricloader": ">=0.15.11",
-        "oneconfigv1": ">=1.1.3"
+        "minecraft": "${minecraft_version_range}",
+        "fabricloader": ">=${loader_version}",
+        "oneconfigv1": ">=${oneconfig_version}"
     }
 }
