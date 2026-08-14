@@ -214,22 +214,28 @@ class InventoryHud : Hud(
 
             val boundInset = (SLOT_BOUND_SIZE - ITEM_SIZE) / 2f
 
-            for (row in 0 until ROWS) {
-                for (col in 0 until COLS) {
-                    val itemX = EDGE + col * SLOT
-                    val itemY = top + row * SLOT
-                    if (slotBounds) {
+            if (slotBounds) {
+                for (row in 0 until ROWS) {
+                    for (col in 0 until COLS) {
                         PolyBox(
                             modifier = PolyModifier
-                                .absoluteAt(itemX - boundInset, itemY - boundInset)
+                                .absoluteAt(EDGE + col * SLOT - boundInset, top + row * SLOT - boundInset)
                                 .size(SLOT_BOUND_SIZE, SLOT_BOUND_SIZE)
                                 .background(slotBoundsColor, slotBoundsRadius),
                         )
                     }
+                }
+            }
 
+            for (row in 0 until ROWS) {
+                for (col in 0 until COLS) {
                     val item = current.items.getOrNull(row * COLS + col) ?: continue
                     if (item.isEmpty) continue
-                    ItemIcon(this@InventoryHud, item, modifier = PolyModifier.absoluteAt(itemX, itemY))
+                    ItemIcon(
+                        this@InventoryHud,
+                        item,
+                        modifier = PolyModifier.absoluteAt(EDGE + col * SLOT, top + row * SLOT),
+                    )
                 }
             }
         }
