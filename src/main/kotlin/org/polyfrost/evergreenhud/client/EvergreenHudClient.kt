@@ -49,7 +49,7 @@ object EvergreenHudClient : ClientModInitializer {
             BiomeHud(), BlockAboveHud(),
             ClockHud(), DigitalClockHud(), ComboHud(), CpsHud(),
             DayHud(), DirectionHud(), EntityCounterHud(), FacingHud(), FpsHud(),
-            InGameTimeHud(), InventoryHud(), ItemCounterHud(),
+            InGameTimeHud(), InventoryHud(), ItemCounterHud(), ItemTrackerHud(),
             KeystrokesHud(),
             LoreHud(), MemoryHud(), MouseStrokesHud(),
             PingHud(), PlaceCountHud(), PlayerHeadHud(), PlayerPreviewHud(),
