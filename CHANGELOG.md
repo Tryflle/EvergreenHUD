@@ -1,2 +1,2 @@
-## 3.5.1
-- Old configs still on a default are migrated to the new defaults.
+## 3.6.1
+- Fixed Play Time HUD going up faster if you're inside OneConfig
