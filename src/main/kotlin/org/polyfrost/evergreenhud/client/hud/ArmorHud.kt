@@ -111,6 +111,10 @@ class ArmorHud : Hud(
 
     override fun canMergeBackground(): Boolean = true
 
+    // items come from the offscreen target, which is only filled while the HUD keeps asking for it
+    override val alwaysRedraw: Boolean
+        get() = super.alwaysRedraw || (isReal && entries.value.isNotEmpty())
+
     override fun setup() {
         if (isReal) {
             hideIf("fullDurabilityColor") { !dynamicColor }
@@ -237,6 +241,7 @@ class ArmorHud : Hud(
         PolyRow(gap = if (entry.text.isEmpty()) 0f else TEXT_GAP * scale, modifier = PolyModifier.align(align)) {
             if (textPosition != RIGHT && entry.text.isNotEmpty()) Info(entry, scale)
             ItemIcon(
+                this@ArmorHud,
                 entry.stack,
                 size = ITEM_SIZE * scale,
                 decorations = showDecorations,

@@ -12,6 +12,8 @@ import org.polyfrost.compose.composables.align
 import org.polyfrost.compose.composables.size
 import org.polyfrost.compose.layout.PolyAlign
 import org.polyfrost.compose.render.PolyColor
+import org.polyfrost.evergreenhud.client.hooks.HudOffscreen
+import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.internal.ui.components.item.ItemCatalog
 import org.polyfrost.oneconfig.internal.ui.components.item.itemImage
 import java.util.Collections
@@ -32,6 +34,7 @@ private val requestedIcons: MutableSet<String> = Collections.newSetFromMap(Concu
 
 @Composable
 fun ItemIcon(
+    hud: Hud,
     stack: ItemStack,
     size: Float = ITEM_SIZE,
     decorations: Boolean = true,
@@ -40,7 +43,7 @@ fun ItemIcon(
 ) {
     val scale = size / ITEM_SIZE
     PolyBox(modifier = modifier.size(size, size)) {
-        ItemImage(itemId(stack), size)
+        ItemImage(hud, stack, size)
         if (!decorations) return@PolyBox
 
         if (stack.isDamageableItem && stack.damageValue > 0) DurabilityBar(stack, scale)
@@ -57,8 +60,22 @@ fun ItemIcon(
 }
 
 @Composable
-private fun ItemImage(id: String, size: Float) {
+private fun ItemImage(hud: Hud, stack: ItemStack, size: Float) {
     PolyCanvas(PolyModifier.size(size, size)) { x, y, w, h ->
+        if (hud.isReal && HudOffscreen.isUsable) {
+            val hudScale = hud.effectiveScale
+            HudOffscreen.submitItem(
+                stack,
+                hud.x + x * hudScale,
+                hud.y + y * hudScale,
+                size / ITEM_SIZE * hudScale,
+            )
+            if (HudOffscreen.hasContent) {
+                HudOffscreen.drawInto(canvas, hud.x, hud.y, hudScale, w, h, x, y)
+                return@PolyCanvas
+            }
+        }
+        val id = itemId(stack)
         val icon = itemImage(id)
         if (icon != null) image(icon, x, y, w, h, itemPaint) else requestIcon(id)
     }

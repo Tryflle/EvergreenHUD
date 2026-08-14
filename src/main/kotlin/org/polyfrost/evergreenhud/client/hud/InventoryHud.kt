@@ -130,6 +130,10 @@ class InventoryHud : Hud(
 
     override fun minimumSize(): Pair<Float, Float> = WIDTH to gridTop() + GRID_HEIGHT + GRID_BOTTOM
 
+    // items come from the offscreen target, which is only filled while the HUD keeps asking for it
+    override val alwaysRedraw: Boolean
+        get() = super.alwaysRedraw || (isReal && grid.value?.items?.any { !it.isEmpty } == true)
+
     override fun setup() {
         staticWidth = true
         staticW = WIDTH
@@ -225,7 +229,7 @@ class InventoryHud : Hud(
 
                     val item = current.items.getOrNull(row * COLS + col) ?: continue
                     if (item.isEmpty) continue
-                    ItemIcon(item, modifier = PolyModifier.absoluteAt(itemX, itemY))
+                    ItemIcon(this@InventoryHud, item, modifier = PolyModifier.absoluteAt(itemX, itemY))
                 }
             }
         }
