@@ -1,6 +1,7 @@
 package org.polyfrost.evergreenhud.client.hud
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import net.minecraft.util.Mth
 import org.polyfrost.compose.composables.PolyBox
 import org.polyfrost.compose.composables.PolyCanvas
@@ -23,6 +24,9 @@ import org.polyfrost.oneconfig.utils.v1.dsl.mc
 private const val WIDTH = 80f
 private const val HEIGHT = 120f
 
+private const val MIN_WIDTH = 24f
+private const val MIN_HEIGHT = 36f
+
 private const val DEFAULT_ENTITY_SCALE = 40f
 
 class PlayerPreviewHud : Hud(
@@ -30,6 +34,12 @@ class PlayerPreviewHud : Hud(
     title = "Player Preview",
     category = Category.PLAYER,
 ) {
+    private var _staticW = mutableStateOf(WIDTH)
+    override var staticW: Float get() = _staticW.value; set(v) { _staticW.value = v }
+
+    private var _staticH = mutableStateOf(HEIGHT)
+    override var staticH: Float get() = _staticH.value; set(v) { _staticH.value = v }
+
     @Switch(title = "Paper Doll", description = "Mirror the player's own head rotation.")
     var paperDoll = false
 
@@ -49,18 +59,24 @@ class PlayerPreviewHud : Hud(
 
     override fun canMergeBackground(): Boolean = true
 
-    override fun minimumSize(): Pair<Float, Float> = WIDTH to HEIGHT
+    override fun minimumSize(): Pair<Float, Float> = MIN_WIDTH to MIN_HEIGHT
 
     override val alwaysRedraw: Boolean get() = true
 
     override fun setup() {
+        super.setup()
         staticWidth = true
-        staticW = WIDTH
-        staticH = HEIGHT
+        tree?.getProp("staticW")?.addMetadata("default", WIDTH)
+        tree?.getProp("staticH")?.addMetadata("default", HEIGHT)
         if (isReal) {
             hideIf("rotation") { paperDoll }
             hideIf("pitch") { paperDoll }
         }
+    }
+
+    override fun clone(): Hud = (super.clone() as PlayerPreviewHud).apply {
+        _staticW = mutableStateOf(this@PlayerPreviewHud.staticW)
+        _staticH = mutableStateOf(this@PlayerPreviewHud.staticH)
     }
 
     override fun update(): Boolean {
@@ -71,6 +87,9 @@ class PlayerPreviewHud : Hud(
     private fun queue(scale: Float): Boolean {
         val player = mc.player ?: return false
         val partialTick = smuggledHudPartialTick
+        val boxW = staticW.coerceAtLeast(1f)
+        val boxH = staticH.coerceAtLeast(1f)
+        val entitySize = modelScale * (boxH / HEIGHT)
 
         val bodyLag = if (paperDoll) {
             Mth.wrapDegrees(Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot) - player.yRot)
@@ -102,9 +121,9 @@ class PlayerPreviewHud : Hud(
         PlayerPreviewOffscreen.submit(
             this,
             PlayerPreviewOffscreen.Request(
-                widthPx = (WIDTH * pixelScale).toInt().coerceAtLeast(1),
-                heightPx = (HEIGHT * pixelScale).toInt().coerceAtLeast(1),
-                sizePx = modelScale * pixelScale,
+                widthPx = (boxW * pixelScale).toInt().coerceAtLeast(1),
+                heightPx = (boxH * pixelScale).toInt().coerceAtLeast(1),
+                sizePx = entitySize * pixelScale,
                 bodyRot = bodyRot,
                 headRot = headRot,
                 headPitch = headPitch,
@@ -116,11 +135,11 @@ class PlayerPreviewHud : Hud(
         //? } else {
         /*val x1 = x.toInt()
         val y1 = y.toInt()
-        val x2 = (x + WIDTH * scale).toInt()
-        val y2 = (y + HEIGHT * scale).toInt()
+        val x2 = (x + boxW * scale).toInt()
+        val y2 = (y + boxH * scale).toInt()
         val centerX = (x1 + x2) / 2f
         val centerY = (y1 + y2) / 2f
-        val entityScale = (modelScale * scale).toInt()
+        val entityScale = (entitySize * scale).toInt()
         val yawOffset = if (paperDoll) bodyLag else rotation - 180f
 
         HudOffscreen.submit { graphics ->
@@ -145,8 +164,8 @@ class PlayerPreviewHud : Hud(
 
     @Composable
     override fun Content() {
-        PolyBox(modifier = hudBackground().size(WIDTH, HEIGHT)) {
-            PolyCanvas(PolyModifier.size(WIDTH, HEIGHT)) { _, _, w, h ->
+        PolyBox(modifier = hudBackground().size(staticW, staticH)) {
+            PolyCanvas(PolyModifier.size(staticW, staticH)) { _, _, w, h ->
                 //? if >= 1.21.10 {
                 if (!isReal) queue(1f)
                 PlayerPreviewOffscreen.drawInto(this@PlayerPreviewHud, canvas, w, h)
