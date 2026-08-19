@@ -59,6 +59,15 @@ fun Hud.HudStyledCells(lines: List<List<StyledCell>>, alignColumns: Boolean = fa
 private fun List<List<StyledCell>>.mapRunText(transform: (String) -> String): List<List<StyledCell>> =
     map { line -> line.map { cell -> StyledCell(cell.runs.map { it.copy(text = transform(it.text)) }) } }
 
+private fun Hud.runFont(run: StyledRun, skiaFont: SkiaFont?): SkiaFont? {
+    if (skiaFont == null) return null
+    if (!run.bold && !run.italic) return skiaFont
+
+    val base = if (run.bold) "poppins-bold" else getPoppinsFontName().removeSuffix("-italic")
+    val name = if (run.italic || textItalic) "$base-italic" else base
+    return FontManager.getFont(POPPINS_SIZE * textScale, name)
+}
+
 private fun Hud.mcRunText(run: StyledRun): String = buildString {
     if (run.bold || textBold) append("§l")
     if (run.italic || textItalic) append("§o")
@@ -66,7 +75,7 @@ private fun Hud.mcRunText(run: StyledRun): String = buildString {
 }
 
 private fun Hud.runWidth(run: StyledRun, skiaFont: SkiaFont?): Float =
-    if (skiaFont != null) skiaFont.measureTextWidth(run.text)
+    if (skiaFont != null) (runFont(run, skiaFont) ?: skiaFont).measureTextWidth(run.text)
     else McFontQueue.measureTextWidth(mcRunText(run), textScale)
 
 private fun Hud.cellWidths(cells: List<StyledCell>, skiaFont: SkiaFont?): List<Float> =
@@ -113,12 +122,12 @@ private fun Hud.StyledLine(cells: List<StyledCell>, alignment: PolyAlign, skiaFo
             if (showShadow) {
                 val shadowCol = PolyColor(shadowColor, shadowChroma, shadowChromaSpeed)
                 for ((run, offset) in placed) {
-                    text(run.text, x + offset + shadowOffsetX, baseline + shadowOffsetY, shadowCol, skiaFont)
+                    text(run.text, x + offset + shadowOffsetX, baseline + shadowOffsetY, shadowCol, runFont(run, skiaFont) ?: skiaFont)
                 }
             }
             for ((run, offset) in placed) {
                 val color = run.color ?: fg
-                text(run.text, x + offset, baseline, color, skiaFont)
+                text(run.text, x + offset, baseline, color, runFont(run, skiaFont) ?: skiaFont)
             }
         }
     } else {

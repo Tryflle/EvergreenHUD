@@ -1,11 +1,16 @@
 package org.polyfrost.evergreenhud.client.hud
 
+import org.polyfrost.compose.render.PolyColor
 import org.polyfrost.evergreenhud.client.utils.FrameTimeHelper
 import org.polyfrost.evergreenhud.client.utils.GenericNumberHud
+import org.polyfrost.evergreenhud.client.utils.quality
+import org.polyfrost.evergreenhud.client.utils.qualityColor
 import org.polyfrost.evergreenhud.client.utils.replace
 import org.polyfrost.oneconfig.api.config.v1.annotations.Slider
+import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.config.v1.annotations.Text
-import org.polyfrost.oneconfig.api.event.v1.eventHandler
+
+private const val WORST_RATIO = 0.5
 
 class FpsHud : GenericNumberHud(
     title = "FPS",
@@ -17,7 +22,8 @@ class FpsHud : GenericNumberHud(
     @Slider(title = "Update Rate", description = "Seconds between display updates. 0 updates as fast as possible.", min = 0F, max = 5F, step = 0.5F)
     private var updateRate = 1F
 
-    private var lastUpdate = 0L
+    @Switch(title = "Color By Value", description = "Colours the value green when FPS is near your usual, fading to red at half of it.", subcategory = "Colors")
+    private var colorByValue = false
 
     init {
         accuracy = 0
@@ -26,25 +32,32 @@ class FpsHud : GenericNumberHud(
     override fun setup() {
         super.setup()
 
-        eventHandler { _: FrameTimeHelper.FrameDataEvent ->
-            val now = System.nanoTime()
-            if (now - lastUpdate < (updateRate * 1_000_000_000.0).toLong()) return@eventHandler
-            lastUpdate = now
-
-            val data = FrameTimeHelper.latest
-            val text = StringBuilder().append(formatString)
-                .replace("#fps", format(data.meanFps))
-                .replace("#avg", format(data.meanFps))
-                .replace("#med", format(data.medianFps))
-                .replace("#p95", format(data.p95Millis))
-                .replace("#p99", format(data.p99Millis))
-                .replace("#cst", format(data.consistencyPercent))
-
-            updateWithText(text)
-        }
-
         if (isReal) {
             updateWhenChanged("formatString")
+            updateWhenChanged("colorByValue")
+            updateWhenChanged("updateRate")
         }
+    }
+
+    override fun getText(): String {
+        val data = FrameTimeHelper.latest
+        return StringBuilder().append(formatString)
+            .replace("#fps", format(data.currentFps))
+            .replace("#avg", format(data.averageFps))
+            .replace("#med", format(data.medianFps))
+            .replace("#p95", format(data.p95Millis))
+            .replace("#p99", format(data.p99Millis))
+            .replace("#cst", format(data.consistencyPercent))
+            .toString()
+    }
+
+    override fun updateFrequency(): Long =
+        if (updateRate <= 0F) -1L else (updateRate * 1_000_000_000.0).toLong()
+
+    override fun valueColor(): PolyColor? {
+        val baseline = FrameTimeHelper.baselineFps
+        if (!colorByValue || baseline <= 0.0) return null
+        val fps = FrameTimeHelper.latest.currentFps
+        return qualityColor(quality(fps.toFloat(), (baseline * WORST_RATIO).toFloat(), baseline.toFloat()))
     }
 }
