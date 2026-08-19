@@ -66,6 +66,7 @@ object PlayerPreviewOffscreen {
         val modelTilt: Float,
         val partialTick: Float,
         val verticalAnchor: Float,
+        val nametag: Boolean,
     )
 
     private class Slot {
@@ -245,13 +246,16 @@ object PlayerPreviewOffscreen {
 
     private fun renderPlayer(slot: Slot, request: Request, player: Player, width: Int, height: Int, fit: Float) {
         playerPreviewPartialTick = request.partialTick
+        playerPreviewNameTag = request.nametag
         val state = try {
             client.entityRenderDispatcher.extractEntity(player, request.partialTick) as? AvatarRenderState ?: return
         } finally {
             playerPreviewPartialTick = -1f
+            playerPreviewNameTag = false
         }
 
         state.lightCoords = FULL_BRIGHT
+        if (!request.nametag) state.nameTag = null
         state.bodyRot = request.bodyRot
         request.headRot?.let { state.yRot = it }
         request.headPitch?.let { state.xRot = it }

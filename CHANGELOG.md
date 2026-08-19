@@ -1,7 +1,11 @@
-## 3.7.0
-- Added Item Tracker HUD, showing items go in and out of your inventory
-- Added potion variant filtering to Item Counter HUD
-- Added an option to count your ender chest in Item Counter HUD
-- Added an option to count shulker boxes in Item Counter HUD
-- Fixed Item Counter HUD copies sharing one item list
-- Fixed Inventory HUD slot bounds drawing over items
+## 3.8.0
+- Added Custom Text HUD, showing any text you type
+- Added Custom Image HUD, showing an image from your computer
+- Added Social Media Stats HUD, showing your YouTube or Twitch counts
+- Added a nametag option to Player Preview HUD
+- Added Above and Below text positions to Armor HUD
+- Added resizing to Inventory HUD
+- Fixed item counts, durability bars and cooldowns being cut off at the item edge
+- Fixed Armor HUD and Item Tracker HUD not redrawing when you change their options
+- Fixed Player Head HUD colors
+- Fixed Player Preview HUD ignoring HUD scale

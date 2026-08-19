@@ -97,6 +97,8 @@ class ItemTrackerHud : Hud(
 
     private var entries = mutableStateOf<List<Entry>>(emptyList())
 
+    private var rev = mutableStateOf(0)
+
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
 
     override fun canMergeBackground(): Boolean = true
@@ -107,6 +109,9 @@ class ItemTrackerHud : Hud(
     override fun setup() {
         if (!isReal) return
         eventHandler { _: TickEvent.End -> track() }
+        for (option in listOf("spacing", "textPosition", "showIcon")) {
+            addCallback(option) { rev.value++ }
+        }
     }
 
     private fun track() {
@@ -205,6 +210,7 @@ class ItemTrackerHud : Hud(
 
     @Composable
     override fun Content() {
+        rev.value
         val list = entries.value
         if (list.isEmpty()) return
         val scale = textScale.coerceAtLeast(0.01f)
@@ -279,5 +285,6 @@ class ItemTrackerHud : Hud(
         it.counts = null
         it.trackedPlayer = null
         it.entries = mutableStateOf(emptyList())
+        it.rev = mutableStateOf(0)
     }
 }

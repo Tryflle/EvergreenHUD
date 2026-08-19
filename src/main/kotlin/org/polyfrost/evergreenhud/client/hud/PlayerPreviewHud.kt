@@ -12,6 +12,7 @@ import org.polyfrost.evergreenhud.client.hooks.PlayerPreviewOffscreen
 //? } else {
 /*import net.minecraft.client.gui.screens.inventory.InventoryScreen
 import org.polyfrost.evergreenhud.client.hooks.HudOffscreen
+import org.polyfrost.evergreenhud.client.hooks.playerPreviewNameTag
 import org.polyfrost.evergreenhud.client.hooks.playerPreviewPartialTick
 *///? }
 import org.polyfrost.evergreenhud.client.hooks.smuggledHudPartialTick
@@ -42,6 +43,9 @@ class PlayerPreviewHud : Hud(
 
     @Switch(title = "Paper Doll", description = "Mirror the player's own head rotation.")
     var paperDoll = false
+
+    @Switch(title = "Nametag", description = "Show the player's name above the model.")
+    var nametag = false
 
     @Slider(title = "Rotation", min = 0F, max = 360F, step = 1F)
     var rotation = 180f
@@ -130,6 +134,7 @@ class PlayerPreviewHud : Hud(
                 modelTilt = modelTilt,
                 partialTick = partialTick,
                 verticalAnchor = verticalAnchor,
+                nametag = nametag,
             ),
         )
         //? } else {
@@ -144,6 +149,7 @@ class PlayerPreviewHud : Hud(
 
         HudOffscreen.submit { graphics ->
             playerPreviewPartialTick = partialTick
+            playerPreviewNameTag = nametag
             try {
                 InventoryScreen.renderEntityInInventoryFollowsMouse(
                     graphics,
@@ -156,6 +162,7 @@ class PlayerPreviewHud : Hud(
                 )
             } finally {
                 playerPreviewPartialTick = -1f
+                playerPreviewNameTag = false
             }
         }
         *///? }

@@ -8,6 +8,7 @@ import org.polyfrost.compose.composables.PolyBox
 import org.polyfrost.compose.composables.PolyCanvas
 import org.polyfrost.compose.composables.PolyMcText
 import org.polyfrost.compose.composables.PolyModifier
+import org.polyfrost.compose.composables.absoluteAt
 import org.polyfrost.compose.composables.align
 import org.polyfrost.compose.composables.size
 import org.polyfrost.compose.layout.PolyAlign
@@ -23,6 +24,8 @@ import kotlin.math.ceil
 import kotlin.math.roundToInt
 
 const val ITEM_SIZE = 16f
+
+private const val OVERSIZE_FACTOR = 0.5f
 
 private const val BAR_X = 2f
 private const val BAR_Y = 13f
@@ -46,8 +49,8 @@ fun ItemIcon(
 ) {
     val scale = size / ITEM_SIZE
     PolyBox(modifier = modifier.size(size, size)) {
-        ItemImage(hud, stack, size)
-        if (!decorations) return@PolyBox
+        ItemImage(hud, stack, size, decorations, countOverride)
+        if (!decorations || offscreen(hud)) return@PolyBox
 
         if (stack.isDamageableItem && stack.damageValue > 0) DurabilityBar(stack, scale)
         //? if >= 1.21.8
@@ -66,19 +69,99 @@ fun ItemIcon(
     }
 }
 
+private fun offscreen(hud: Hud): Boolean = hud.isReal && HudOffscreen.isUsable
+
+class ItemGridSlot(val x: Float, val y: Float, val stack: ItemStack)
+
 @Composable
-private fun ItemImage(hud: Hud, stack: ItemStack, size: Float) {
+fun ItemGrid(
+    hud: Hud,
+    slots: List<ItemGridSlot>,
+    width: Float,
+    height: Float,
+    size: Float = ITEM_SIZE,
+    decorations: Boolean = true,
+) {
+    if (slots.isEmpty()) return
+    val scale = size / ITEM_SIZE
+    val offscreen = offscreen(hud)
+
+    PolyCanvas(PolyModifier.absoluteAt(0f, 0f).size(width, height)) { x, y, _, _ ->
+        if (offscreen) {
+            val hudScale = hud.effectiveScale
+            for (slot in slots) {
+                HudOffscreen.submitItem(
+                    slot.stack,
+                    hud.x + (x + slot.x) * hudScale,
+                    hud.y + (y + slot.y) * hudScale,
+                    scale * hudScale,
+                    decorations,
+                )
+            }
+            if (HudOffscreen.hasContent) {
+                val margin = size * OVERSIZE_FACTOR
+                HudOffscreen.drawInto(
+                    canvas,
+                    hud.x,
+                    hud.y,
+                    hudScale,
+                    width + margin * 2f,
+                    height + margin * 2f,
+                    x - margin,
+                    y - margin,
+                )
+                return@PolyCanvas
+            }
+        }
+        for (slot in slots) {
+            val id = itemId(slot.stack)
+            val icon = itemImage(id)
+            if (icon != null) image(icon, x + slot.x, y + slot.y, size, size, itemPaint) else requestIcon(id)
+        }
+    }
+
+    if (!decorations || offscreen) return
+    for (slot in slots) {
+        PolyBox(modifier = PolyModifier.absoluteAt(slot.x, slot.y).size(size, size)) {
+            val stack = slot.stack
+            if (stack.isDamageableItem && stack.damageValue > 0) DurabilityBar(stack, scale)
+            val count = stack.count.takeIf { it > 1 }?.toString()
+            if (count != null) {
+                PolyMcText(
+                    count,
+                    scale = scale,
+                    modifier = PolyModifier.align(PolyAlign.BottomRight),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ItemImage(hud: Hud, stack: ItemStack, size: Float, decorations: Boolean, countOverride: String?) {
     PolyCanvas(PolyModifier.size(size, size)) { x, y, w, h ->
-        if (hud.isReal && HudOffscreen.isUsable) {
+        if (offscreen(hud)) {
             val hudScale = hud.effectiveScale
             HudOffscreen.submitItem(
                 stack,
                 hud.x + x * hudScale,
                 hud.y + y * hudScale,
                 size / ITEM_SIZE * hudScale,
+                decorations,
+                countOverride,
             )
             if (HudOffscreen.hasContent) {
-                HudOffscreen.drawInto(canvas, hud.x, hud.y, hudScale, w, h, x, y)
+                val margin = size * OVERSIZE_FACTOR
+                HudOffscreen.drawInto(
+                    canvas,
+                    hud.x,
+                    hud.y,
+                    hudScale,
+                    w + margin * 2f,
+                    h + margin * 2f,
+                    x - margin,
+                    y - margin,
+                )
                 return@PolyCanvas
             }
         }

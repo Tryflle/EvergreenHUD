@@ -39,7 +39,10 @@ private const val DURABILITY = 1
 private const val DURABILITY_PERCENT = 2
 private const val NAME = 3
 
+private const val LEFT = 0
 private const val RIGHT = 1
+private const val ABOVE = 2
+private const val BELOW = 3
 
 class ArmorHud : Hud(
     id = "armor.json",
@@ -91,7 +94,7 @@ class ArmorHud : Hud(
     @Dropdown(title = "Extra Info", options = ["None", "Durability", "Durability %", "Item Name"])
     var extraInfo = 0
 
-    @RadioButton(title = "Text Position", options = ["Left", "Right"])
+    @Dropdown(title = "Text Position", options = ["Left", "Right", "Above", "Below"])
     var textPosition = RIGHT
 
     @Switch(title = "Dynamic Durability Color", description = "Fade the durability text between two colors as the item wears down.")
@@ -107,11 +110,12 @@ class ArmorHud : Hud(
 
     private var entries = mutableStateOf<List<Entry>>(emptyList())
 
+    private var rev = mutableStateOf(0)
+
     override fun defaultPosition(): Pair<Float, Float> = 0f to 0f
 
     override fun canMergeBackground(): Boolean = true
 
-    // items come from the offscreen target, which is only filled while the HUD keeps asking for it
     override val alwaysRedraw: Boolean
         get() = super.alwaysRedraw || (isReal && entries.value.isNotEmpty())
 
@@ -119,6 +123,9 @@ class ArmorHud : Hud(
         if (isReal) {
             hideIf("fullDurabilityColor") { !dynamicColor }
             hideIf("emptyDurabilityColor") { !dynamicColor }
+            for (option in listOf("padding", "direction", "textPosition", "showDecorations")) {
+                addCallback(option) { rev.value++ }
+            }
         }
     }
 
@@ -217,6 +224,7 @@ class ArmorHud : Hud(
 
     @Composable
     override fun Content() {
+        rev.value
         val list = entries.value
         if (list.isEmpty()) return
         val scale = textScale.coerceAtLeast(0.01f)
@@ -228,7 +236,11 @@ class ArmorHud : Hud(
                     for (entry in list) Entry(entry, scale, PolyAlign.Center)
                 }
             } else {
-                val rowAlign = if (textPosition == RIGHT) PolyAlign.Left else PolyAlign.Right
+                val rowAlign = when (textPosition) {
+                    RIGHT -> PolyAlign.Left
+                    LEFT -> PolyAlign.Right
+                    else -> PolyAlign.Center
+                }
                 PolyColumn(gap = padding * scale) {
                     for (entry in list) Entry(entry, scale, rowAlign)
                 }
@@ -238,8 +250,13 @@ class ArmorHud : Hud(
 
     @Composable
     private fun Entry(entry: Entry, scale: Float, align: PolyAlign) {
-        PolyRow(gap = if (entry.text.isEmpty()) 0f else TEXT_GAP * scale, modifier = PolyModifier.align(align)) {
-            if (textPosition != RIGHT && entry.text.isNotEmpty()) Info(entry, scale)
+        val gap = if (entry.text.isEmpty()) 0f else TEXT_GAP * scale
+        val modifier = PolyModifier.align(align)
+        val textFirst = textPosition == LEFT || textPosition == ABOVE
+        val stacked = textPosition == ABOVE || textPosition == BELOW
+
+        val body: @Composable () -> Unit = {
+            if (textFirst && entry.text.isNotEmpty()) Info(entry, scale)
             ItemIcon(
                 this@ArmorHud,
                 entry.stack,
@@ -248,7 +265,13 @@ class ArmorHud : Hud(
                 countOverride = entry.count,
                 modifier = PolyModifier.align(PolyAlign.Center),
             )
-            if (textPosition == RIGHT && entry.text.isNotEmpty()) Info(entry, scale)
+            if (!textFirst && entry.text.isNotEmpty()) Info(entry, scale)
+        }
+
+        if (stacked) {
+            PolyColumn(gap = gap, modifier = modifier, content = body)
+        } else {
+            PolyRow(gap = gap, modifier = modifier, content = body)
         }
     }
 
@@ -274,5 +297,6 @@ class ArmorHud : Hud(
 
     override fun clone(): Hud = (super.clone() as ArmorHud).also {
         it.entries = mutableStateOf(emptyList())
+        it.rev = mutableStateOf(0)
     }
 }

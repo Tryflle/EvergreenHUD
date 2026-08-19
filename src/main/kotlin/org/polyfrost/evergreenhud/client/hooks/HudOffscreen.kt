@@ -70,12 +70,34 @@ object HudOffscreen {
         pending.add(draw)
     }
 
-    fun submitItem(stack: ItemStack, guiX: Float, guiY: Float, scale: Float) = submit { graphics ->
+    fun submitItem(
+        stack: ItemStack,
+        guiX: Float,
+        guiY: Float,
+        scale: Float,
+        decorations: Boolean = false,
+        countOverride: String? = null,
+    ) = submit { graphics ->
         transformed(graphics, guiX, guiY, scale) {
-            //? if < 26
-            //graphics.renderItem(stack, 0, 0)
-            //? if >= 26
+            //? if >= 26 {
             graphics.item(stack, 0, 0)
+            if (decorations) {
+                if (countOverride != null) {
+                    graphics.itemDecorations(client.font, stack, 0, 0, countOverride)
+                } else {
+                    graphics.itemDecorations(client.font, stack, 0, 0)
+                }
+            }
+            //? } else {
+            /*graphics.renderItem(stack, 0, 0)
+            if (decorations) {
+                if (countOverride != null) {
+                    graphics.renderItemDecorations(client.font, stack, 0, 0, countOverride)
+                } else {
+                    graphics.renderItemDecorations(client.font, stack, 0, 0)
+                }
+            }
+            *///? }
         }
     }
 
