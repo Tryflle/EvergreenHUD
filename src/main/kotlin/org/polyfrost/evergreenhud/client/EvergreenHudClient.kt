@@ -102,7 +102,7 @@ object EvergreenHudClient : ClientModInitializer {
 
             }
         }
-        eventHandler { _: TickEvent ->
+        eventHandler { _: TickEvent.End ->
             while (true) {
                 val pos = recentBlockChanges.poll() ?: break
                 EventManager.INSTANCE.post(BlockChangeEvent(pos))

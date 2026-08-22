@@ -229,7 +229,7 @@ class PotionEffectsHud : Hud(
         if (isReal) {
             hideIf("hideVanillaEffects") { !VanillaHudCompat.isPresent }
             if (VanillaHudCompat.isPresent) {
-                eventHandler { _: TickEvent ->
+                eventHandler { _: TickEvent.End ->
                     VanillaHudCompat.hideStatusEffects(hideVanillaEffects && !hidden)
                 }
             }
