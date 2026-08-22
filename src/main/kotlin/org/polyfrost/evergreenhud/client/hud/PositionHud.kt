@@ -15,7 +15,7 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Color
 import org.polyfrost.oneconfig.api.config.v1.annotations.RadioButton
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
-import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
+import org.polyfrost.oneconfig.api.event.v1.events.FramebufferRenderEvent
 import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.oneconfig.utils.v1.dsl.mc
 
@@ -90,7 +90,7 @@ class PositionHud : GenericNumberHud(
 
     override fun setup() {
         super.setup()
-        eventHandler { _: TickEvent.End ->
+        eventHandler { _: FramebufferRenderEvent ->
             val player = mc.player ?: return@eventHandler
             val camera = mc.cameraEntity ?: player
             this.px = player.x
