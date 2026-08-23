@@ -3,7 +3,8 @@ package org.polyfrost.evergreenhud.client.utils
 import org.polyfrost.oneconfig.api.config.v1.Properties.ktProperty
 import org.polyfrost.oneconfig.api.config.v1.Property
 import org.polyfrost.oneconfig.api.config.v1.Tree
-import java.util.function.Supplier
+import org.polyfrost.oneconfig.api.event.v1.eventHandler
+import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 
 abstract class AutoHideTextHud(
     id: String,
@@ -28,6 +29,8 @@ abstract class AutoHideTextHud(
 
     private var syncing = false
 
+    private var lastAutoHideCheck = 0L
+
     override var hidden: Boolean
         get() = super.hidden
         set(value) {
@@ -42,6 +45,22 @@ abstract class AutoHideTextHud(
         syncing = true
         hidden = manuallyHidden || autoHidden
         syncing = false
+    }
+
+    override fun setup() {
+        super.setup()
+        if (isReal) eventHandler { _: TickEvent.End -> refreshWhileAutoHidden() }
+    }
+
+    private fun refreshWhileAutoHidden() {
+        if (!autoHidden || manuallyHidden) return
+
+        val now = System.nanoTime()
+        val frequency = updateFrequency()
+        if (frequency > 0L && now - lastAutoHideCheck < frequency) return
+        lastAutoHideCheck = now
+
+        updateAndRecalculate()
     }
 
     override fun addToSerialized(tree: Tree) {

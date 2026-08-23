@@ -18,7 +18,7 @@ abstract class CachedTextHud(
 
     private var valueColorState: MutableState<PolyColor?> = mutableStateOf(null)
 
-    private var lastValue: String = defaultText
+    private var lastValueState: MutableState<String> = mutableStateOf(defaultText)
 
     fun updateWithText(text: Any?) {
         this.currentText = text?.toString() ?: defaultText
@@ -32,7 +32,7 @@ abstract class CachedTextHud(
     protected open fun valueColor(): PolyColor? = null
 
     override fun concat(prefix: String, value: String?, suffix: String): String {
-        lastValue = value.orEmpty()
+        lastValueState.value = value.orEmpty()
         return super.concat(prefix, value, suffix)
     }
 
@@ -49,7 +49,7 @@ abstract class CachedTextHud(
     }
 
     private fun styledLines(color: PolyColor): List<List<StyledRun>> {
-        val value = lastValue
+        val value = lastValueState.value
         if (value.isEmpty()) {
             val bare = listOfNotNull(prefix.takeIf { it.isNotEmpty() }, suffix.takeIf { it.isNotEmpty() }).joinToString(concatString)
             return listOf(listOf(run(decorate(bare))))
@@ -71,6 +71,6 @@ abstract class CachedTextHud(
 
     override fun clone(): Hud = (super.clone() as CachedTextHud).also {
         it.valueColorState = mutableStateOf(null)
-        it.lastValue = defaultText
+        it.lastValueState = mutableStateOf(defaultText)
     }
 }
