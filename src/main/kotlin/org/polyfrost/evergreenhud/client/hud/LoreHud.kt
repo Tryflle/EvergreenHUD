@@ -3,11 +3,11 @@ package org.polyfrost.evergreenhud.client.hud
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import net.minecraft.client.Minecraft
 import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.ItemStack
 import org.polyfrost.compose.render.PolyColor
-import org.polyfrost.evergreenhud.client.SelectedItemChangedEvent
 import org.polyfrost.evergreenhud.client.utils.HudStyledLines
 import org.polyfrost.evergreenhud.client.utils.StyledRun
 import org.polyfrost.evergreenhud.client.utils.plainText
@@ -16,6 +16,7 @@ import org.polyfrost.oneconfig.api.config.v1.annotations.Checkbox
 import org.polyfrost.oneconfig.api.config.v1.annotations.Number
 import org.polyfrost.oneconfig.api.config.v1.annotations.Switch
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
+import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
 import org.polyfrost.oneconfig.api.hud.v1.Hud
 import org.polyfrost.evergreenhud.client.utils.AutoHideTextHud
 
@@ -56,8 +57,8 @@ class LoreHud : AutoHideTextHud(
             updateWhenChanged("showName")
             updateWhenChanged("removeEmptyLines")
             updateWhenChanged("maxLines")
-            eventHandler { (item): SelectedItemChangedEvent ->
-                theItem = item
+            eventHandler { _: TickEvent.End ->
+                theItem = Minecraft.getInstance().player?.mainHandItem
             }
         }
     }
@@ -67,7 +68,7 @@ class LoreHud : AutoHideTextHud(
             val old = field
             if (old == null && value == null) return
             if (old != null && value != null && ItemStack.matches(old, value)) return
-            field = value
+            field = value?.copy()
             updateAndRecalculate()
         }
 

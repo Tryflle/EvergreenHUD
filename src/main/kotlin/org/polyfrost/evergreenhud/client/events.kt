@@ -4,7 +4,6 @@ import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.Player
-import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import org.polyfrost.oneconfig.api.event.v1.events.Event
 
@@ -31,10 +30,6 @@ data class ServerChangedEvent(
 
 data class SaturationChangedEvent(
     val saturation: Float
-) : Event
-
-data class SelectedItemChangedEvent(
-    val item: ItemStack?
 ) : Event
 
 data class BlockChangeEvent(
