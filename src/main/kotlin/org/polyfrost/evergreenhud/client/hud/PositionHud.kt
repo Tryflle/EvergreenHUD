@@ -90,7 +90,7 @@ class PositionHud : GenericNumberHud(
 
     override fun setup() {
         super.setup()
-        eventHandler { _: FramebufferRenderEvent ->
+        eventHandler { _: FramebufferRenderEvent.Start ->
             val player = mc.player ?: return@eventHandler
             val camera = mc.cameraEntity ?: player
             this.px = player.x
